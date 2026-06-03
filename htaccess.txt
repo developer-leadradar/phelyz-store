@@ -1,0 +1,32 @@
+# Phelyz Diamond Store - Apache Configuration
+
+# Enable Rewrite Engine
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /phelyz-store/
+    
+    # Remove index.php from URLs
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?/$1 [L]
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Prevent Directory Browsing
+Options -Indexes
+
+# Set Default Charset
+AddDefaultCharset UTF-8
+
+# Disable Server Signature
+ServerSignature Off
+
+# Set max upload size
+php_value upload_max_filesize 10M
+php_value post_max_size 10M
