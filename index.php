@@ -155,7 +155,7 @@ function renderStars($rating) {
 ══════════════════════════════════════════ -->
 <section style="padding:80px 0;background:var(--cream);">
   <div class="container">
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:40px;flex-wrap:wrap;gap:16px;">
+    <div class="featured-header" style="display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:40px;flex-wrap:wrap;gap:16px;">
       <div>
         <p class="section-eyebrow">Handpicked for You</p>
         <h2 class="section-title">Featured Collection</h2>
@@ -342,6 +342,10 @@ function renderStars($rating) {
   /* Center Our Story text column */
   .story-grid > div:last-child { text-align:center !important; }
   .story-grid > div:last-child a.btn { display:inline-flex !important; }
+
+  /* Center Featured Collection header */
+  .featured-header { flex-direction:column !important; align-items:center !important; text-align:center !important; }
+  .featured-header .section-divider { margin-left:auto; margin-right:auto; }
 }
 @media(max-width:480px){
   .trust-bar-grid { grid-template-columns:1fr !important; }
