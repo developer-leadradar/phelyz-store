@@ -233,6 +233,44 @@ $items = $cartSummary['items'];
   </div>
 </div>
 
+<style>
+/* ── Mobile cart item layout ── */
+@media (max-width: 767px) {
+  /* Convert grid to flex-wrap so product takes full row, controls share next row */
+  .cart-item > div {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    align-items: center !important;
+  }
+  /* Product info: full width */
+  .cart-item > div > div:first-child {
+    flex: 1 1 100% !important;
+  }
+  /* Unit-price cell: already hidden by Tailwind .hidden */
+  /* Qty stepper: auto width */
+  .cart-item > div > div:nth-child(3) {
+    flex: 0 0 auto !important;
+  }
+  /* Subtotal: push to right, hide "Subtotal:" label since price is in product row */
+  .cart-item > div > div:nth-child(4) {
+    flex: 1 1 auto !important;
+    justify-content: flex-end !important;
+    display: flex !important;
+  }
+  /* Remove button: stays at end */
+  .cart-item > div > div:nth-child(5) {
+    flex: 0 0 auto !important;
+    margin-left: 0 !important;
+  }
+  /* Hide the mobile "Subtotal:" label — price already shows in product section */
+  .cart-item .text-xs.text-stone-400 { display: none !important; }
+
+  /* Cart page title: center on mobile */
+  .cart-item + .cart-item { border-top: 1px solid #f1f0ef; }
+}
+</style>
+
 <script>
 function changeQty(btn, delta) {
   const input = btn.parentElement.querySelector('.qty-input');

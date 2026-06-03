@@ -869,6 +869,14 @@ input, select, textarea, button { font-family: inherit; }
   .page-hero-title { font-size: 28px !important; }
   .page-hero-sub { font-size: 12px !important; }
 
+  /* Page hero — center heading & sub on mobile */
+  .page-hero .container { text-align: center !important; }
+  .breadcrumb { justify-content: center !important; }
+
+  /* Auth pages — center logo + headings on mobile */
+  .auth-logo-text { justify-content: center !important; }
+  .auth-heading, .auth-sub { text-align: center !important; }
+
   /* Auth form */
   .auth-form-inner { padding: 0 4px !important; }
 
