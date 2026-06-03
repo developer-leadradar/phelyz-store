@@ -747,10 +747,22 @@ input, select, textarea, button { font-family: inherit; }
   .hero-grid > div:first-child > div[style*="display:flex"] { justify-content: center !important; }
 
   .footer-grid { grid-template-columns: 1fr; gap: 28px; }
+  /* Footer — center every column */
   .footer-grid > div { text-align: center; }
-  .footer-social { justify-content: center; }
   .footer-col { text-align: center; }
-  .footer-bottom { flex-direction: column; text-align: center; }
+
+  /* Brand column */
+  .footer-logo { justify-content: center; }
+  .footer-desc { text-align: center; margin-left: auto; margin-right: auto; }
+  .footer-social { justify-content: center; }
+
+  /* Contact column — center each icon+text row */
+  .footer-contact-row { justify-content: center; }
+
+  /* Footer bottom */
+  .footer-bottom { flex-direction: column; text-align: center; align-items: center; }
+  .footer-bottom-links { justify-content: center; flex-wrap: wrap; }
+  .payment-tags { justify-content: center; }
   .page-hero { padding: 36px 0; }
   .admin-main { padding: 16px; }
   .wa-float { bottom: 16px; right: 16px; width: 50px; height: 50px; }
