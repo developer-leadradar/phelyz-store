@@ -137,14 +137,14 @@ $items = $cartSummary['items'];
           </div>
 
           <!-- Bottom actions -->
-          <div class="flex items-center justify-between pt-5 mt-2 border-t border-stone-200">
-            <a href="shop.php" class="btn btn-outline btn-sm flex items-center gap-2">
+          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding-top:20px;margin-top:8px;border-top:1px solid #e7e5e4;">
+            <a href="shop.php" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap;">
               <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
               Continue Shopping
             </a>
             <button onclick="clearCart()"
-              class="flex items-center gap-2 text-sm text-red-500 hover:text-red-700 font-medium transition-colors">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#EF4444;font-weight:600;background:none;border:none;cursor:pointer;white-space:nowrap;padding:0;margin-left:auto;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
               Clear Cart
             </button>
           </div>
@@ -200,7 +200,7 @@ $items = $cartSummary['items'];
             </div>
 
             <!-- CTA -->
-            <a href="checkout.php" class="btn btn-gold btn-full flex items-center justify-center gap-2 mb-3 text-base">
+            <a href="checkout.php" class="btn btn-gold btn-full" style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;font-size:15px;padding:16px;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
               Proceed to Checkout
             </a>
