@@ -29,8 +29,6 @@ $statusOrder = ['pending' => 0, 'processing' => 1, 'shipped' => 2, 'delivered' =
 $currentStep = $statusOrder[$order['status']] ?? 0;
 ?>
 
-<div class="admin-main">
-
   <!-- Top bar: Breadcrumb + Actions -->
   <div style="display:flex;align-items:flex-start;justify-content:space-between;
               gap:16px;margin-bottom:28px;flex-wrap:wrap;">
@@ -87,7 +85,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
 
   <!-- Status update form -->
   <?php if (!in_array($order['status'], ['delivered', 'cancelled'])): ?>
-    <div class="card" style="padding:18px 22px;margin-bottom:24px;
+    <div class="card status-update-card" style="padding:18px 22px;margin-bottom:24px;
                              display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
       <div style="display:flex;align-items:center;gap:8px;">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -226,7 +224,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
           <h2 style="font-family:'Cormorant',serif;font-size:17px;font-weight:700;
                      color:var(--black);">Shipping Address</h2>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="addr-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div>
             <p style="font-size:11px;font-weight:700;letter-spacing:0.07em;
                       text-transform:uppercase;color:var(--stone-mid);margin-bottom:4px;">
@@ -272,7 +270,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
           <h2 style="font-family:'Cormorant',serif;font-size:17px;font-weight:700;
                      color:var(--black);">Billing Address</h2>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div class="addr-2col" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
           <div>
             <p style="font-size:11px;font-weight:700;letter-spacing:0.07em;
                       text-transform:uppercase;color:var(--stone-mid);margin-bottom:4px;">
@@ -516,8 +514,6 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
 
     </div><!-- /RIGHT -->
   </div><!-- /grid -->
-
-</div><!-- /admin-main -->
 
 <style>
 @media (max-width: 1024px) {

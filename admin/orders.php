@@ -27,7 +27,7 @@ $statusColors=['pending'=>'status-pending','processing'=>'status-processing','sh
 
 <!-- Filters bar -->
 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
-  <div style="display:flex;gap:4px;flex-wrap:wrap;">
+  <div class="admin-status-tabs" style="display:flex;gap:4px;flex-wrap:wrap;">
     <?php foreach(['all'=>'All','pending'=>'Pending','processing'=>'Processing','shipped'=>'Shipped','delivered'=>'Delivered','cancelled'=>'Cancelled'] as $val=>$label): ?>
       <a href="?status=<?php echo $val; ?><?php echo $searchQuery?'&search='.urlencode($searchQuery):''; ?>"
          style="padding:8px 14px;font-size:13px;font-weight:600;border-radius:8px;text-decoration:none;<?php echo $statusFilter===$val?'background:var(--black);color:white;':'background:white;color:var(--stone);border:1px solid #E9ECEF;'; ?>"><?php echo $label; ?></a>

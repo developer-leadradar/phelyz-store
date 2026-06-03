@@ -77,7 +77,7 @@ $dailyRevenue = $db->fetchAll(
         COUNT(*) as orders
      FROM orders
      WHERE status != 'cancelled'
-     AND created_at >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+     AND created_at >= CURRENT_DATE - INTERVAL '30 days'
      GROUP BY DATE(created_at)
      ORDER BY date ASC"
 );
@@ -121,7 +121,7 @@ $topCustomers = $db->fetchAll(
 
 <!-- ── Date Filter Bar ── -->
 <div class="card" style="padding:20px;margin-bottom:24px;">
-    <form method="GET" style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;">
+    <form method="GET" style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;justify-content:center;">
         <div class="form-group" style="margin-bottom:0;min-width:160px;">
             <label class="form-label" for="rpt_start">From</label>
             <input type="date" id="rpt_start" name="start_date" class="form-input"
@@ -151,7 +151,7 @@ $topCustomers = $db->fetchAll(
             Print
         </button>
     </form>
-    <p style="font-size:12px;color:var(--stone-mid);margin:12px 0 0;font-weight:500;">
+    <p style="font-size:12px;color:var(--stone-mid);margin:12px 0 0;font-weight:500;text-align:center;">
         Report period: <strong style="color:var(--black);"><?php echo date('M d, Y', strtotime($startDate)); ?></strong>
         &mdash;
         <strong style="color:var(--black);"><?php echo date('M d, Y', strtotime($endDate)); ?></strong>
@@ -371,8 +371,8 @@ $topCustomers = $db->fetchAll(
 
 <!-- ── Export ── -->
 <div class="card" style="padding:20px;">
-    <h3 style="font-family:'Cormorant',serif;font-size:16px;font-weight:700;color:var(--black);margin:0 0 14px;">Export Reports</h3>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <h3 style="font-family:'Cormorant',serif;font-size:16px;font-weight:700;color:var(--black);margin:0 0 14px;text-align:center;">Export Reports</h3>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;">
         <button onclick="exportToCSV('product-report')" class="btn btn-outline btn-sm" style="gap:6px;">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:14px;height:14px;">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/>

@@ -30,8 +30,8 @@ $categories = getAllCategories();
 
 <!-- Top bar -->
 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
-  <div style="display:flex;gap:8px;flex-wrap:wrap;">
-    <form method="GET" style="display:flex;gap:6px;">
+  <div style="display:flex;gap:8px;flex-wrap:wrap;width:100%;min-width:0;">
+    <form method="GET" style="display:flex;gap:6px;flex-wrap:wrap;width:100%;min-width:0;">
       <input type="text" name="search" class="form-input" placeholder="Search products…" value="<?php echo htmlspecialchars($searchQuery); ?>" style="width:200px;padding:8px 12px;font-size:13px;">
       <select name="category" class="form-input form-select" style="width:160px;padding:8px 12px;font-size:13px;">
         <option value="">All Categories</option>

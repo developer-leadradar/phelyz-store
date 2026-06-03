@@ -10,9 +10,10 @@
 # Settings with credentials
 /data/settings.json
 
-# Environment & config overrides (keep config.php but note DB creds are in it)
-*.env
-.env*
+# Environment & secrets
+.env
+.env.local
+.env.production
 
 # XAMPP / OS files
 *.log

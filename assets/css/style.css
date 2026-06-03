@@ -677,7 +677,12 @@ input, select, textarea, button { font-family: inherit; }
   margin-left: auto; background: #EF4444; color: white;
   font-size: 10px; font-weight: 700; border-radius: 99px; padding: 2px 7px;
 }
-.admin-main { padding: 28px; overflow: auto; }
+.admin-main { padding: 28px; overflow-x: hidden; overflow-y: auto; min-width: 0; }
+/* Table scroll wrapper — used by admin pages that use class instead of inline style */
+.table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
+/* Constrain ALL overflow-x:auto wrappers inside admin-main to container width */
+.admin-main [style*="overflow-x:auto"],
+.admin-main [style*="overflow-x: auto"] { width: 100% !important; max-width: 100% !important; box-sizing: border-box !important; }
 .admin-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
 .admin-page-title { font-family: 'Cormorant', serif; font-size: 26px; font-weight: 700; color: var(--black); letter-spacing: -0.02em; }
 
@@ -918,8 +923,22 @@ input, select, textarea, button { font-family: inherit; }
   /* Trust pills */
   .trust-bar-grid { grid-template-columns: 1fr !important; }
 
-  /* Admin KPI → 1 col on very small */
+  /* Admin KPI + alert → 1 col on very small */
   .admin-kpi-grid { grid-template-columns: 1fr !important; }
+  .admin-alert-grid { grid-template-columns: 1fr !important; }
+
+  /* Admin filter forms → stack on mobile */
+  .admin-main form[method=GET] { flex-wrap: wrap !important; }
+  .admin-main form[method=GET] input,
+  .admin-main form[method=GET] select { width: 100% !important; min-width: 0 !important; }
+  .admin-main form[method=GET] button { width: 100% !important; }
+
+  /* Admin top action bars → stack vertically */
+  .admin-main > div[style*="space-between"] { flex-direction: column !important; }
+  .admin-main > div[style*="space-between"] > a.btn { width: 100% !important; text-align: center !important; justify-content: center !important; }
+
+  /* Admin main padding */
+  .admin-main { padding: 12px !important; }
 
   /* Dashboard nav cards → 2 col */
   .dashboard-cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
@@ -932,6 +951,91 @@ input, select, textarea, button { font-family: inherit; }
 
   /* Pagination - smaller */
   .page-btn { width: 34px !important; height: 34px !important; font-size: 12px !important; }
+}
+
+/* ═══════════════════════════════════════════════════
+   ADMIN PANEL — PRODUCTION MOBILE FIXES
+   Covers every page: Dashboard, Orders, Products,
+   Categories, Customers, Order Details, Reports,
+   Add/Edit Product, Settings.
+   ═══════════════════════════════════════════════════ */
+
+/* CSS-level topbar switching (JS in footer.php also does this — CSS is instant fallback) */
+@media (max-width: 1023px) {
+  #admin-desktop-topbar { display: none !important; }
+  #admin-mobile-topbar  { display: flex !important; }
+}
+
+/* ── Tablet/Mobile (≤768px) ─────────────────────── */
+@media (max-width: 768px) {
+  /* Reduce card padding so content has more room */
+  .admin-main .card { padding: 18px !important; }
+
+  /* Page action bars — stack heading + CTA button vertically */
+  .admin-main > div[style*="justify-content:space-between"],
+  .admin-main > div[style*="justify-content: space-between"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+  .admin-main > div[style*="justify-content:space-between"] > a.btn,
+  .admin-main > div[style*="justify-content:space-between"] > button.btn,
+  .admin-main > div[style*="justify-content: space-between"] > a.btn,
+  .admin-main > div[style*="justify-content: space-between"] > button.btn {
+    width: 100% !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  /* All GET filter/search forms — wrap and go full-width */
+  .admin-main form[method=GET] { flex-wrap: wrap !important; gap: 8px !important; }
+  .admin-main form[method=GET] input,
+  .admin-main form[method=GET] select { width: 100% !important; min-width: 0 !important; }
+  .admin-main form[method=GET] button,
+  .admin-main form[method=GET] a.btn { width: 100% !important; justify-content: center !important; }
+
+  /* Status filter tabs (orders page) — horizontal scroll strip */
+  .admin-status-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; padding-bottom: 4px; }
+  .admin-status-tabs > a { white-space: nowrap; flex-shrink: 0; }
+
+  /* Order details: 2-col address/info grids collapse to 1-col */
+  .addr-2col { grid-template-columns: 1fr !important; }
+
+  /* Order details: status update bar stacks on narrow screens */
+  .status-update-card { flex-direction: column !important; align-items: flex-start !important; }
+
+  /* Admin panel footer bar (copyright row) */
+  .admin-footer-bar { flex-wrap: wrap !important; justify-content: center !important; gap: 4px !important; text-align: center !important; }
+
+  /* Reports date filter: stack form groups */
+  .admin-main .card > form[method=GET] > .form-group { min-width: 0 !important; width: 100% !important; }
+
+  /* Data table: tighter cell padding */
+  .data-table th { padding: 10px 10px; font-size: 9.5px; }
+  .data-table td { padding: 10px 10px; }
+}
+
+/* ── Small Mobile (≤480px) ──────────────────────── */
+@media (max-width: 480px) {
+  /* Tightest card padding */
+  .admin-main .card { padding: 12px !important; }
+
+  /* Form cards (add/edit product, settings) */
+  .admin-main .card[style*="padding:28px"] { padding: 14px !important; }
+
+  /* Status badges — compact */
+  .status-badge { font-size: 9px !important; padding: 2px 5px !important; }
+
+  /* Data table — minimal */
+  .data-table { font-size: 12px !important; }
+  .data-table th { padding: 7px 8px; font-size: 8.5px; letter-spacing: 0.05em; }
+  .data-table td { padding: 8px 8px; }
+
+  /* Mobile topbar title — don't overflow */
+  #admin-mobile-topbar span { font-size: 17px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+
+  /* Admin alert cards — show count larger */
+  .admin-alert-grid a > div:first-child { width: 36px !important; height: 36px !important; font-size: 18px !important; }
 }
 
 /* ── Global overflow prevention ─────────────────── */

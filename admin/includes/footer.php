@@ -1,5 +1,5 @@
     <!-- /PAGE CONTENT -->
-    <div style="margin-top:48px;padding-top:16px;border-top:1px solid #E9ECEF;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--stone-mid);">
+    <div class="admin-footer-bar" style="margin-top:48px;padding-top:16px;border-top:1px solid #E9ECEF;display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--stone-mid);">
       <span>&copy; <?php echo date('Y'); ?> Phelyz Store. All rights reserved.</span>
       <span>Admin Panel v1.0</span>
     </div>

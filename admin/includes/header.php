@@ -38,14 +38,14 @@ $adminNav = [
 <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@400;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{gold:{DEFAULT:'#CA8A04',light:'#D97706'},stone:{950:'#0C0A09',900:'#1C1917',800:'#292524',700:'#44403C',600:'#57534E',500:'#78716C',400:'#A8A29E',300:'#D6D3D1',200:'#E7E5E4',100:'#F5F5F4',50:'#FAFAF9'}},fontFamily:{display:['Cormorant','Georgia','serif'],sans:['Montserrat','system-ui','sans-serif']}}}}</script>
-<link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/style.css">
+<link rel="stylesheet" href="<?php echo SITE_URL; ?>/assets/css/style.css?v=<?php echo filemtime(__DIR__.'/../../assets/css/style.css'); ?>">
 </head>
 <body style="margin:0;padding:0;background:#F4F5F7;font-family:'Montserrat',sans-serif;">
 
 <div class="admin-wrap">
 
   <!-- Sidebar -->
-  <aside class="admin-sidebar">
+  <aside class="admin-sidebar" id="admin-sidebar">
     <div class="admin-logo-area">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 2h11l4 6-9.5 14L2.5 8l4-6z"/></svg>
       PHELYZ
@@ -95,7 +95,7 @@ $adminNav = [
     </div>
 
     <!-- Top bar (desktop) -->
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #E9ECEF;flex-wrap:wrap;gap:12px;">
+    <div id="admin-desktop-topbar" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid #E9ECEF;flex-wrap:wrap;gap:12px;">
       <div>
         <div style="font-size:11px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:4px;"><?php echo date('l, F j, Y'); ?></div>
         <h1 class="admin-page-title"><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) : 'Dashboard'; ?></h1>

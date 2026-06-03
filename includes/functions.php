@@ -270,9 +270,9 @@ function getFeaturedProducts($limit = 8) {
 function getRelatedProducts($productId, $categoryId, $limit = 4) {
     $db = getDB();
     return $db->fetchAll(
-        "SELECT * FROM products 
-         WHERE category_id = ? AND id != ? AND is_active = 1 
-         ORDER BY RAND() 
+        "SELECT * FROM products
+         WHERE category_id = ? AND id != ? AND is_active = 1
+         ORDER BY RANDOM()
          LIMIT ?",
         [$categoryId, $productId, $limit]
     );
@@ -671,75 +671,115 @@ function generateSlug($text) {
 }
 
 function uploadImage($file, $directory = 'products') {
-    $uploadDir = UPLOAD_PATH . $directory . '/';
-    
-    if (!is_dir($uploadDir)) {
-        mkdir($uploadDir, 0755, true);
-    }
-    
     $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-    $filename = $file['name'];
-    $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-    
-    if (!in_array($ext, $allowed)) {
+    $ext     = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, $allowed)) return false;
+
+    $newFilename = $directory . '/' . uniqid() . '.' . $ext;
+
+    // Use Supabase Storage in production
+    if (!empty(SUPABASE_URL) && !empty(SUPABASE_SERVICE_KEY)) {
+        $fileContent = file_get_contents($file['tmp_name']);
+        $mimeTypes   = ['jpg'=>'image/jpeg','jpeg'=>'image/jpeg','png'=>'image/png','gif'=>'image/gif','webp'=>'image/webp'];
+        $mime        = $mimeTypes[$ext] ?? 'application/octet-stream';
+        $url         = SUPABASE_URL . '/storage/v1/object/' . SUPABASE_BUCKET . '/' . $newFilename;
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_CUSTOMREQUEST  => 'POST',
+            CURLOPT_HTTPHEADER     => [
+                'Authorization: Bearer ' . SUPABASE_SERVICE_KEY,
+                'apikey: ' . SUPABASE_SERVICE_KEY,
+                'Content-Type: ' . $mime,
+                'x-upsert: true',
+            ],
+            CURLOPT_POSTFIELDS     => $fileContent,
+        ]);
+        $response = curl_exec($ch);
+        $code     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($code === 200 || $code === 201) {
+            return SUPABASE_URL . '/storage/v1/object/public/' . SUPABASE_BUCKET . '/' . $newFilename;
+        }
+        error_log('Supabase Storage upload failed: ' . $response);
         return false;
     }
-    
-    $newFilename = uniqid() . '.' . $ext;
-    $destination = $uploadDir . $newFilename;
-    
-    if (move_uploaded_file($file['tmp_name'], $destination)) {
-        return 'uploads/' . $directory . '/' . $newFilename;
+
+    // Local fallback
+    $uploadDir = UPLOAD_PATH . $directory . '/';
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
+    if (move_uploaded_file($file['tmp_name'], $uploadDir . basename($newFilename))) {
+        return 'uploads/' . $newFilename;
     }
-    
     return false;
 }
 
 function sendEmail($to, $subject, $message) {
-    $autoload = __DIR__ . '/../vendor/autoload.php';
+    // Use Resend API if key is set
+    if (!empty(RESEND_API_KEY)) {
+        $payload = [
+            'from'    => SMTP_FROM_NAME . ' <' . SMTP_FROM_EMAIL . '>',
+            'to'      => [$to],
+            'subject' => $subject,
+            'html'    => $message,
+            'text'    => strip_tags($message),
+        ];
 
-    if (!file_exists($autoload)) {
-        // Localhost fallback — basic mail()
-        $headers  = "From: " . SITE_EMAIL . "\r\n";
-        $headers .= "Reply-To: " . SITE_EMAIL . "\r\n";
-        $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-        return mail($to, $subject, $message, $headers);
-    }
+        $ch = curl_init('https://api.resend.com/emails');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_POST           => true,
+            CURLOPT_HTTPHEADER     => [
+                'Authorization: Bearer ' . RESEND_API_KEY,
+                'Content-Type: application/json',
+            ],
+            CURLOPT_POSTFIELDS     => json_encode($payload),
+        ]);
+        $response = curl_exec($ch);
+        $code     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
 
-    require_once $autoload;
-    $mail = new PHPMailer\PHPMailer\PHPMailer(true);
-
-    try {
-        // SMTP Configuration
-        $mail->isSMTP();
-        $mail->Host       = SMTP_HOST;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = SMTP_USERNAME;
-        $mail->Password   = SMTP_PASSWORD;
-        $mail->SMTPSecure = SMTP_ENCRYPTION === 'ssl'
-            ? PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS
-            : PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = SMTP_PORT;
-
-        // Sender & Recipient
-        $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
-        $mail->addAddress($to);
-        $mail->addReplyTo(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
-
-        // Content
-        $mail->isHTML(true);
-        $mail->CharSet = 'UTF-8';
-        $mail->Subject = $subject;
-        $mail->Body    = $message;
-        $mail->AltBody = strip_tags($message); // Plain-text fallback
-
-        $mail->send();
-        return true;
-
-    } catch (Exception $e) {
-        error_log('PHPMailer Error: ' . $mail->ErrorInfo);
+        if ($code === 200 || $code === 201) return true;
+        error_log('Resend error: ' . $response);
         return false;
     }
+
+    // PHPMailer fallback (local dev with Composer)
+    $autoload = __DIR__ . '/../vendor/autoload.php';
+    if (file_exists($autoload)) {
+        require_once $autoload;
+        $mail = new PHPMailer\PHPMailer\PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host       = SMTP_HOST;
+            $mail->SMTPAuth   = true;
+            $mail->Username   = SMTP_USERNAME;
+            $mail->Password   = SMTP_PASSWORD;
+            $mail->SMTPSecure = SMTP_ENCRYPTION === 'ssl'
+                ? PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS
+                : PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port       = SMTP_PORT;
+            $mail->setFrom(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+            $mail->addAddress($to);
+            $mail->isHTML(true);
+            $mail->CharSet = 'UTF-8';
+            $mail->Subject = $subject;
+            $mail->Body    = $message;
+            $mail->AltBody = strip_tags($message);
+            $mail->send();
+            return true;
+        } catch (Exception $e) {
+            error_log('PHPMailer Error: ' . $mail->ErrorInfo);
+            return false;
+        }
+    }
+
+    // Basic mail() last resort
+    $headers  = "From: " . SMTP_FROM_EMAIL . "\r\n";
+    $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
+    return mail($to, $subject, $message, $headers);
 }
 
 function getStatusBadge($status) {
