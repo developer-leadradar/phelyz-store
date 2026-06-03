@@ -537,6 +537,21 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
   fill: #CA8A04;
 }
 .tab-btn { outline: none; }
+
+/* ── Review card mobile layout ── */
+@media (max-width: 600px) {
+  /* Less padding so content has room */
+  .space-y-4 .glass-card { padding: 16px !important; }
+  /* Stack: info row full width, then stars+edit row below */
+  .space-y-4 .glass-card .flex.justify-between {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .space-y-4 .glass-card .flex.justify-between > .flex:last-child {
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+}
 </style>
 
 <script>
