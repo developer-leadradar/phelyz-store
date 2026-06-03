@@ -137,13 +137,13 @@ $items = $cartSummary['items'];
           </div>
 
           <!-- Bottom actions -->
-          <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding-top:20px;margin-top:8px;border-top:1px solid #e7e5e4;">
-            <a href="shop.php" class="btn btn-outline btn-sm" style="display:inline-flex;align-items:center;gap:6px;white-space:nowrap;">
+          <div style="padding-top:20px;margin-top:8px;border-top:1px solid #e7e5e4;">
+            <a href="shop.php" class="btn btn-outline btn-sm" style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;margin-bottom:12px;">
               <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
               Continue Shopping
             </a>
             <button onclick="clearCart()"
-              style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#EF4444;font-weight:600;background:none;border:none;cursor:pointer;white-space:nowrap;padding:0;margin-left:auto;">
+              style="display:flex;align-items:center;justify-content:center;gap:6px;width:100%;font-size:13px;color:#EF4444;font-weight:600;background:none;border:1px solid #fecaca;border-radius:8px;cursor:pointer;padding:10px;">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
               Clear Cart
             </button>

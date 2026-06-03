@@ -12,27 +12,30 @@ $cartCount = getCartCount();
   <div style="background:linear-gradient(135deg,var(--black) 0%,var(--stone) 100%);padding:36px 0;position:relative;overflow:hidden;">
     <div style="position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 80% 50%,rgba(202,138,4,0.15),transparent);pointer-events:none;"></div>
     <div class="container" style="position:relative;z-index:2;">
-      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+      <!-- Top row: avatar + info side by side always -->
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:nowrap;">
         <!-- Avatar -->
-        <div style="width:64px;height:64px;border-radius:50%;background:rgba(202,138,4,0.20);border:2px solid rgba(202,138,4,0.40);display:flex;align-items:center;justify-content:center;font-family:'Cormorant',serif;font-size:26px;font-weight:700;color:var(--gold);flex-shrink:0;">
+        <div style="width:58px;height:58px;border-radius:50%;background:rgba(202,138,4,0.20);border:2px solid rgba(202,138,4,0.40);display:flex;align-items:center;justify-content:center;font-family:'Cormorant',serif;font-size:24px;font-weight:700;color:var(--gold);flex-shrink:0;">
           <?php echo strtoupper(substr($user['first_name'],0,1).substr($user['last_name'],0,1)); ?>
         </div>
         <!-- Info -->
-        <div style="flex:1;min-width:0;">
-          <p style="font-size:12px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(202,138,4,0.80);margin-bottom:4px;">Member Account</p>
-          <h1 style="font-family:'Cormorant',serif;font-size:clamp(22px,4vw,32px);font-weight:700;color:white;margin-bottom:4px;line-height:1.1;">
+        <div style="flex:1;min-width:0;overflow:hidden;">
+          <p style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(202,138,4,0.80);margin-bottom:2px;">Member Account</p>
+          <h1 style="font-family:'Cormorant',serif;font-size:clamp(20px,5vw,32px);font-weight:700;color:white;margin-bottom:2px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
             Hello, <?php echo htmlspecialchars($user['first_name']); ?> <?php echo htmlspecialchars($user['last_name']); ?>
           </h1>
-          <p style="font-size:13px;color:rgba(255,255,255,0.50);"><?php echo htmlspecialchars($user['email']); ?></p>
+          <p style="font-size:12px;color:rgba(255,255,255,0.50);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($user['email']); ?></p>
         </div>
-        <!-- Cart badge shortcut -->
-        <?php if ($cartCount > 0): ?>
-        <a href="cart.php" style="display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--black);padding:10px 18px;border-radius:99px;font-size:13px;font-weight:700;text-decoration:none;flex-shrink:0;">
+      </div>
+      <!-- Cart badge — full row below on all screen sizes -->
+      <?php if ($cartCount > 0): ?>
+      <div style="margin-top:16px;">
+        <a href="cart.php" style="display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--black);padding:10px 20px;border-radius:99px;font-size:13px;font-weight:700;text-decoration:none;">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
           <?php echo $cartCount; ?> item<?php echo $cartCount!=1?'s':''; ?> in cart
         </a>
-        <?php endif; ?>
       </div>
+      <?php endif; ?>
     </div>
   </div>
 
