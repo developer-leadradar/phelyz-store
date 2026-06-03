@@ -4,22 +4,9 @@
       "runtime": "vercel-php@0.7.2"
     }
   },
-  "routes": [
-    {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
-    },
-    {
-      "src": "/uploads/(.*)",
-      "dest": "/uploads/$1"
-    },
-    {
-      "src": "/(.*\\.php(?:\\?.*)?)",
-      "dest": "/$1"
-    },
-    {
-      "src": "/$",
-      "dest": "/index.php"
-    }
+  "rewrites": [
+    { "source": "/",        "destination": "/index.php" },
+    { "source": "/admin",   "destination": "/admin/index.php" },
+    { "source": "/admin/",  "destination": "/admin/index.php" }
   ]
 }
