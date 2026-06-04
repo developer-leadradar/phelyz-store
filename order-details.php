@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = "Order Details";
 require_once 'includes/header.php';
 requireLogin();

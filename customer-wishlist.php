@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = "My Wishlist";
 require_once 'includes/header.php';
 requireLogin();

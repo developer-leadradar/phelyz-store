@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = "My Addresses";
 require_once 'includes/header.php';
 requireLogin();

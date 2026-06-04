@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 $pageTitle = "Profile & Security";
 require_once 'includes/header.php';
 requireLogin();
