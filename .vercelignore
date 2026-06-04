@@ -1,0 +1,20 @@
+# Vercel deployment ignore
+# Same as .gitignore but vendor/ is NOT excluded — PHPMailer is bundled
+
+.claude/
+/uploads/
+/data/settings.json
+.env
+.env.local
+.env.production
+*.log
+Thumbs.db
+.DS_Store
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+/cache/
+*.cache
+.vercel
