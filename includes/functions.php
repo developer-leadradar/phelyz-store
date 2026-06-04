@@ -23,6 +23,9 @@ function requireLogin() {
     if (!isLoggedIn()) {
         redirect('login.php');
     }
+    if (isAdmin()) {
+        redirect('admin/index.php');
+    }
 }
 
 function requireAdmin() {
