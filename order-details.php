@@ -61,7 +61,10 @@ $currentPage=basename($_SERVER['PHP_SELF']);
     <div class="card" style="padding:20px;margin-bottom:20px;">
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;">
         <div><div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:4px;">Date Placed</div><div style="font-size:13px;font-weight:600;"><?php echo formatDate($order['created_at']); ?></div></div>
-        <div><div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:4px;">Payment Method</div><div style="font-size:13px;font-weight:600;"><?php echo ucwords(str_replace('_',' ',$order['payment_method'])); ?></div></div>
+        <div><div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:4px;">Payment Method</div><div style="font-size:13px;font-weight:600;"><?php
+$pmLabels = ['cod'=>'Cash on Delivery','bank_transfer'=>'Bank Transfer','card'=>'Card Payment'];
+echo htmlspecialchars($pmLabels[$order['payment_method']] ?? ucwords(str_replace('_',' ',$order['payment_method'])));
+?></div></div>
         <div><div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:4px;">Ship To</div><div style="font-size:13px;font-weight:600;"><?php echo htmlspecialchars($order['shipping_first_name'].' '.$order['shipping_last_name']); ?></div></div>
         <div><div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:4px;">Order Total</div><div style="font-size:16px;font-family:'Cormorant',serif;font-weight:700;color:var(--gold);"><?php echo formatPrice($order['total']); ?></div></div>
       </div>

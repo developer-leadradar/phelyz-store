@@ -7,36 +7,18 @@ $cartSummary = getCartSummary();
 if (empty($cartSummary['items'])) redirect('cart.php');
 $user = isLoggedIn() ? getCurrentUser() : null;
 
-// Handle POST - keep original order processing logic
+// Handle POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    require_once 'includes/functions.php';
-    $shippingFirst  = sanitize($_POST['shipping_first_name'] ?? '');
-    $shippingLast   = sanitize($_POST['shipping_last_name'] ?? '');
-    $shippingAddr   = sanitize($_POST['shipping_address'] ?? '');
-    $shippingCity   = sanitize($_POST['shipping_city'] ?? '');
-    $shippingPhone  = sanitize($_POST['shipping_phone'] ?? '');
-    $shippingNotes  = sanitize($_POST['notes'] ?? '');
-    $paymentMethod  = sanitize($_POST['payment_method'] ?? 'cod');
+    $shippingFirst = sanitize($_POST['shipping_first_name'] ?? '');
+    $shippingLast  = sanitize($_POST['shipping_last_name'] ?? '');
+    $shippingAddr  = sanitize($_POST['shipping_address'] ?? '');
+    $shippingCity  = sanitize($_POST['shipping_city'] ?? '');
+    $shippingPhone = sanitize($_POST['shipping_phone'] ?? '');
 
     if ($shippingFirst && $shippingLast && $shippingAddr && $shippingCity && $shippingPhone) {
-        $orderData = [
-            'user_id'               => $_SESSION['user_id'] ?? null,
-            'shipping_first_name'   => $shippingFirst,
-            'shipping_last_name'    => $shippingLast,
-            'shipping_address'      => $shippingAddr,
-            'shipping_city'         => $shippingCity,
-            'shipping_phone'        => $shippingPhone,
-            'notes'                 => $shippingNotes,
-            'payment_method'        => $paymentMethod,
-            'subtotal'              => $cartSummary['subtotal'],
-            'shipping'              => $cartSummary['shipping'],
-            'tax'                   => $cartSummary['tax'] ?? 0,
-            'total'                 => $cartSummary['total'],
-        ];
-        $orderId = createOrder($orderData, $cartSummary['items']);
-        if ($orderId) {
-            clearCart();
-            redirect('order-details.php?id=' . $orderId . '&success=1');
+        $result = processCheckout($_POST);
+        if ($result['success']) {
+            redirect('order-details.php?id=' . $result['order_id'] . '&success=1');
         }
     }
 }
