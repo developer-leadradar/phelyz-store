@@ -210,20 +210,23 @@ function getAllProducts($filters = [], $limit = null, $offset = 0) {
     $orderBy = "p.created_at DESC";
     if (!empty($filters['sort'])) {
         switch ($filters['sort']) {
+            case 'price_asc':
             case 'price_low':
                 $orderBy = "p.price ASC";
                 break;
+            case 'price_desc':
             case 'price_high':
                 $orderBy = "p.price DESC";
+                break;
+            case 'rating':
+            case 'popular':
+                $orderBy = "p.rating DESC, p.review_count DESC";
                 break;
             case 'name_asc':
                 $orderBy = "p.name ASC";
                 break;
             case 'name_desc':
                 $orderBy = "p.name DESC";
-                break;
-            case 'popular':
-                $orderBy = "p.review_count DESC, p.rating DESC";
                 break;
             case 'newest':
             default:
