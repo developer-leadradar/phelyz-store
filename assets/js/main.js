@@ -7,7 +7,7 @@ async function addToCart(productId, quantity) {
   var btn = event && event.target ? event.target.closest('button') : null;
   if (btn) btn.classList.add('btn-loading');
   try {
-    var res  = await fetch('/phelyz-store/api/add-to-cart.php', {
+    var res  = await fetch('/api/add-to-cart.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ product_id: productId, quantity: quantity })
@@ -35,13 +35,13 @@ async function buyNow(productId) {
   var qtyEl = document.getElementById('product-qty');
   var qty   = qtyEl ? parseInt(qtyEl.value) : 1;
   try {
-    var res  = await fetch('/phelyz-store/api/add-to-cart.php', {
+    var res  = await fetch('/api/add-to-cart.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ product_id: productId, quantity: qty })
     });
     var data = await res.json();
-    if (data.success) window.location.href = '/phelyz-store/checkout.php';
+    if (data.success) window.location.href = '/checkout.php';
     else showToast(data.message || 'Could not add to cart', 'error');
   } catch(e) { showToast('Network error', 'error'); }
 }
@@ -49,7 +49,7 @@ async function buyNow(productId) {
 /* ── Wishlist ──────────────────────────────────────── */
 async function addToWishlist(productId, callback) {
   try {
-    var res  = await fetch('/phelyz-store/api/add-to-wishlist.php', {
+    var res  = await fetch('/api/add-to-wishlist.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ product_id: productId, action: 'toggle' })
@@ -66,7 +66,7 @@ async function addToWishlist(productId, callback) {
 
 async function toggleWishlist(productId) {
   try {
-    var res  = await fetch('/phelyz-store/api/add-to-wishlist.php', {
+    var res  = await fetch('/api/add-to-wishlist.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ product_id: productId, action: 'toggle' })
@@ -120,7 +120,7 @@ function changeQty(btn, delta) {
 
 async function updateQuantity(itemId, qty) {
   try {
-    var res  = await fetch('/phelyz-store/api/update-cart.php', {
+    var res  = await fetch('/api/update-cart.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ cart_item_id: itemId, quantity: qty })
@@ -135,7 +135,7 @@ async function updateQuantity(itemId, qty) {
 
 async function removeFromCart(itemId) {
   try {
-    var res  = await fetch('/phelyz-store/api/update-cart.php', {
+    var res  = await fetch('/api/update-cart.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ cart_item_id: itemId, quantity: 0 })
@@ -149,7 +149,7 @@ async function removeFromCart(itemId) {
 async function clearCart() {
   if (!confirm('Remove all items from your cart?')) return;
   try {
-    var res  = await fetch('/phelyz-store/api/update-cart.php', {
+    var res  = await fetch('/api/update-cart.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ action: 'clear' })
