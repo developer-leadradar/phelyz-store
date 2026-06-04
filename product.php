@@ -375,6 +375,13 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
               Write a Review
             </button>
           </div>
+          <?php elseif (isLoggedIn() && !$userHasPurchased): ?>
+          <div class="flex justify-end mb-6">
+            <p class="text-sm text-stone-400 italic flex items-center gap-2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>
+              Only customers who received this item can leave a review.
+            </p>
+          </div>
           <?php endif; ?>
 
           <!-- Review Cards -->
@@ -433,6 +440,8 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
               <button onclick="openReviewModal()" class="btn btn-gold">Write a Review</button>
             <?php elseif (!isLoggedIn()): ?>
               <a href="login.php" class="btn btn-outline">Sign in to review</a>
+            <?php else: ?>
+              <p class="text-sm text-stone-400 italic">Only customers who received this item can leave a review.</p>
             <?php endif; ?>
           </div>
         <?php endif; ?>
