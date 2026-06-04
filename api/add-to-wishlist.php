@@ -26,33 +26,24 @@ if (!isset($data['product_id'])) {
 $productId = (int)$data['product_id'];
 $action = isset($data['action']) ? $data['action'] : 'add';
 
+// Resolve 'toggle' to add or remove based on current state
+if ($action === 'toggle') {
+    $action = isInWishlist($productId) ? 'remove' : 'add';
+}
+
 if ($action === 'remove') {
     $result = removeFromWishlist($productId);
-    
     if ($result) {
-        echo json_encode([
-            'success' => true,
-            'message' => 'Removed from wishlist'
-        ]);
+        echo json_encode(['success' => true, 'action' => 'removed', 'message' => 'Removed from wishlist']);
     } else {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Failed to remove from wishlist'
-        ]);
+        echo json_encode(['success' => false, 'message' => 'Failed to remove from wishlist']);
     }
 } else {
     $result = addToWishlist($productId);
-    
     if ($result) {
-        echo json_encode([
-            'success' => true,
-            'message' => 'Added to wishlist'
-        ]);
+        echo json_encode(['success' => true, 'action' => 'added', 'message' => 'Added to wishlist']);
     } else {
-        echo json_encode([
-            'success' => false,
-            'message' => 'Failed to add to wishlist'
-        ]);
+        echo json_encode(['success' => false, 'message' => 'Failed to add to wishlist']);
     }
 }
 ?>

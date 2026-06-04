@@ -1,22 +1,20 @@
 <?php
-require_once 'includes/header.php';
+// Load data BEFORE header so $pageTitle is available for <title>
+define('PHELYZ_ACCESS', true);
+require_once 'config.php';
+require_once 'includes/db.php';
+require_once 'includes/functions.php';
 
-// Get product ID
 $productId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+if (!$productId) { redirect('shop.php'); }
 
-if (!$productId) {
-    redirect('shop.php');
-}
-
-// Get product details
 $product = getProductById($productId);
+if (!$product) { redirect('shop.php'); }
 
-if (!$product) {
-    redirect('shop.php');
-}
-
-$pageTitle = $product['name'];
+$pageTitle       = $product['name'];
 $pageDescription = substr(strip_tags($product['description']), 0, 160);
+
+require_once 'includes/header.php';
 
 // Get related products
 $relatedProducts = getRelatedProducts($product['id'], $product['category_id'], 4);
@@ -564,17 +562,6 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
 </style>
 
 <script>
-// Quantity
-let qty = 1;
-const maxQty = <?php echo (int)$product['stock_quantity']; ?>;
-
-function increaseQty() {
-  if (qty < maxQty) { qty++; document.getElementById('product-qty').value = qty; }
-}
-function decreaseQty() {
-  if (qty > 1) { qty--; document.getElementById('product-qty').value = qty; }
-}
-
 // Gallery
 function setMainImage(src, btn) {
   document.getElementById('main-product-image').src = src;
@@ -586,162 +573,49 @@ function setMainImage(src, btn) {
   btn.classList.remove('border-stone-200');
 }
 
-// Cart
-function addToCartWithQty(productId) {
-  const quantity = parseInt(document.getElementById('product-qty')?.value || 1);
-  fetch('api/add-to-cart.php', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({product_id: productId, quantity: quantity})
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.success) {
-      showToast('Added to cart!', 'success');
-      const badge = document.getElementById('cart-count');
-      if (badge && data.cart_count) badge.textContent = data.cart_count;
-    } else {
-      showToast(data.message || 'Failed to add to cart', 'error');
-    }
-  });
-}
-
-function addToCart(productId) {
-  fetch('api/add-to-cart.php', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({product_id: productId, quantity: 1})
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.success) showToast('Added to cart!', 'success');
-    else showToast(data.message || 'Failed', 'error');
-  });
-}
-
-function buyNow(productId) {
-  addToCartWithQty(productId);
-  setTimeout(() => { window.location.href = 'checkout.php'; }, 600);
-}
-
-function addToWishlist(productId) {
-  fetch('api/add-to-wishlist.php', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({product_id: productId, action: 'add'})
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.success) showToast('Added to wishlist!', 'success');
-    else showToast(data.message || 'Failed', 'error');
-  });
-}
-
-// Wishlist toggle
-let inWishlist = <?php echo $inWishlist ? 'true' : 'false'; ?>;
-function toggleWishlist(productId) {
-  const action = inWishlist ? 'remove' : 'add';
-  fetch('api/add-to-wishlist.php', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({product_id: productId, action: action})
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (data.success) {
-      inWishlist = !inWishlist;
-      const btn = document.getElementById('wishlist-btn');
-      const icon = document.getElementById('wishlist-icon');
-      const txt  = document.getElementById('wishlist-text');
-      if (inWishlist) {
-        icon.setAttribute('fill', 'currentColor');
-        txt.textContent = 'Saved to Wishlist';
-        btn.classList.add('text-red-500', 'border-red-200');
-        showToast('Added to wishlist!', 'success');
-      } else {
-        icon.setAttribute('fill', 'none');
-        txt.textContent = 'Add to Wishlist';
-        btn.classList.remove('text-red-500', 'border-red-200');
-        showToast('Removed from wishlist', 'success');
-      }
-    }
-  });
-}
-
-// Tabs
-function switchTab(tab) {
-  ['description', 'reviews'].forEach(t => {
-    const btn   = document.getElementById('tab-' + t);
-    const panel = document.getElementById('panel-' + t);
-    if (t === tab) {
-      btn.classList.add('border-gold', 'text-gold');
-      btn.classList.remove('border-transparent', 'text-stone-500');
-      panel.classList.remove('hidden');
-    } else {
-      btn.classList.remove('border-gold', 'text-gold');
-      btn.classList.add('border-transparent', 'text-stone-500');
-      panel.classList.add('hidden');
-    }
-  });
-}
-
 // Review modal
 function openReviewModal() {
   document.getElementById('review-modal-title').textContent = 'Write a Review';
   document.getElementById('review-id').value = '';
   document.getElementById('review-form').reset();
-  // Reset stars
   document.querySelectorAll('#star-input .star-input-svg').forEach(s => { s.style.color = ''; });
-  const m = document.getElementById('review-modal');
+  var m = document.getElementById('review-modal');
   if (m) { m.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
 }
 function openEditReview(reviewId, rating, text) {
   document.getElementById('review-modal-title').textContent = 'Edit Your Review';
   document.getElementById('review-id').value = reviewId;
   document.getElementById('review-text').value = text;
-  // Pre-select the star rating
-  const radio = document.getElementById('star' + rating);
+  var radio = document.getElementById('star' + rating);
   if (radio) radio.checked = true;
-  const m = document.getElementById('review-modal');
+  var m = document.getElementById('review-modal');
   if (m) { m.classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
 }
 function closeReviewModal() {
-  const m = document.getElementById('review-modal');
+  var m = document.getElementById('review-modal');
   if (m) { m.classList.add('hidden'); document.body.style.overflow = ''; }
 }
 function handleModalClick(e) {
   if (e.target === e.currentTarget) closeReviewModal();
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeReviewModal(); });
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeReviewModal(); });
 
 function submitReview(e) {
   e.preventDefault();
-  const formData = new FormData(e.target);
+  var formData = new FormData(e.target);
   formData.append('product_id', <?php echo (int)$productId; ?>);
-  fetch('api/submit-review.php', { method: 'POST', body: formData })
-    .then(r => r.json())
-    .then(data => {
+  fetch('/api/submit-review.php', { method: 'POST', body: formData })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
       if (data.success) {
         showToast('Review submitted! Thank you.', 'success');
         closeReviewModal();
-        setTimeout(() => location.reload(), 1200);
+        setTimeout(function() { location.reload(); }, 1200);
       } else {
         showToast(data.message || 'Failed to submit review', 'error');
       }
     })
-    .catch(() => showToast('An error occurred', 'error'));
-}
-
-// Toast helper
-function showToast(message, type) {
-  const container = document.getElementById('toast-container');
-  if (!container) return;
-  const toast = document.createElement('div');
-  toast.className = 'alert ' + (type === 'success' ? 'alert-success' : 'alert-error');
-  toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;min-width:200px;';
-  toast.textContent = message;
-  container.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
+    .catch(function() { showToast('An error occurred', 'error'); });
 }
 
 // Auto-switch to reviews tab when URL contains #reviews
