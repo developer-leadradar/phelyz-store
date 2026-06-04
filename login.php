@@ -15,10 +15,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please enter both email and password.';
     } elseif (login($email, $password)) {
         if (isAdmin()) {
-            redirect('admin/index.php');
+            // Admin accounts must use /admin/login.php — boot them out
+            session_destroy();
+            $error = 'No customer account found with those credentials.';
+        } else {
+            mergeGuestCart($_SESSION['user_id']);
+            redirect($redirect);
         }
-        mergeGuestCart($_SESSION['user_id']);
-        redirect($redirect);
     } else {
         $error = 'Incorrect email or password. Please try again.';
     }
