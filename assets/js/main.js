@@ -94,6 +94,8 @@ function updateCartBadge(count) {
     if (count > 0) { b.textContent = count; b.style.display = 'flex'; }
     else { b.style.display = 'none'; }
   });
+  var cartLink = document.getElementById('cart-nav-link');
+  if (cartLink) cartLink.setAttribute('aria-label', 'Cart (' + count + ' items)');
 }
 
 /* ── Product page qty ──────────────────────────────── */
