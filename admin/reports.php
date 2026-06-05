@@ -121,15 +121,15 @@ $topCustomers = $db->fetchAll(
 
 <!-- ── Date Filter Bar ── -->
 <div class="card" style="padding:20px;margin-bottom:24px;">
-    <form method="GET" style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;justify-content:center;">
-        <div class="form-group" style="margin-bottom:0;min-width:160px;">
-            <label class="form-label" for="rpt_start">From</label>
-            <input type="date" id="rpt_start" name="start_date" class="form-input"
+    <form method="GET" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;">
+        <div style="display:flex;align-items:center;gap:8px;">
+            <label class="form-label" for="rpt_start" style="margin-bottom:0;white-space:nowrap;font-size:12px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--stone-mid);">From</label>
+            <input type="date" id="rpt_start" name="start_date" class="form-input" style="margin-bottom:0;"
                    value="<?php echo htmlspecialchars($startDate); ?>">
         </div>
-        <div class="form-group" style="margin-bottom:0;min-width:160px;">
-            <label class="form-label" for="rpt_end">To</label>
-            <input type="date" id="rpt_end" name="end_date" class="form-input"
+        <div style="display:flex;align-items:center;gap:8px;">
+            <label class="form-label" for="rpt_end" style="margin-bottom:0;white-space:nowrap;font-size:12px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--stone-mid);">To</label>
+            <input type="date" id="rpt_end" name="end_date" class="form-input" style="margin-bottom:0;"
                    value="<?php echo htmlspecialchars($endDate); ?>">
         </div>
         <button type="submit" class="btn btn-gold" style="gap:6px;">

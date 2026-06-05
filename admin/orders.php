@@ -26,16 +26,16 @@ $statusColors=['pending'=>'status-pending','processing'=>'status-processing','sh
 ?>
 
 <!-- Filters bar -->
-<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px;">
-  <div class="admin-status-tabs" style="display:flex;gap:4px;flex-wrap:wrap;">
+<div style="margin-bottom:20px;">
+  <div class="admin-status-tabs" style="display:flex;gap:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px;flex-wrap:nowrap;">
     <?php foreach(['all'=>'All','pending'=>'Pending','processing'=>'Processing','shipped'=>'Shipped','delivered'=>'Delivered','cancelled'=>'Cancelled'] as $val=>$label): ?>
       <a href="?status=<?php echo $val; ?><?php echo $searchQuery?'&search='.urlencode($searchQuery):''; ?>"
-         style="padding:8px 14px;font-size:13px;font-weight:600;border-radius:8px;text-decoration:none;<?php echo $statusFilter===$val?'background:var(--black);color:white;':'background:white;color:var(--stone);border:1px solid #E9ECEF;'; ?>"><?php echo $label; ?></a>
+         style="padding:8px 14px;font-size:13px;font-weight:600;border-radius:8px;text-decoration:none;white-space:nowrap;flex-shrink:0;<?php echo $statusFilter===$val?'background:var(--black);color:white;':'background:white;color:var(--stone);border:1px solid #E9ECEF;'; ?>"><?php echo $label; ?></a>
     <?php endforeach; ?>
   </div>
-  <form method="GET" style="display:flex;gap:8px;">
+  <form method="GET" style="display:flex;gap:8px;margin-top:12px;">
     <input type="hidden" name="status" value="<?php echo htmlspecialchars($statusFilter); ?>">
-    <input type="text" name="search" class="form-input" placeholder="Search orders…" value="<?php echo htmlspecialchars($searchQuery); ?>" style="width:220px;padding:8px 14px;font-size:13px;">
+    <input type="text" name="search" class="form-input" placeholder="Search orders…" value="<?php echo htmlspecialchars($searchQuery); ?>" style="flex:1;padding:8px 14px;font-size:13px;">
     <button type="submit" class="btn btn-dark btn-sm">Search</button>
   </form>
 </div>

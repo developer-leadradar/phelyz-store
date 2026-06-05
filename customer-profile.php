@@ -40,21 +40,6 @@ $customerNav=[
 $currentPage=basename($_SERVER['PHP_SELF']);
 ?>
 <div class="customer-layout">
-  <aside class="customer-sidebar">
-    <div class="sidebar-user-block">
-      <div class="sidebar-avatar"><?php echo strtoupper(substr($user['first_name'],0,1).substr($user['last_name'],0,1)); ?></div>
-      <div class="sidebar-name"><?php echo htmlspecialchars($user['first_name'].' '.$user['last_name']); ?></div>
-      <div class="sidebar-email"><?php echo htmlspecialchars($user['email']); ?></div>
-    </div>
-    <nav style="padding:8px 0;">
-      <?php foreach ($customerNav as [$href,$label,$icon]): ?>
-        <a href="<?php echo $href; ?>" class="sidebar-nav-link <?php echo $currentPage===$href?'active':''; ?>">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" width="17" height="17"><path stroke-linecap="round" stroke-linejoin="round" d="<?php echo $icon; ?>"/></svg>
-          <?php echo $label; ?>
-        </a>
-      <?php endforeach; ?>
-    </nav>
-  </aside>
   <div>
     <div style="margin-bottom:24px;">
       <div class="breadcrumb"><a href="customer-dashboard.php">Account</a><svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg><span>Profile & Security</span></div>

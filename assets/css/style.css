@@ -546,7 +546,7 @@ input, select, textarea, button { font-family: inherit; }
 
 /* ── Customer Layout ────────────────────────────────────── */
 .customer-layout {
-  display: grid; grid-template-columns: 220px 1fr; gap: 28px;
+  display: block;
   max-width: 1280px; margin: 0 auto; padding: 40px 24px;
 }
 .customer-layout > * { min-width: 0; }
@@ -734,7 +734,7 @@ input, select, textarea, button { font-family: inherit; }
   .customer-sidebar { position: static; }
   .admin-wrap { grid-template-columns: 1fr; }
   .admin-sidebar { display: none; }
-  .auth-split { grid-template-columns: 1fr; }
+  .auth-split { grid-template-columns: 1fr; min-height: auto; }
   .auth-panel-left { display: none; }
 }
 @media (max-width: 768px) {
@@ -771,6 +771,19 @@ input, select, textarea, button { font-family: inherit; }
   .page-hero { padding: 36px 0; }
   .admin-main { padding: 16px; }
   .wa-float { bottom: 16px; right: 16px; width: 50px; height: 50px; }
+
+  /* About page — story section single col + center */
+  .story-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
+  .story-grid > div:first-child { text-align: center !important; }
+  .story-grid > div:first-child .section-eyebrow { text-align: center !important; }
+  .story-grid > div:first-child h2 { text-align: center !important; }
+
+  /* Contact page — grid collapses to single col */
+  .contact-grid { grid-template-columns: 1fr !important; }
+  .contact-grid > div:first-child { text-align: center !important; }
+  .contact-grid > div:first-child h2 { text-align: center !important; }
+  .contact-grid > div:first-child p { text-align: center !important; }
+  .contact-grid > div:first-child a[href*="wa.me"] { justify-content: center !important; }
 }
 @media (max-width: 480px) {
   .btn { padding: 11px 20px; font-size: 12px; }
@@ -1036,6 +1049,15 @@ input, select, textarea, button { font-family: inherit; }
 
   /* Admin alert cards — show count larger */
   .admin-alert-grid a > div:first-child { width: 36px !important; height: 36px !important; font-size: 18px !important; }
+}
+
+/* ── Shop page — FOUC prevention ────────────────── */
+/* These rules are in the <head> stylesheet so they apply before body paint */
+#desktop-sidebar { display: block; }
+#mobile-filter-bar { display: none; }
+@media (max-width: 1024px) {
+  #desktop-sidebar { display: none !important; }
+  #mobile-filter-bar { display: block !important; }
 }
 
 /* ── Global overflow prevention ─────────────────── */

@@ -86,12 +86,12 @@ $adminNav = [
   <!-- Main content area -->
   <div class="admin-main">
     <!-- Mobile top bar with hamburger -->
-    <div id="admin-mobile-topbar" style="display:none;align-items:center;gap:12px;margin-bottom:20px;padding:12px 0;border-bottom:1px solid #E9ECEF;">
+    <div id="admin-mobile-topbar" style="display:none;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;padding:12px 0;border-bottom:1px solid #E9ECEF;">
       <button onclick="openAdminNav()" style="display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--black);color:white;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>
         Menu
       </button>
-      <span style="font-family:'Cormorant',serif;font-size:20px;font-weight:700;color:var(--black);"><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) : 'Dashboard'; ?></span>
+      <span style="font-family:'Cormorant',serif;font-size:20px;font-weight:700;color:var(--black);text-align:right;"><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) : 'Dashboard'; ?></span>
     </div>
 
     <!-- Top bar (desktop) -->

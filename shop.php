@@ -129,7 +129,7 @@ if (!empty($activeFilters)):
   <div style="display:flex;gap:28px;align-items:flex-start;">
 
     <!-- ── Sidebar Filter ─────────────────────── -->
-    <aside style="width:240px;flex-shrink:0;display:block;" id="desktop-sidebar">
+    <aside style="width:240px;flex-shrink:0;" id="desktop-sidebar">
       <form method="GET" action="shop.php" id="filter-form">
         <?php if (!empty($filters['sort'])): ?><input type="hidden" name="sort" value="<?php echo htmlspecialchars($filters['sort']); ?>"><?php endif; ?>
 
@@ -315,18 +315,6 @@ if (!empty($activeFilters)):
   </div>
 </div>
 
-<style>
-/* Mobile: hide desktop sidebar, show filter bar */
-@media(max-width:1024px) {
-  #desktop-sidebar { display:none !important; }
-  #product-grid { grid-template-columns:repeat(2,1fr) !important; }
-  #mobile-filter-bar { display:block !important; }
-}
-@media(max-width:480px) {
-  #product-grid { grid-template-columns:1fr !important; }
-}
-</style>
-
 <script>
 function openFilterSheet(){
   document.getElementById('filter-backdrop').style.display='block';
@@ -334,11 +322,14 @@ function openFilterSheet(){
   s.style.display='block';
   setTimeout(function(){s.style.transform='translateY(0)';},10);
   document.body.style.overflow='hidden';
-  // Clone filter form into sheet
+  // Clone filter form into sheet (once only)
   if(!document.getElementById('mobile-filter-form')){
     var original=document.getElementById('filter-form');
     var clone=original.cloneNode(true);
     clone.id='mobile-filter-form';
+    // Remove the desktop Apply button from the clone — the sheet has its own sticky button
+    var innerApply=clone.querySelector('div[style*="padding:14px 18px"]');
+    if(innerApply) innerApply.remove();
     document.getElementById('filter-sheet-content').appendChild(clone);
   }
 }
