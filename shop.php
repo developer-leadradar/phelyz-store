@@ -205,8 +205,8 @@ if (!empty($activeFilters)):
           echo filterSection('Availability', $inStockContent);
           ?>
 
-          <!-- Apply button -->
-          <div style="padding:14px 18px;">
+          <!-- Apply button (desktop only — hidden when cloned into mobile sheet) -->
+          <div class="desktop-apply-wrap" style="padding:14px 18px;">
             <button type="submit" class="btn btn-gold btn-full btn-sm">Apply Filters</button>
           </div>
         </div>
@@ -328,7 +328,7 @@ function openFilterSheet(){
     var clone=original.cloneNode(true);
     clone.id='mobile-filter-form';
     // Remove the desktop Apply button from the clone — the sheet has its own sticky button
-    var innerApply=clone.querySelector('div[style*="padding:14px 18px"]');
+    var innerApply=clone.querySelector('.desktop-apply-wrap');
     if(innerApply) innerApply.remove();
     document.getElementById('filter-sheet-content').appendChild(clone);
   }

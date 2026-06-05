@@ -646,7 +646,7 @@ input, select, textarea, button { font-family: inherit; }
 .admin-wrap { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; background: #F4F5F7; }
 .admin-sidebar {
   background: var(--black); position: sticky; top: 0; height: 100vh;
-  overflow-y: auto; display: flex; flex-direction: column;
+  overflow: hidden; display: flex; flex-direction: column;
 }
 .admin-sidebar::-webkit-scrollbar { width: 3px; }
 .admin-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); }
@@ -1044,12 +1044,16 @@ input, select, textarea, button { font-family: inherit; }
   .data-table th { padding: 7px 8px; font-size: 8.5px; letter-spacing: 0.05em; }
   .data-table td { padding: 8px 8px; }
 
-  /* Mobile topbar title — don't overflow */
-  #admin-mobile-topbar span { font-size: 17px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+  /* Mobile topbar: always row — Menu left, title right */
+  #admin-mobile-topbar { flex-direction: row !important; align-items: center !important; justify-content: space-between !important; }
+  #admin-mobile-topbar span { font-size: 17px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; text-align: right !important; }
 
   /* Admin alert cards — show count larger */
   .admin-alert-grid a > div:first-child { width: 36px !important; height: 36px !important; font-size: 18px !important; }
 }
+
+/* ── Shop filter — hide desktop Apply button inside mobile clone ── */
+#mobile-filter-form .desktop-apply-wrap { display: none !important; }
 
 /* ── Shop page — FOUC prevention ────────────────── */
 /* These rules are in the <head> stylesheet so they apply before body paint */
