@@ -24,13 +24,16 @@
       sidebar.style.position = 'fixed';
       sidebar.style.left = '-260px';
       sidebar.style.top = '0';
-      sidebar.style.height = '100vh';
+      /* Use window.innerHeight instead of 100vh — on mobile browsers 100vh
+         includes the area behind the address/nav bar, pushing Sign Out off screen */
+      sidebar.style.height = window.innerHeight + 'px';
       sidebar.style.zIndex = '50';
       sidebar.style.transition = 'left 0.3s ease';
       sidebar.style.display = 'flex';
     } else if (sidebar) {
       sidebar.style.position = 'sticky';
       sidebar.style.left = '';
+      sidebar.style.height = '';
       sidebar.style.transition = '';
       sidebar.style.display = 'flex';
     }

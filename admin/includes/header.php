@@ -52,7 +52,7 @@ $adminNav = [
       <span class="admin-logo-tag">ADMIN</span>
     </div>
 
-    <nav style="flex:1;overflow-y:auto;padding:4px 0;">
+    <nav style="flex:1;min-height:0;overflow-y:auto;padding:4px 0;">
       <?php foreach ($adminNav as $section => $links): ?>
         <div class="admin-nav-group">
           <div class="admin-nav-section"><?php echo $section; ?></div>
