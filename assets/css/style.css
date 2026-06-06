@@ -228,7 +228,7 @@ input, select, textarea, button { font-family: inherit; }
   border-radius: 50%; color: var(--stone); transition: background var(--transition);
 }
 .drawer-close:hover { background: var(--cream-dark); }
-.drawer-nav { flex: 1; padding: 8px 0; }
+.drawer-nav { padding: 8px 0; }
 .drawer-link {
   display: flex; align-items: center; justify-content: space-between;
   padding: 14px 24px; font-size: 15px; font-weight: 500;
@@ -780,9 +780,9 @@ input, select, textarea, button { font-family: inherit; }
 
   /* Contact page — grid collapses to single col */
   .contact-grid { grid-template-columns: 1fr !important; }
-  .contact-grid > div:first-child { text-align: center !important; }
-  .contact-grid > div:first-child h2 { text-align: center !important; }
-  .contact-grid > div:first-child p { text-align: center !important; }
+  /* Center only the heading + description — contact item rows stay left-aligned */
+  .contact-grid > div:first-child > h2 { text-align: center !important; }
+  .contact-grid > div:first-child > p { text-align: center !important; }
   .contact-grid > div:first-child a[href*="wa.me"] { justify-content: center !important; }
 }
 @media (max-width: 480px) {
