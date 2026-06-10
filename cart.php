@@ -155,6 +155,26 @@ $items = $cartSummary['items'];
           <div class="card p-6 lg:sticky lg:top-24">
             <h3 class="font-display text-xl font-semibold text-stone-900 mb-5">Order Summary</h3>
 
+            <!-- State selector for shipping estimate -->
+            <?php
+            $nigStatesCart = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno',
+              'Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','FCT (Abuja)','Gombe','Imo',
+              'Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger',
+              'Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara'];
+            $cartSavedState = $_SESSION['phelyz_shipping_state'] ?? '';
+            ?>
+            <div style="margin-bottom:16px;">
+              <label style="font-size:11px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--stone-mid);display:block;margin-bottom:6px;">Deliver to</label>
+              <select id="cart-state-select" onchange="updateCartShipping(this.value)"
+                      style="width:100%;padding:9px 12px;border:1.5px solid var(--cream-dark);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:white;"
+                      onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--cream-dark)'">
+                <option value="">Select your state</option>
+                <?php foreach ($nigStatesCart as $st): ?>
+                  <option value="<?php echo htmlspecialchars($st); ?>" <?php echo $cartSavedState===$st?'selected':''; ?>><?php echo htmlspecialchars($st); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+
             <!-- Line items -->
             <div class="space-y-2 mb-5 pb-5 border-b border-stone-100">
               <div class="flex justify-between text-sm text-stone-600">
@@ -170,8 +190,8 @@ $items = $cartSummary['items'];
               <?php endif; ?>
 
               <div class="flex justify-between text-sm text-stone-600">
-                <span>Shipping</span>
-                <span class="font-semibold">
+                <span>Shipping <?php if ($cartSavedState): ?><span style="font-size:11px;color:var(--stone-mid);">(<?php echo htmlspecialchars($cartSavedState); ?>)</span><?php endif; ?></span>
+                <span id="cart-shipping-display" class="font-semibold">
                   <?php if ($cartSummary['shipping'] == 0): ?>
                     <span class="text-emerald-600 font-bold">FREE</span>
                   <?php else: ?>
@@ -180,14 +200,14 @@ $items = $cartSummary['items'];
                 </span>
               </div>
 
-              <?php if ($cartSummary['subtotal'] < 50000 && $cartSummary['subtotal'] > 0): ?>
+              <?php if ($cartSummary['subtotal'] < $cartSummary['threshold'] && $cartSummary['subtotal'] > 0): ?>
                 <div class="bg-gold-pale border border-gold/30 rounded-lg px-3 py-2 mt-3">
                   <p class="text-xs text-stone-700">
-                    <span class="font-bold text-gold">+<?php echo formatPrice(50000 - $cartSummary['subtotal']); ?></span>
+                    <span class="font-bold text-gold">+<?php echo formatPrice($cartSummary['threshold'] - $cartSummary['subtotal']); ?></span>
                     more to get <span class="font-bold">free shipping</span>
                   </p>
                   <div class="mt-1.5 h-1.5 bg-stone-200 rounded-full overflow-hidden">
-                    <div class="h-full bg-gold rounded-full" style="width:<?php echo round($cartSummary['subtotal'] / 50000 * 100); ?>%"></div>
+                    <div class="h-full bg-gold rounded-full" style="width:<?php echo round($cartSummary['subtotal'] / $cartSummary['threshold'] * 100); ?>%"></div>
                   </div>
                 </div>
               <?php endif; ?>
@@ -271,5 +291,35 @@ $items = $cartSummary['items'];
 }
 </style>
 
+
+<script>
+function updateCartShipping(state) {
+  if (!state) return;
+  var display = document.getElementById('cart-shipping-display');
+  if (display) display.innerHTML = '<span style="color:var(--stone-mid);font-size:12px;">Calculating…</span>';
+  fetch('/api/get-shipping-rate.php?state=' + encodeURIComponent(state))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d.success) return;
+      if (display) {
+        display.innerHTML = d.is_free
+          ? '<span class="text-emerald-600 font-bold">FREE</span>'
+          : '<span class="text-stone-800">' + d.formatted + '</span>';
+      }
+      // Update the label to show selected state
+      var shippingLabel = display ? display.closest('.flex').querySelector('span:first-child') : null;
+      if (shippingLabel) {
+        shippingLabel.innerHTML = 'Shipping <span style="font-size:11px;color:var(--stone-mid);">(' + d.state + ')</span>';
+      }
+    })
+    .catch(function() {});
+}
+
+// Auto-fire for saved state
+(function() {
+  var sel = document.getElementById('cart-state-select');
+  if (sel && sel.value) updateCartShipping(sel.value);
+})();
+</script>
 
 <?php require_once 'includes/footer.php'; ?>

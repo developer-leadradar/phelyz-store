@@ -178,6 +178,12 @@ function renderStars($rating) {
             <?php elseif ($p['is_featured']): ?>
               <span class="product-card-badge badge-featured">Featured</span>
             <?php endif; ?>
+            <?php $idxStatus = $p['stock_status'] ?? 'available'; ?>
+            <?php if ($idxStatus === 'express'): ?>
+              <span class="product-card-badge" style="top:auto;bottom:10px;left:10px;right:auto;background:#D97706;color:white;font-size:9px;padding:3px 8px;border-radius:20px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Express</span>
+            <?php elseif ($idxStatus === 'out_of_stock'): ?>
+              <span class="product-card-badge" style="top:auto;bottom:10px;left:10px;right:auto;background:rgba(28,25,23,0.75);color:white;font-size:9px;padding:3px 8px;border-radius:20px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Sold Out</span>
+            <?php endif; ?>
             <div class="product-card-actions">
               <button onclick="event.stopPropagation();addToCart(<?php echo $p['id']; ?>)" class="icon-btn" title="Add to Cart">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="17" height="17"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
@@ -207,10 +213,13 @@ function renderStars($rating) {
                 <span class="price-original"><?php echo formatPrice($p['compare_price']); ?></span>
               <?php endif; ?>
             </div>
-            <?php if ($p['stock_quantity'] <= 5 && $p['stock_quantity'] > 0): ?>
-              <div class="stock-low">Only <?php echo $p['stock_quantity']; ?> left!</div>
-            <?php elseif ($p['stock_quantity'] == 0): ?>
+            <?php $idxStatus = $p['stock_status'] ?? 'available'; ?>
+            <?php if ($idxStatus === 'out_of_stock'): ?>
               <div class="stock-out">Out of Stock</div>
+            <?php elseif ($idxStatus === 'express'): ?>
+              <div style="font-size:11px;font-weight:700;color:#D97706;margin-top:4px;">Express / Pre-Order</div>
+            <?php elseif ($p['stock_quantity'] <= 5 && $p['stock_quantity'] > 0): ?>
+              <div class="stock-low">Only <?php echo $p['stock_quantity']; ?> left!</div>
             <?php endif; ?>
           </div>
         </div>

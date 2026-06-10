@@ -395,21 +395,29 @@ function addToCart($productId, $quantity = 1) {
         return false;
     }
     
-    // Check stock
-    if ($product['stock_quantity'] < $quantity) {
+    // Express (pre-order) items bypass stock limits
+    $isExpress = ($product['stock_status'] ?? 'available') === 'express';
+
+    // Out-of-stock items cannot be added
+    if (($product['stock_status'] ?? 'available') === 'out_of_stock') {
         return false;
     }
-    
+
+    // Check stock for non-express items
+    if (!$isExpress && $product['stock_quantity'] < $quantity) {
+        return false;
+    }
+
     // Check if item already in cart
     $existingItem = $db->fetchOne(
         "SELECT * FROM cart_items WHERE cart_id = ? AND product_id = ?",
         [$cart['id'], $productId]
     );
-    
+
     if ($existingItem) {
         // Update quantity
         $newQuantity = $existingItem['quantity'] + $quantity;
-        if ($newQuantity > $product['stock_quantity']) {
+        if (!$isExpress && $newQuantity > $product['stock_quantity']) {
             return false;
         }
         
@@ -434,9 +442,9 @@ function getCartItems() {
     $cart = getOrCreateCart();
     
     return $db->fetchAll(
-        "SELECT ci.*, p.name, p.price, p.image, p.stock_quantity 
-         FROM cart_items ci 
-         JOIN products p ON ci.product_id = p.id 
+        "SELECT ci.*, p.name, p.price, p.image, p.stock_quantity, p.stock_status
+         FROM cart_items ci
+         JOIN products p ON ci.product_id = p.id
          WHERE ci.cart_id = ?",
         [$cart['id']]
     );

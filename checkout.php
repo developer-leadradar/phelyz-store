@@ -3,7 +3,9 @@ $pageTitle = "Checkout";
 require_once 'includes/header.php';
 require_once 'includes/cart-functions.php';
 
-$cartSummary = getCartSummary();
+// Pre-compute state so the summary reflects it on page load
+$checkoutState = sanitize($_POST['shipping_state'] ?? $_SESSION['phelyz_shipping_state'] ?? '');
+$cartSummary = getCartSummary($checkoutState ?: null);
 if (empty($cartSummary['items'])) redirect('cart.php');
 $user = isLoggedIn() ? getCurrentUser() : null;
 
@@ -15,7 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $shippingCity  = sanitize($_POST['shipping_city'] ?? '');
     $shippingPhone = sanitize($_POST['shipping_phone'] ?? '');
 
-    if ($shippingFirst && $shippingLast && $shippingAddr && $shippingCity && $shippingPhone) {
+    $shippingState = sanitize($_POST['shipping_state'] ?? '');
+    if ($shippingFirst && $shippingLast && $shippingAddr && $shippingCity && $shippingPhone && $shippingState) {
         $result = processCheckout($_POST);
         if ($result['success']) {
             redirect('order-details.php?id=' . $result['order_id'] . '&success=1');
@@ -92,12 +95,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                    value="<?php echo htmlspecialchars($_POST['shipping_address'] ?? ''); ?>" required>
           </div>
 
+          <?php
+          $coNigStates = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno',
+            'Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','FCT (Abuja)','Gombe','Imo',
+            'Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger',
+            'Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara'];
+          $coSavedState = $checkoutState ?: ($user['state'] ?? ($_POST['shipping_state'] ?? ''));
+          ?>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
             <div class="form-group" style="margin:0;">
               <label class="form-label">City *</label>
               <input type="text" name="shipping_city" class="form-input"
                      value="<?php echo htmlspecialchars($user['city'] ?? ($_POST['shipping_city'] ?? '')); ?>" required>
             </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">State *</label>
+              <select name="shipping_state" id="co-state-select" required class="form-input form-select"
+                      onchange="updateCheckoutShipping(this.value)">
+                <option value="">Select State</option>
+                <?php foreach ($coNigStates as $st): ?>
+                  <option value="<?php echo htmlspecialchars($st); ?>" <?php echo $coSavedState===$st?'selected':''; ?>><?php echo htmlspecialchars($st); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
             <div class="form-group" style="margin:0;">
               <label class="form-label">Phone *</label>
               <input type="tel" name="shipping_phone" class="form-input"
@@ -192,8 +215,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <span style="font-weight:600;color:var(--black);"><?php echo formatPrice($cartSummary['subtotal']); ?></span>
             </div>
             <div style="display:flex;justify-content:space-between;font-size:13px;">
-              <span style="color:var(--stone-mid);">Shipping</span>
-              <span style="font-weight:600;color:<?php echo $cartSummary['shipping']==0?'#22C55E':'var(--black)'; ?>;"><?php echo $cartSummary['shipping']==0?'FREE':formatPrice($cartSummary['shipping']); ?></span>
+              <span style="color:var(--stone-mid);">Shipping<?php if ($coSavedState): ?> <span style="font-size:11px;">(<?php echo htmlspecialchars($coSavedState); ?>)</span><?php endif; ?></span>
+              <span id="co-shipping-display" style="font-weight:600;color:<?php echo $cartSummary['shipping']==0?'#22C55E':'var(--black)'; ?>;"><?php echo $cartSummary['shipping']==0?'FREE':formatPrice($cartSummary['shipping']); ?></span>
             </div>
             <?php if (!empty($cartSummary['tax']) && $cartSummary['tax'] > 0): ?>
             <div style="display:flex;justify-content:space-between;font-size:13px;">
@@ -241,6 +264,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </style>
 
 <script>
+function updateCheckoutShipping(state) {
+  if (!state) return;
+  var display = document.getElementById('co-shipping-display');
+  if (display) display.innerHTML = '<span style="color:var(--stone-mid);font-size:12px;">…</span>';
+  fetch('/api/get-shipping-rate.php?state=' + encodeURIComponent(state))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (!d.success || !display) return;
+      display.style.color = d.is_free ? '#22C55E' : 'var(--black)';
+      display.textContent = d.is_free ? 'FREE' : d.formatted;
+      // Update label
+      var row = display.closest('[style*="justify-content:space-between"]');
+      if (row) {
+        var lbl = row.querySelector('span:first-child');
+        if (lbl) lbl.innerHTML = 'Shipping <span style="font-size:11px;">(' + d.state + ')</span>';
+      }
+    })
+    .catch(function() {});
+}
+
+// Auto-fire on page load if state already selected
+(function() {
+  var sel = document.getElementById('co-state-select');
+  if (sel && sel.value) updateCheckoutShipping(sel.value);
+})();
+
 function updatePaymentBorder(){
   var selected = document.querySelector('input[name="payment_method"]:checked')?.value;
   document.getElementById('cod-label').style.borderColor  = selected==='cod'         ?'var(--gold)':'var(--cream-dark)';

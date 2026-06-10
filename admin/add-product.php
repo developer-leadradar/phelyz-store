@@ -52,6 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 'gender' => sanitize($_POST['gender']) ?: 'Unisex',
                 'style' => sanitize($_POST['style']) ?: null,
                 'occasion' => sanitize($_POST['occasion']) ?: null,
+                'stock_status' => in_array($_POST['stock_status'] ?? '', ['available','express','out_of_stock']) ? $_POST['stock_status'] : 'available',
                 'is_active' => isset($_POST['is_active']) ? 1 : 0,
                 'is_featured' => isset($_POST['is_featured']) ? 1 : 0,
                 'rating' => 4.5,
@@ -201,6 +202,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                        class="form-input"
                        value="<?php echo isset($_POST['low_stock_threshold']) ? $_POST['low_stock_threshold'] : ''; ?>">
                 <p class="form-hint">Alert when stock falls below this</p>
+            </div>
+        </div>
+
+        <!-- Stock Status -->
+        <div style="margin-top:20px;">
+            <label class="form-label">Stock Status <span style="color:#EF4444;">*</span></label>
+            <p class="form-hint" style="margin-bottom:12px;">Controls what customers see on the product page and whether they can purchase.</p>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;" class="form-row-3col">
+                <?php
+                $statusOptions = [
+                    'available'    => ['label'=>'Available','sub'=>'In stock, ships promptly','dot'=>'#22C55E'],
+                    'express'      => ['label'=>'Express','sub'=>'Pre-order, longer shipping','dot'=>'#F59E0B'],
+                    'out_of_stock' => ['label'=>'Out of Stock','sub'=>'Not available to buy','dot'=>'#EF4444'],
+                ];
+                $selectedStatus = $_POST['stock_status'] ?? 'available';
+                foreach ($statusOptions as $val => $opt): ?>
+                <label style="display:flex;align-items:flex-start;gap:10px;padding:14px;border:1.5px solid <?php echo $selectedStatus===$val?'var(--gold)':'var(--cream-dark)'; ?>;border-radius:10px;cursor:pointer;transition:border-color 0.15s;" class="status-label">
+                    <input type="radio" name="stock_status" value="<?php echo $val; ?>"
+                           <?php echo $selectedStatus===$val?'checked':''; ?>
+                           onchange="highlightStatus()"
+                           style="accent-color:var(--gold);margin-top:2px;flex-shrink:0;">
+                    <div>
+                        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">
+                            <span style="width:8px;height:8px;border-radius:50%;background:<?php echo $opt['dot']; ?>;flex-shrink:0;"></span>
+                            <span style="font-size:13px;font-weight:700;color:var(--black);"><?php echo $opt['label']; ?></span>
+                        </div>
+                        <span style="font-size:11px;color:var(--stone-mid);"><?php echo $opt['sub']; ?></span>
+                    </div>
+                </label>
+                <?php endforeach; ?>
             </div>
         </div>
     </div>
@@ -356,10 +387,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <style>
 @media (max-width: 640px) {
     .form-row-2col { grid-template-columns: 1fr !important; }
+    .form-row-3col { grid-template-columns: 1fr !important; }
 }
 </style>
 
 <script>
+function highlightStatus() {
+    document.querySelectorAll('.status-label').forEach(function(label) {
+        var radio = label.querySelector('input[type="radio"]');
+        label.style.borderColor = radio.checked ? 'var(--gold)' : 'var(--cream-dark)';
+    });
+}
+
 function previewImage(input) {
     const preview = document.getElementById('image-preview');
     const container = document.getElementById('image-preview-container');

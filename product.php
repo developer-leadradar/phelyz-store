@@ -134,17 +134,25 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
             <span class="price-current text-3xl"><?php echo formatPrice($product['price']); ?></span>
           <?php endif; ?>
 
-          <!-- Stock status -->
+          <!-- Stock status (admin-controlled) -->
+          <?php $stockStatus = $product['stock_status'] ?? 'available'; ?>
           <div class="mt-3">
-            <?php if ($product['stock_quantity'] > 10): ?>
-              <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
-                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                In Stock
-              </span>
-            <?php elseif ($product['stock_quantity'] > 0): ?>
-              <span class="stock-low inline-flex items-center gap-1.5 text-sm">
-                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-                Only <?php echo (int)$product['stock_quantity']; ?> left in stock
+            <?php if ($stockStatus === 'available'): ?>
+              <?php if ($product['stock_quantity'] > 0 && $product['stock_quantity'] <= 5): ?>
+                <span class="stock-low inline-flex items-center gap-1.5 text-sm">
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                  Only <?php echo (int)$product['stock_quantity']; ?> left in stock
+                </span>
+              <?php else: ?>
+                <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
+                  <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                  In Stock
+                </span>
+              <?php endif; ?>
+            <?php elseif ($stockStatus === 'express'): ?>
+              <span class="inline-flex items-center gap-1.5 text-sm font-semibold" style="color:#D97706;">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                Express / Pre-Order
               </span>
             <?php else: ?>
               <span class="stock-out inline-flex items-center gap-1.5 text-sm">
@@ -152,6 +160,35 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
                 Out of Stock
               </span>
             <?php endif; ?>
+          </div>
+
+          <!-- Shipping state selector -->
+          <?php
+          $nigStates = ['Abia','Adamawa','Akwa Ibom','Anambra','Bauchi','Bayelsa','Benue','Borno',
+            'Cross River','Delta','Ebonyi','Edo','Ekiti','Enugu','FCT (Abuja)','Gombe','Imo',
+            'Jigawa','Kaduna','Kano','Katsina','Kebbi','Kogi','Kwara','Lagos','Nasarawa','Niger',
+            'Ogun','Ondo','Osun','Oyo','Plateau','Rivers','Sokoto','Taraba','Yobe','Zamfara'];
+          $savedState = $_SESSION['phelyz_shipping_state'] ?? '';
+          ?>
+          <div class="mt-4" style="border-top:1px solid #e7e5e4;padding-top:14px;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="var(--stone-mid)" style="width:15px;height:15px;flex-shrink:0;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+              </svg>
+              <select id="pdp-state-select" onchange="fetchShippingRate(this.value)"
+                      style="flex:1;min-width:0;padding:8px 12px;border:1.5px solid var(--cream-dark);border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:white;cursor:pointer;"
+                      onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--cream-dark)'">
+                <option value="">Select state for shipping cost</option>
+                <?php foreach ($nigStates as $st): ?>
+                  <option value="<?php echo htmlspecialchars($st); ?>" <?php echo $savedState===$st?'selected':''; ?>><?php echo htmlspecialchars($st); ?></option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div id="pdp-shipping-info" style="margin-top:8px;font-size:12px;color:var(--stone-mid);min-height:18px;">
+              <?php if ($savedState): ?>
+                <span id="pdp-shipping-text" style="font-weight:600;">Loading&hellip;</span>
+              <?php endif; ?>
+            </div>
           </div>
         </div>
 
@@ -225,8 +262,18 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
         </div>
 
         <!-- Quantity + Add to Cart -->
-        <?php if ($product['stock_quantity'] > 0): ?>
+        <?php
+        $stockStatus  = $product['stock_status'] ?? 'available';
+        $canPurchase  = ($stockStatus === 'available' && $product['stock_quantity'] > 0) || $stockStatus === 'express';
+        $maxQty       = $stockStatus === 'express' ? 99 : max(1, (int)$product['stock_quantity']);
+        ?>
+        <?php if ($canPurchase): ?>
         <div class="bg-white rounded-xl border border-stone-200 p-5 space-y-4">
+          <?php if ($stockStatus === 'express'): ?>
+          <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#92400E;line-height:1.5;">
+            <strong>Pre-Order item:</strong> Ships based on order — allow extra time for delivery.
+          </div>
+          <?php endif; ?>
           <div class="flex items-center gap-4">
             <label class="text-sm font-semibold text-stone-700">Quantity</label>
             <div class="qty-stepper">
@@ -234,18 +281,20 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
                 <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
               </button>
               <input type="number" id="product-qty" class="qty-input" value="1" min="1"
-                     max="<?php echo (int)$product['stock_quantity']; ?>" readonly>
+                     max="<?php echo $maxQty; ?>" readonly>
               <button type="button" onclick="increaseQty()" class="qty-btn" aria-label="Increase quantity">
                 <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
               </button>
             </div>
+            <?php if ($stockStatus === 'available'): ?>
             <span class="text-xs text-stone-400"><?php echo (int)$product['stock_quantity']; ?> available</span>
+            <?php endif; ?>
           </div>
 
           <button onclick="addToCartWithQty(<?php echo (int)$product['id']; ?>)"
             class="btn btn-gold btn-full flex items-center justify-center gap-2 text-base">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-            Add to Cart
+            <?php echo $stockStatus === 'express' ? 'Pre-Order Now' : 'Add to Cart'; ?>
           </button>
 
           <button onclick="buyNow(<?php echo (int)$product['id']; ?>)"
@@ -622,6 +671,30 @@ function submitReview(e) {
 if (window.location.hash === '#reviews') {
   switchTab('reviews');
 }
+
+// Shipping rate lookup
+function fetchShippingRate(state) {
+  var info = document.getElementById('pdp-shipping-info');
+  if (!state) { info.innerHTML = ''; return; }
+  info.innerHTML = '<span style="color:var(--stone-mid);">Calculating&hellip;</span>';
+  fetch('/api/get-shipping-rate.php?state=' + encodeURIComponent(state))
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.success) {
+        var msg = d.is_free
+          ? '<span style="color:#22C55E;font-weight:700;">FREE shipping</span> to ' + d.state + ' (order qualifies)'
+          : 'Shipping to <strong>' + d.state + '</strong>: <span style="color:var(--gold);font-weight:700;">' + d.formatted + '</span>';
+        info.innerHTML = msg;
+      }
+    })
+    .catch(function() { info.innerHTML = ''; });
+}
+
+// Auto-load rate for previously selected state
+(function() {
+  var sel = document.getElementById('pdp-state-select');
+  if (sel && sel.value) fetchShippingRate(sel.value);
+})();
 </script>
 
 <?php require_once 'includes/footer.php'; ?>

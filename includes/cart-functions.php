@@ -1,46 +1,90 @@
 <?php
 // Additional Cart-Specific Functions
 
+function getShippingRateByState($state) {
+    if (empty($state)) return getDefaultShippingRate();
+    try {
+        $db  = getDB();
+        $row = $db->fetchOne("SELECT rate FROM shipping_rates WHERE state = ?", [$state]);
+        if ($row) return (float)$row['rate'];
+    } catch (Exception $e) {}
+    return getDefaultShippingRate();
+}
+
+function getDefaultShippingRate() {
+    $settingsFile = __DIR__ . '/../data/settings.json';
+    if (file_exists($settingsFile)) {
+        $s = json_decode(file_get_contents($settingsFile), true);
+        if (isset($s['shipping_fee'])) return (float)$s['shipping_fee'];
+    }
+    return 2500.00;
+}
+
+function getFreeShippingThreshold() {
+    $settingsFile = __DIR__ . '/../data/settings.json';
+    if (file_exists($settingsFile)) {
+        $s = json_decode(file_get_contents($settingsFile), true);
+        if (isset($s['free_shipping_threshold'])) return (float)$s['free_shipping_threshold'];
+    }
+    return 50000.00;
+}
+
 function validateCartStock() {
     $items = getCartItems();
     $errors = [];
-    
+
     foreach ($items as $item) {
-        if ($item['stock_quantity'] < $item['quantity']) {
-            $errors[] = $item['name'] . ' - Only ' . $item['stock_quantity'] . ' in stock';
+        $status = $item['stock_status'] ?? 'available';
+        if ($status === 'out_of_stock') {
+            $errors[] = $item['name'] . ' is currently out of stock';
+        } elseif ($status !== 'express' && $item['stock_quantity'] < $item['quantity']) {
+            $errors[] = $item['name'] . ' — only ' . $item['stock_quantity'] . ' in stock';
         }
     }
-    
+
     return $errors;
 }
 
-function getCartSummary() {
-    $items = getCartItems();
-    $subtotal = 0;
+function getCartSummary($selectedState = null) {
+    $items     = getCartItems();
+    $subtotal  = 0;
     $itemCount = 0;
-    
+
     foreach ($items as $item) {
-        $subtotal += $item['price'] * $item['quantity'];
+        $subtotal  += $item['price'] * $item['quantity'];
         $itemCount += $item['quantity'];
     }
-    
-    $tax = $subtotal * 0.05; // 5% tax
-    $shipping = $subtotal >= 50000 ? 0 : 2500; // Free shipping over ₦50,000
+
+    // Determine shipping state (passed in > session > null)
+    if ($selectedState === null) {
+        $selectedState = $_SESSION['phelyz_shipping_state'] ?? null;
+    } else {
+        $_SESSION['phelyz_shipping_state'] = $selectedState;
+    }
+
+    $threshold    = getFreeShippingThreshold();
+    $shippingRate = $selectedState ? getShippingRateByState($selectedState) : getDefaultShippingRate();
+    $shipping     = $subtotal >= $threshold ? 0 : $shippingRate;
+
+    $tax   = $subtotal * 0.05;
     $total = $subtotal + $tax + $shipping;
-    
+
     return [
-        'items' => $items,
-        'item_count' => $itemCount,
-        'subtotal' => $subtotal,
-        'tax' => $tax,
-        'shipping' => $shipping,
-        'total' => $total
+        'items'          => $items,
+        'item_count'     => $itemCount,
+        'subtotal'       => $subtotal,
+        'tax'            => $tax,
+        'shipping'       => $shipping,
+        'shipping_rate'  => $shippingRate,
+        'shipping_state' => $selectedState,
+        'threshold'      => $threshold,
+        'total'          => $total,
     ];
 }
 
 function processCheckout($formData) {
     $db = getDB();
-    $cartSummary = getCartSummary();
+    $cartSummary = getCartSummary($formData['shipping_state'] ?? null);
     
     // Validate stock before processing
     $stockErrors = validateCartStock();
