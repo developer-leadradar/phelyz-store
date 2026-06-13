@@ -65,6 +65,9 @@ echo htmlspecialchars($pmLabels[$order['payment_method']] ?? ucwords(str_replace
           <img src="<?php echo htmlspecialchars($item['image']); ?>" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px;flex-shrink:0;" onerror="this.src='https://placehold.co/64x64/F5F5F4/78716C?text=J'">
           <div style="flex:1;">
             <div style="font-size:14px;font-weight:600;color:var(--black);margin-bottom:3px;"><?php echo htmlspecialchars($item['product_name'] ?? ''); ?></div>
+            <?php if (!empty($item['selected_color'])): ?>
+            <div style="font-size:12px;color:var(--stone-mid);">Colour: <?php echo htmlspecialchars($item['selected_color']); ?></div>
+            <?php endif; ?>
             <div style="font-size:12px;color:var(--stone-mid);">Qty: <?php echo $item['quantity']; ?> × <?php echo formatPrice($item['price_at_purchase'] ?? $item['price'] ?? 0); ?></div>
           </div>
           <div style="font-size:14px;font-weight:700;color:var(--black);"><?php echo formatPrice(($item['price_at_purchase'] ?? $item['price'] ?? 0) * $item['quantity']); ?></div>

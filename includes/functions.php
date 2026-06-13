@@ -385,16 +385,16 @@ function getOrCreateCart() {
     return $cart;
 }
 
-function addToCart($productId, $quantity = 1) {
+function addToCart($productId, $quantity = 1, $selectedColor = null) {
     $db = getDB();
     $cart = getOrCreateCart();
-    
+
     // Check if product exists
     $product = getProductById($productId);
     if (!$product) {
         return false;
     }
-    
+
     // Express (pre-order) items bypass stock limits
     $isExpress = ($product['stock_status'] ?? 'available') === 'express';
 
@@ -408,10 +408,15 @@ function addToCart($productId, $quantity = 1) {
         return false;
     }
 
-    // Check if item already in cart
+    // Validate color against product's available colors (if any)
+    $selectedColor = $selectedColor !== null ? trim($selectedColor) : null;
+    if ($selectedColor === '') $selectedColor = null;
+
+    // Check if item already in cart with the same color (null-safe equality, portable to MySQL + PG)
     $existingItem = $db->fetchOne(
-        "SELECT * FROM cart_items WHERE cart_id = ? AND product_id = ?",
-        [$cart['id'], $productId]
+        "SELECT * FROM cart_items WHERE cart_id = ? AND product_id = ?
+         AND (selected_color = ? OR (selected_color IS NULL AND ? IS NULL))",
+        [$cart['id'], $productId, $selectedColor, $selectedColor]
     );
 
     if ($existingItem) {
@@ -420,7 +425,7 @@ function addToCart($productId, $quantity = 1) {
         if (!$isExpress && $newQuantity > $product['stock_quantity']) {
             return false;
         }
-        
+
         return $db->update(
             'cart_items',
             ['quantity' => $newQuantity],
@@ -432,7 +437,8 @@ function addToCart($productId, $quantity = 1) {
         return $db->insert('cart_items', [
             'cart_id' => $cart['id'],
             'product_id' => $productId,
-            'quantity' => $quantity
+            'quantity' => $quantity,
+            'selected_color' => $selectedColor
         ]);
     }
 }
@@ -440,14 +446,39 @@ function addToCart($productId, $quantity = 1) {
 function getCartItems() {
     $db = getDB();
     $cart = getOrCreateCart();
-    
+
     return $db->fetchAll(
-        "SELECT ci.*, p.name, p.price, p.image, p.stock_quantity, p.stock_status
+        "SELECT ci.*, p.name, p.price, p.image, p.stock_quantity, p.stock_status, p.colors
          FROM cart_items ci
          JOIN products p ON ci.product_id = p.id
          WHERE ci.cart_id = ?",
         [$cart['id']]
     );
+}
+
+/**
+ * Parse a product's colors field into an array of ['name' => ..., 'hex' => ...].
+ * Format stored: "Gold|#CA8A04,Rose Gold|#E8B4A0,Silver|#C0C0C0"
+ * Falls back to no hex if separator missing: "Gold,Silver"
+ */
+function parseProductColors($colorsStr) {
+    $out = [];
+    if (!$colorsStr) return $out;
+    foreach (explode(',', $colorsStr) as $chunk) {
+        $chunk = trim($chunk);
+        if ($chunk === '') continue;
+        if (strpos($chunk, '|') !== false) {
+            [$name, $hex] = array_map('trim', explode('|', $chunk, 2));
+        } else {
+            $name = $chunk;
+            $hex  = '';
+        }
+        if ($name === '') continue;
+        // Validate hex (#rgb or #rrggbb), else blank
+        $hex = preg_match('/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/', $hex) ? $hex : '';
+        $out[] = ['name' => $name, 'hex' => $hex];
+    }
+    return $out;
 }
 
 function getCartTotal() {
@@ -527,6 +558,7 @@ function addOrderItems($orderId, $items) {
             'product_id' => $item['product_id'],
             'product_name' => $item['name'],
             'quantity' => $item['quantity'],
+            'selected_color' => $item['selected_color'] ?? null,
             'price_at_purchase' => $item['price'],
             'subtotal' => $item['price'] * $item['quantity']
         ]);
@@ -682,6 +714,41 @@ function generateSlug($text) {
     $text = preg_replace('/[^a-z0-9-]/', '-', $text);
     $text = preg_replace('/-+/', '-', $text);
     return trim($text, '-');
+}
+
+/**
+ * Get all gallery images for a product (ordered).
+ * Returns array of rows with keys: id, product_id, image_path, sort_order, is_primary.
+ * Falls back to an empty array if the product_images table doesn't exist yet.
+ */
+function getProductImages($productId) {
+    $db = getDB();
+    try {
+        return $db->fetchAll(
+            "SELECT * FROM product_images WHERE product_id = ? ORDER BY sort_order ASC, id ASC",
+            [$productId]
+        );
+    } catch (Exception $e) {
+        return [];
+    }
+}
+
+/**
+ * Get the full gallery for a product, combining the legacy products.image
+ * (as the first/primary entry) with all rows from product_images.
+ * Returns an array of image URLs (strings).
+ */
+function getProductGallery($product) {
+    $gallery = [];
+    if (!empty($product['image'])) {
+        $gallery[] = $product['image'];
+    }
+    foreach (getProductImages($product['id']) as $img) {
+        if (!empty($img['image_path']) && !in_array($img['image_path'], $gallery, true)) {
+            $gallery[] = $img['image_path'];
+        }
+    }
+    return $gallery;
 }
 
 function uploadImage($file, $directory = 'products') {

@@ -76,6 +76,20 @@ $items = $cartSummary['items'];
                          class="font-semibold text-stone-800 text-sm leading-snug hover:text-gold transition-colors line-clamp-2 block mb-1">
                         <?php echo htmlspecialchars($item['name']); ?>
                       </a>
+                      <?php if (!empty($item['selected_color'])):
+                        // Look up the hex from the product's colors string for the swatch dot
+                        $hex = '';
+                        foreach (parseProductColors($item['colors'] ?? '') as $c) {
+                          if (strcasecmp($c['name'], $item['selected_color']) === 0) { $hex = $c['hex']; break; }
+                        }
+                      ?>
+                        <span class="inline-flex items-center gap-1.5 text-xs text-stone-500 mb-1">
+                          <?php if ($hex): ?>
+                          <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:<?php echo htmlspecialchars($hex); ?>;border:1px solid rgba(0,0,0,0.1);flex-shrink:0;"></span>
+                          <?php endif; ?>
+                          Colour: <strong class="text-stone-700"><?php echo htmlspecialchars($item['selected_color']); ?></strong>
+                        </span>
+                      <?php endif; ?>
                       <?php if ($item['stock_quantity'] < $item['quantity']): ?>
                         <span class="inline-flex items-center gap-1 text-xs text-amber-600 font-medium">
                           <svg viewBox="0 0 20 20" fill="currentColor" width="12" height="12"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>

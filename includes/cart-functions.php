@@ -1,6 +1,52 @@
 <?php
 // Additional Cart-Specific Functions
 
+/**
+ * Resolve which payment methods are available for the current cart in a given state.
+ * Logic:
+ *   - Per-state toggle (shipping_rates.cod_enabled / bank_enabled) is the baseline.
+ *   - Each cart product can override (products.cod_enabled / bank_enabled). NULL = inherit.
+ *   - A method is offered only when state-allows AND every item allows it.
+ *   - Falls back to "both enabled" if tables/columns are missing.
+ *
+ * Returns: ['cod' => bool, 'bank' => bool]
+ */
+function getAvailablePaymentMethods($state = null) {
+    $methods = ['cod' => true, 'bank' => true];
+    $db = getDB();
+
+    // State-level
+    if ($state) {
+        try {
+            $row = $db->fetchOne(
+                "SELECT cod_enabled, bank_enabled FROM shipping_rates WHERE state = ? LIMIT 1",
+                [$state]
+            );
+            if ($row) {
+                $methods['cod']  = (int)$row['cod_enabled']  === 1;
+                $methods['bank'] = (int)$row['bank_enabled'] === 1;
+            }
+        } catch (Exception $e) { /* table/column missing — keep defaults */ }
+    }
+
+    // Product-level intersection
+    try {
+        $cart  = getOrCreateCart();
+        $items = $db->fetchAll(
+            "SELECT p.cod_enabled, p.bank_enabled
+             FROM cart_items ci JOIN products p ON ci.product_id = p.id
+             WHERE ci.cart_id = ?",
+            [$cart['id']]
+        );
+        foreach ($items as $it) {
+            if ($it['cod_enabled']  !== null && (int)$it['cod_enabled']  !== 1) $methods['cod']  = false;
+            if ($it['bank_enabled'] !== null && (int)$it['bank_enabled'] !== 1) $methods['bank'] = false;
+        }
+    } catch (Exception $e) { /* table/column missing — keep state-level result */ }
+
+    return $methods;
+}
+
 function getShippingRateByState($state) {
     if (empty($state)) return getDefaultShippingRate();
     try {
@@ -66,8 +112,8 @@ function getCartSummary($selectedState = null) {
     $shippingRate = $selectedState ? getShippingRateByState($selectedState) : getDefaultShippingRate();
     $shipping     = $subtotal >= $threshold ? 0 : $shippingRate;
 
-    $tax   = $subtotal * 0.05;
-    $total = $subtotal + $tax + $shipping;
+    $tax   = 0;
+    $total = $subtotal + $shipping;
 
     return [
         'items'          => $items,

@@ -36,9 +36,12 @@ function renderStars($rating) {
   return $out;
 }
 
-// Parse additional images
+// Additional gallery images (from product_images table; legacy JSON column also supported as fallback)
 $additionalImages = [];
-if (!empty($product['images'])) {
+foreach (getProductImages($product['id']) as $img) {
+    if (!empty($img['image_path'])) $additionalImages[] = $img['image_path'];
+}
+if (empty($additionalImages) && !empty($product['images'])) {
     $additionalImages = json_decode($product['images'], true) ?? [];
 }
 
@@ -268,12 +271,36 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
         $maxQty       = $stockStatus === 'express' ? 99 : max(1, (int)$product['stock_quantity']);
         ?>
         <?php if ($canPurchase): ?>
+        <?php $productColors = parseProductColors($product['colors'] ?? ''); ?>
         <div class="bg-white rounded-xl border border-stone-200 p-5 space-y-4">
           <?php if ($stockStatus === 'express'): ?>
           <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#92400E;line-height:1.5;">
             <strong>Pre-Order item:</strong> Ships based on order — allow extra time for delivery.
           </div>
           <?php endif; ?>
+
+          <?php if (!empty($productColors)): ?>
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <label class="text-sm font-semibold text-stone-700">Colour <span style="color:#EF4444;">*</span></label>
+              <span id="selected-color-label" style="font-size:12px;color:var(--stone-mid);font-weight:600;"></span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:10px;">
+              <?php foreach ($productColors as $idx => $c):
+                $bg = $c['hex'] ?: '#E5E7EB'; ?>
+                <button type="button"
+                        onclick="selectColor(this, <?php echo htmlspecialchars(json_encode($c['name']), ENT_QUOTES); ?>)"
+                        class="color-swatch-btn"
+                        data-color="<?php echo htmlspecialchars($c['name']); ?>"
+                        title="<?php echo htmlspecialchars($c['name']); ?>"
+                        style="position:relative;width:38px;height:38px;border-radius:50%;border:2px solid transparent;background:<?php echo $bg; ?>;cursor:pointer;padding:0;outline:1px solid rgba(0,0,0,0.08);transition:transform 0.15s;">
+                </button>
+              <?php endforeach; ?>
+            </div>
+            <input type="hidden" id="selected-color" name="selected_color" value="">
+          </div>
+          <?php endif; ?>
+
           <div class="flex items-center gap-4">
             <label class="text-sm font-semibold text-stone-700">Quantity</label>
             <div class="qty-stepper">
@@ -695,6 +722,20 @@ function fetchShippingRate(state) {
   var sel = document.getElementById('pdp-state-select');
   if (sel && sel.value) fetchShippingRate(sel.value);
 })();
+
+// Colour swatch selection
+function selectColor(btn, name) {
+  document.querySelectorAll('.color-swatch-btn').forEach(function(b) {
+    b.style.borderColor = 'transparent';
+    b.style.transform = '';
+  });
+  btn.style.borderColor = 'var(--gold)';
+  btn.style.transform = 'scale(1.08)';
+  var hidden = document.getElementById('selected-color');
+  if (hidden) hidden.value = name;
+  var lbl = document.getElementById('selected-color-label');
+  if (lbl) lbl.textContent = name;
+}
 </script>
 
 <?php require_once 'includes/footer.php'; ?>

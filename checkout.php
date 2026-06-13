@@ -9,6 +9,9 @@ $cartSummary = getCartSummary($checkoutState ?: null);
 if (empty($cartSummary['items'])) redirect('cart.php');
 $user = isLoggedIn() ? getCurrentUser() : null;
 
+// Which payment methods are allowed for this cart in the chosen state
+$availableMethods = getAvailablePaymentMethods($checkoutState ?: null);
+
 // Handle POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $shippingFirst = sanitize($_POST['shipping_first_name'] ?? '');
@@ -19,9 +22,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $shippingState = sanitize($_POST['shipping_state'] ?? '');
     if ($shippingFirst && $shippingLast && $shippingAddr && $shippingCity && $shippingPhone && $shippingState) {
-        $result = processCheckout($_POST);
-        if ($result['success']) {
-            redirect('order-details.php?id=' . $result['order_id'] . '&success=1');
+        // Validate chosen payment method against availability for this state + cart
+        $methodsForState = getAvailablePaymentMethods($shippingState);
+        $chosenMethod = $_POST['payment_method'] ?? 'cod';
+        $methodAllowed = ($chosenMethod === 'cod' && $methodsForState['cod'])
+                      || ($chosenMethod === 'bank_transfer' && $methodsForState['bank']);
+        if ($methodAllowed) {
+            $result = processCheckout($_POST);
+            if ($result['success']) {
+                redirect('order-details.php?id=' . $result['order_id'] . '&success=1');
+            }
         }
     }
 }
@@ -143,12 +153,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h2 style="font-family:'Cormorant',serif;font-size:22px;font-weight:700;color:var(--black);">Payment Method</h2>
           </div>
 
+          <?php
+          // Decide default selection: prefer COD if allowed, else bank
+          $defaultMethod = $availableMethods['cod'] ? 'cod' : ($availableMethods['bank'] ? 'bank_transfer' : '');
+          ?>
+
+          <?php if (!$availableMethods['cod'] && !$availableMethods['bank']): ?>
+          <div class="alert alert-error" style="margin:0;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+            No payment methods are available for the selected state and cart. Please contact support or try a different shipping state.
+          </div>
+          <?php else: ?>
+
           <div style="display:flex;flex-direction:column;gap:12px;">
 
+            <?php if ($availableMethods['cod']): ?>
             <!-- Cash on Delivery -->
             <label style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border:1.5px solid var(--cream-dark);border-radius:10px;cursor:pointer;transition:border-color 0.2s;" id="cod-label"
                    onmouseover="this.style.borderColor='var(--gold)'" onmouseout="updatePaymentBorder()">
-              <input type="radio" name="payment_method" value="cod" checked
+              <input type="radio" name="payment_method" value="cod" <?php echo $defaultMethod === 'cod' ? 'checked' : ''; ?>
                      style="accent-color:var(--gold);margin-top:2px;width:16px;height:16px;flex-shrink:0;"
                      onchange="updatePaymentBorder()">
               <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
@@ -157,15 +180,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div>
                   <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;">Cash on Delivery</div>
-                  <div style="font-size:12px;color:var(--stone-mid);">Pay with cash when your order arrives at your door.</div>
+                  <div style="font-size:12px;color:var(--stone-mid);">Pay only your shipping fee now (bank transfer) — pay the balance in cash when your order arrives.</div>
                 </div>
               </div>
             </label>
+            <?php endif; ?>
 
+            <?php if ($availableMethods['bank']): ?>
             <!-- Bank Transfer -->
             <label style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border:1.5px solid var(--cream-dark);border-radius:10px;cursor:pointer;transition:border-color 0.2s;" id="bank-label"
                    onmouseover="this.style.borderColor='var(--gold)'" onmouseout="updatePaymentBorder()">
-              <input type="radio" name="payment_method" value="bank_transfer"
+              <input type="radio" name="payment_method" value="bank_transfer" <?php echo $defaultMethod === 'bank_transfer' ? 'checked' : ''; ?>
                      style="accent-color:var(--gold);margin-top:2px;width:16px;height:16px;flex-shrink:0;"
                      onchange="updatePaymentBorder()">
               <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
@@ -174,12 +199,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div>
                   <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;">Bank Transfer</div>
-                  <div style="font-size:12px;color:var(--stone-mid);">Direct transfer to our corporate account. We'll confirm your order once payment clears.</div>
+                  <div style="font-size:12px;color:var(--stone-mid);">Direct transfer of the full amount to our corporate account. We'll confirm your order once payment clears.</div>
                 </div>
               </div>
             </label>
+            <?php endif; ?>
 
           </div>
+
+          <!-- COD banner: pay-shipping-now-balance-later -->
+          <?php if ($availableMethods['cod']):
+            $codShipping  = (float)$cartSummary['shipping'];
+            $codSubtotal  = (float)$cartSummary['subtotal'];
+          ?>
+          <div id="cod-info-banner" style="margin-top:16px;padding:16px;border-radius:10px;background:rgba(202,138,4,0.08);border:1px solid rgba(202,138,4,0.25);display:<?php echo $defaultMethod === 'cod' ? 'block' : 'none'; ?>;">
+            <div style="display:flex;align-items:flex-start;gap:10px;">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#CA8A04" style="width:20px;height:20px;flex-shrink:0;margin-top:1px;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75"/>
+              </svg>
+              <div style="font-size:13px;color:var(--stone);line-height:1.55;">
+                <strong style="color:var(--black);">How Cash on Delivery works:</strong>
+                <div style="margin-top:8px;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:12.5px;">
+                  <span style="color:var(--gold);font-weight:700;">1.</span>
+                  <span>Pay only the <strong id="cod-shipping-amount"><?php echo $codShipping > 0 ? formatPrice($codShipping) : 'FREE shipping'; ?></strong> shipping fee now via bank transfer — this confirms your order.</span>
+                  <span style="color:var(--gold);font-weight:700;">2.</span>
+                  <span>Pay the remaining <strong id="cod-balance-amount"><?php echo formatPrice($codSubtotal); ?></strong> in cash to the courier when your items arrive.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <?php endif; ?>
+
+          <?php endif; // any method available ?>
         </div>
       </div>
 
@@ -201,6 +252,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div style="flex:1;min-width:0;">
                   <div style="font-size:13px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($item['name']); ?></div>
+                  <?php if (!empty($item['selected_color'])): ?>
+                  <div style="font-size:11px;color:var(--stone-mid);">Colour: <?php echo htmlspecialchars($item['selected_color']); ?></div>
+                  <?php endif; ?>
                   <div style="font-size:12px;color:var(--stone-mid);"><?php echo formatPrice($item['price']); ?> each</div>
                 </div>
                 <div style="font-size:13px;font-weight:700;color:var(--black);flex-shrink:0;"><?php echo formatPrice($item['price'] * $item['quantity']); ?></div>
@@ -271,17 +325,46 @@ function updateCheckoutShipping(state) {
   fetch('/api/get-shipping-rate.php?state=' + encodeURIComponent(state))
     .then(function(r) { return r.json(); })
     .then(function(d) {
-      if (!d.success || !display) return;
-      display.style.color = d.is_free ? '#22C55E' : 'var(--black)';
-      display.textContent = d.is_free ? 'FREE' : d.formatted;
-      // Update label
-      var row = display.closest('[style*="justify-content:space-between"]');
-      if (row) {
-        var lbl = row.querySelector('span:first-child');
-        if (lbl) lbl.innerHTML = 'Shipping <span style="font-size:11px;">(' + d.state + ')</span>';
+      if (!d.success) return;
+      if (display) {
+        display.style.color = d.is_free ? '#22C55E' : 'var(--black)';
+        display.textContent = d.is_free ? 'FREE' : d.formatted;
+        var row = display.closest('[style*="justify-content:space-between"]');
+        if (row) {
+          var lbl = row.querySelector('span:first-child');
+          if (lbl) lbl.innerHTML = 'Shipping <span style="font-size:11px;">(' + d.state + ')</span>';
+        }
       }
+      // Update payment-method availability based on the new state
+      if (d.methods) applyPaymentAvailability(d.methods, d);
     })
     .catch(function() {});
+}
+
+function applyPaymentAvailability(methods, rateData) {
+  var codLabel  = document.getElementById('cod-label');
+  var bankLabel = document.getElementById('bank-label');
+  var codRadio  = codLabel  ? codLabel.querySelector('input[type=radio]')  : null;
+  var bankRadio = bankLabel ? bankLabel.querySelector('input[type=radio]') : null;
+
+  if (codLabel)  codLabel.style.display  = methods.cod  ? '' : 'none';
+  if (bankLabel) bankLabel.style.display = methods.bank ? '' : 'none';
+
+  // If the currently-selected method is no longer available, pick a fallback
+  var cur = document.querySelector('input[name="payment_method"]:checked');
+  if (cur) {
+    if (cur.value === 'cod' && !methods.cod && bankRadio) bankRadio.checked = true;
+    if (cur.value === 'bank_transfer' && !methods.bank && codRadio) codRadio.checked = true;
+  } else {
+    if (methods.cod && codRadio) codRadio.checked = true;
+    else if (methods.bank && bankRadio) bankRadio.checked = true;
+  }
+
+  // Update COD banner amounts (shipping changes per state)
+  var amt = document.getElementById('cod-shipping-amount');
+  if (amt) amt.textContent = rateData.is_free ? 'FREE shipping' : rateData.formatted;
+
+  updatePaymentBorder();
 }
 
 // Auto-fire on page load if state already selected
@@ -291,12 +374,17 @@ function updateCheckoutShipping(state) {
 })();
 
 function updatePaymentBorder(){
-  var selected = document.querySelector('input[name="payment_method"]:checked')?.value;
-  document.getElementById('cod-label').style.borderColor  = selected==='cod'         ?'var(--gold)':'var(--cream-dark)';
-  document.getElementById('bank-label').style.borderColor = selected==='bank_transfer'?'var(--gold)':'var(--cream-dark)';
+  var selected = document.querySelector('input[name="payment_method"]:checked');
+  selected = selected ? selected.value : null;
+  var codLabel  = document.getElementById('cod-label');
+  var bankLabel = document.getElementById('bank-label');
+  if (codLabel)  codLabel.style.borderColor  = selected==='cod'           ? 'var(--gold)' : 'var(--cream-dark)';
+  if (bankLabel) bankLabel.style.borderColor = selected==='bank_transfer' ? 'var(--gold)' : 'var(--cream-dark)';
+  var banner = document.getElementById('cod-info-banner');
+  if (banner) banner.style.display = selected==='cod' ? 'block' : 'none';
 }
 updatePaymentBorder();
-document.querySelectorAll('input[name="payment_method"]').forEach(r=>r.addEventListener('change',updatePaymentBorder));
+document.querySelectorAll('input[name="payment_method"]').forEach(function(r){ r.addEventListener('change',updatePaymentBorder); });
 </script>
 
 <?php require_once 'includes/footer.php'; ?>

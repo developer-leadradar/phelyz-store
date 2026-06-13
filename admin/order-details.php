@@ -183,6 +183,11 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
                             <?php echo htmlspecialchars($item['variant']); ?>
                           </div>
                         <?php endif; ?>
+                        <?php if (!empty($item['selected_color'])): ?>
+                          <div style="font-size:11px;color:var(--stone-mid);margin-top:2px;">
+                            Colour: <?php echo htmlspecialchars($item['selected_color']); ?>
+                          </div>
+                        <?php endif; ?>
                       </div>
                     </div>
                   </td>

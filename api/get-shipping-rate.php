@@ -3,6 +3,7 @@ define('PHELYZ_ACCESS', true);
 require_once __DIR__ . '/../config.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/cart-functions.php';
 
 header('Content-Type: application/json');
 
@@ -47,10 +48,14 @@ if (file_exists($settingsFile)) {
 
 $isFree = $subtotal >= $threshold;
 
+$availableMethods = getAvailablePaymentMethods($state);
+
 echo json_encode([
     'success'   => true,
     'state'     => $state,
     'rate'      => $rate,
     'is_free'   => $isFree,
     'formatted' => $isFree ? 'FREE' : '₦' . number_format($rate, 0),
+    'subtotal'  => $subtotal,
+    'methods'   => $availableMethods,
 ]);

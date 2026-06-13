@@ -22,12 +22,39 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($existingSku) {
             $error = 'SKU already exists';
         } else {
-            // Handle image upload
+            // Handle image upload(s) — accept either single `image` or multiple `images[]`
             $imagePath = 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800'; // Default
-            if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
-                $uploaded = uploadImage($_FILES['image'], 'products');
+            $extraImages = []; // additional gallery images beyond the primary
+
+            // Normalise the multi-file input ($_FILES['images']) into a flat list
+            $uploadedFiles = [];
+            if (isset($_FILES['images']) && is_array($_FILES['images']['name'])) {
+                $count = count($_FILES['images']['name']);
+                for ($i = 0; $i < $count; $i++) {
+                    if ($_FILES['images']['error'][$i] === 0 && $_FILES['images']['size'][$i] > 0) {
+                        $uploadedFiles[] = [
+                            'name'     => $_FILES['images']['name'][$i],
+                            'type'     => $_FILES['images']['type'][$i],
+                            'tmp_name' => $_FILES['images']['tmp_name'][$i],
+                            'error'    => $_FILES['images']['error'][$i],
+                            'size'     => $_FILES['images']['size'][$i],
+                        ];
+                    }
+                }
+            }
+            // Backwards-compat: still allow the original single-file input named `image`
+            if (isset($_FILES['image']) && $_FILES['image']['error'] === 0 && $_FILES['image']['size'] > 0) {
+                array_unshift($uploadedFiles, $_FILES['image']);
+            }
+
+            foreach ($uploadedFiles as $idx => $f) {
+                $uploaded = uploadImage($f, 'products');
                 if ($uploaded) {
-                    $imagePath = $uploaded;
+                    if ($idx === 0) {
+                        $imagePath = $uploaded; // first becomes the primary
+                    } else {
+                        $extraImages[] = $uploaded;
+                    }
                 }
             }
 
@@ -53,6 +80,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 'style' => sanitize($_POST['style']) ?: null,
                 'occasion' => sanitize($_POST['occasion']) ?: null,
                 'stock_status' => in_array($_POST['stock_status'] ?? '', ['available','express','out_of_stock']) ? $_POST['stock_status'] : 'available',
+                'colors' => trim($_POST['colors'] ?? '') ?: null,
+                'cod_enabled'  => isset($_POST['pm_cod_override'])  ? (isset($_POST['cod_enabled'])  ? 1 : 0) : null,
+                'bank_enabled' => isset($_POST['pm_bank_override']) ? (isset($_POST['bank_enabled']) ? 1 : 0) : null,
                 'is_active' => isset($_POST['is_active']) ? 1 : 0,
                 'is_featured' => isset($_POST['is_featured']) ? 1 : 0,
                 'rating' => 4.5,
@@ -62,6 +92,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $productId = $db->insert('products', $productData);
 
             if ($productId) {
+                // Save extra gallery images (if any)
+                if (!empty($extraImages)) {
+                    try {
+                        $sort = 1;
+                        foreach ($extraImages as $extraPath) {
+                            $db->insert('product_images', [
+                                'product_id' => $productId,
+                                'image_path' => $extraPath,
+                                'sort_order' => $sort++,
+                                'is_primary' => 0,
+                            ]);
+                        }
+                    } catch (Exception $e) {
+                        // product_images table may not exist yet — non-fatal
+                        error_log('product_images insert failed: ' . $e->getMessage());
+                    }
+                }
                 redirect('products.php?success=1');
             } else {
                 $error = 'Failed to add product';
@@ -325,17 +372,59 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                    class="form-input"
                    value="<?php echo isset($_POST['occasion']) ? htmlspecialchars($_POST['occasion']) : ''; ?>">
         </div>
+
+        <!-- Colors -->
+        <div class="form-group" style="margin-top:20px;margin-bottom:0;">
+            <label class="form-label">Available Colors <span style="color:var(--stone-mid);font-weight:400;">(optional)</span></label>
+            <p class="form-hint" style="margin-bottom:10px;">Add the colour variants this product comes in. Customers pick one before adding to cart.</p>
+            <div id="colors-list" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;min-height:8px;"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                <input type="text" id="color-name-input" placeholder="Colour name (e.g., Rose Gold)"
+                       class="form-input" style="flex:1;min-width:180px;">
+                <input type="color" id="color-hex-input" value="#CA8A04"
+                       style="width:48px;height:42px;border:1.5px solid var(--cream-dark);border-radius:8px;padding:2px;cursor:pointer;background:white;" title="Pick a hex">
+                <button type="button" onclick="addColorChip()" class="btn btn-outline" style="padding:10px 18px;font-size:13px;">+ Add</button>
+            </div>
+            <input type="hidden" name="colors" id="colors-hidden" value="<?php echo htmlspecialchars($_POST['colors'] ?? ''); ?>">
+        </div>
+
+        <!-- Payment Methods Override -->
+        <div class="form-group" style="margin-top:20px;margin-bottom:0;">
+            <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--black);font-weight:600;">
+                <input type="checkbox" name="pm_cod_override" id="pm-override-toggle"
+                       onchange="document.getElementById('pm-override-box').style.display = this.checked ? 'block' : 'none';"
+                       style="accent-color:var(--gold);">
+                <span>Override default payment methods for this product</span>
+            </label>
+            <p class="form-hint" style="margin-top:4px;">Leave unchecked to use the per-state defaults set in Settings → Payment Methods.</p>
+            <div id="pm-override-box" style="display:none;margin-top:12px;padding:14px 16px;background:var(--cream);border-radius:8px;border:1px solid var(--cream-dark);">
+                <input type="hidden" name="pm_bank_override" value="1">
+                <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--stone-mid);margin:0 0 10px;">Allowed for this product</p>
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--black);">
+                        <input type="checkbox" name="cod_enabled" value="1" checked
+                               style="accent-color:var(--gold);width:18px;height:18px;">
+                        <span><strong>Cash on Delivery</strong> — pay shipping now, balance on arrival</span>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--black);">
+                        <input type="checkbox" name="bank_enabled" value="1" checked
+                               style="accent-color:var(--gold);width:18px;height:18px;">
+                        <span><strong>Bank Transfer</strong> — pay full amount upfront</span>
+                    </label>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- ── Section 4: Product Image ── -->
+    <!-- ── Section 4: Product Images ── -->
     <div class="card" style="padding:28px;margin-bottom:28px;">
         <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--cream-dark);">
             <div style="width:4px;height:28px;background:var(--gold);border-radius:2px;flex-shrink:0;"></div>
-            <h3 style="font-family:'Cormorant',serif;font-size:20px;font-weight:700;color:var(--black);margin:0;">Product Image</h3>
+            <h3 style="font-family:'Cormorant',serif;font-size:20px;font-weight:700;color:var(--black);margin:0;">Product Images</h3>
         </div>
 
         <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label">Upload Image</label>
+            <label class="form-label">Upload Images <span style="color:var(--stone-mid);font-weight:400;">(first image is the primary)</span></label>
 
             <!-- Drop zone -->
             <div id="drop-zone"
@@ -348,25 +437,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                      style="width:40px;height:40px;color:var(--stone-mid);margin:0 auto 12px;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
                 </svg>
-                <p style="font-size:14px;font-weight:600;color:var(--black);margin:0 0 4px;">Drag &amp; drop image here</p>
-                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse &mdash; PNG, JPG, WebP &middot; Max 5MB &middot; 800&times;800px recommended</p>
+                <p style="font-size:14px;font-weight:600;color:var(--black);margin:0 0 4px;">Drag &amp; drop image(s) here</p>
+                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse &mdash; PNG, JPG, WebP &middot; Max 5MB each &middot; 800&times;800px recommended &middot; Select multiple to add a gallery</p>
             </div>
-            <input type="file" id="product_image" name="image" accept="image/*"
-                   style="display:none;" onchange="previewImage(this)">
+            <input type="file" id="product_image" name="images[]" accept="image/*" multiple
+                   style="display:none;" onchange="previewImages(this)">
 
-            <!-- Preview -->
+            <!-- Multi-image preview grid -->
             <div id="image-preview-container" style="margin-top:16px;display:none;">
-                <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--stone-mid);margin-bottom:8px;">Preview</p>
-                <div style="position:relative;display:inline-block;">
-                    <img id="image-preview" src="" alt="Preview"
-                         style="width:160px;height:160px;object-fit:cover;border-radius:10px;border:1px solid var(--cream-dark);display:block;">
-                    <button type="button" onclick="clearImage()"
-                            style="position:absolute;top:-8px;right:-8px;width:24px;height:24px;background:#EF4444;border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white" style="width:13px;height:13px;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                    </button>
-                </div>
+                <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--stone-mid);margin-bottom:8px;">
+                    <span id="image-count-label">Selected Image</span>
+                </p>
+                <div id="image-preview-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;"></div>
+                <button type="button" onclick="clearImage()" style="margin-top:12px;background:none;border:none;color:#EF4444;font-size:13px;font-weight:600;cursor:pointer;padding:0;">
+                    Remove all
+                </button>
             </div>
         </div>
     </div>
@@ -399,25 +484,60 @@ function highlightStatus() {
     });
 }
 
-function previewImage(input) {
-    const preview = document.getElementById('image-preview');
-    const container = document.getElementById('image-preview-container');
-    const dropZone = document.getElementById('drop-zone');
+function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
 
-    if (input.files && input.files[0]) {
+function previewImages(input) {
+    const container = document.getElementById('image-preview-container');
+    const grid      = document.getElementById('image-preview-grid');
+    const dropZone  = document.getElementById('drop-zone');
+    const label     = document.getElementById('image-count-label');
+
+    if (!input.files || !input.files.length) return;
+    grid.innerHTML = '';
+    const total = input.files.length;
+    label.textContent = total === 1
+        ? 'Selected Image'
+        : 'Selected Images (' + total + ', first is primary)';
+
+    Array.from(input.files).forEach(function(file, idx) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            preview.src = e.target.result;
-            container.style.display = 'block';
-            dropZone.style.display = 'none';
+            const card = document.createElement('div');
+            card.style.cssText = 'position:relative;border:1px solid var(--cream-dark);border-radius:10px;overflow:hidden;background:white;';
+            card.innerHTML =
+                '<div style="position:relative;">' +
+                    '<img src="' + e.target.result + '" alt="Preview ' + (idx+1) + '" style="width:100%;height:140px;object-fit:cover;display:block;">' +
+                    (idx === 0 ? '<span style="position:absolute;top:6px;left:6px;background:var(--gold);color:white;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase;">Primary</span>' : '') +
+                '</div>' +
+                '<div style="padding:8px 10px;">' +
+                    '<div style="font-size:12px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + escapeHtmlAttr(file.name) + '">' + escapeHtmlAttr(file.name) + '</div>' +
+                    '<div style="font-size:11px;color:var(--stone-mid);">' + formatFileSize(file.size) + '</div>' +
+                '</div>';
+            grid.appendChild(card);
         };
-        reader.readAsDataURL(input.files[0]);
-    }
+        reader.readAsDataURL(file);
+    });
+    container.style.display = 'block';
+    dropZone.style.display = 'none';
 }
+
+function escapeHtmlAttr(s) {
+    return String(s).replace(/[&<>"']/g, function(c){
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+    });
+}
+
+// Backwards-compatible alias for code that still calls previewImage(input)
+function previewImage(input) { previewImages(input); }
 
 function clearImage() {
     document.getElementById('product_image').value = '';
     document.getElementById('image-preview-container').style.display = 'none';
+    document.getElementById('image-preview-grid').innerHTML = '';
     document.getElementById('drop-zone').style.display = 'block';
 }
 
@@ -427,14 +547,83 @@ function handleDrop(e) {
     dz.style.borderColor = 'var(--cream-dark)';
     dz.style.background = 'var(--cream)';
     const files = e.dataTransfer.files;
-    if (files && files[0]) {
+    if (files && files.length) {
         const input = document.getElementById('product_image');
         const dt = new DataTransfer();
-        dt.items.add(files[0]);
+        Array.from(files).forEach(function(f) { dt.items.add(f); });
         input.files = dt.files;
-        previewImage(input);
+        previewImages(input);
     }
 }
+
+/* ── Colors tag input ─────────────────────────── */
+var productColors = [];
+
+function syncColorsHidden() {
+    document.getElementById('colors-hidden').value =
+        productColors.map(c => c.name + (c.hex ? '|' + c.hex : '')).join(',');
+}
+
+function renderColorChips() {
+    var list = document.getElementById('colors-list');
+    if (!productColors.length) { list.innerHTML = ''; syncColorsHidden(); return; }
+    list.innerHTML = productColors.map(function(c, i) {
+        var hex = c.hex || '#E5E7EB';
+        return '<span style="display:inline-flex;align-items:center;gap:8px;padding:6px 10px 6px 8px;border:1px solid var(--cream-dark);border-radius:99px;background:white;font-size:13px;">' +
+               '<span style="width:18px;height:18px;border-radius:50%;background:' + hex + ';border:1px solid rgba(0,0,0,0.08);flex-shrink:0;"></span>' +
+               '<span style="font-weight:600;color:var(--black);">' + escapeHtml(c.name) + '</span>' +
+               '<button type="button" onclick="removeColorChip(' + i + ')" aria-label="Remove" style="background:none;border:none;color:var(--stone-mid);cursor:pointer;padding:0 2px;font-size:16px;line-height:1;">&times;</button>' +
+               '</span>';
+    }).join('');
+    syncColorsHidden();
+}
+
+function addColorChip() {
+    var nameEl = document.getElementById('color-name-input');
+    var hexEl  = document.getElementById('color-hex-input');
+    var name = (nameEl.value || '').trim();
+    var hex  = (hexEl.value  || '').trim();
+    if (!name) { nameEl.focus(); return; }
+    if (productColors.some(c => c.name.toLowerCase() === name.toLowerCase())) {
+        nameEl.value = '';
+        return;
+    }
+    productColors.push({ name: name, hex: hex });
+    nameEl.value = '';
+    renderColorChips();
+    nameEl.focus();
+}
+
+function removeColorChip(i) {
+    productColors.splice(i, 1);
+    renderColorChips();
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function(c){
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+    });
+}
+
+/* Hydrate from hidden input (e.g., after POST validation error) */
+(function() {
+    var existing = document.getElementById('colors-hidden').value;
+    if (!existing) return;
+    existing.split(',').forEach(function(chunk) {
+        chunk = chunk.trim();
+        if (!chunk) return;
+        var parts = chunk.split('|');
+        var name = (parts[0] || '').trim();
+        var hex  = ((parts[1] || '').trim()).match(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/) ? parts[1].trim() : '';
+        if (name) productColors.push({ name: name, hex: hex });
+    });
+    renderColorChips();
+})();
+
+/* Allow Enter in colour-name input to add chip */
+document.getElementById('color-name-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); addColorChip(); }
+});
 </script>
 
 <?php require_once 'includes/footer.php'; ?>

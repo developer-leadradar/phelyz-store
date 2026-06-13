@@ -2,15 +2,37 @@
 // All UI interactions — routes through showToast defined in header.php
 
 /* ── Cart ─────────────────────────────────────────── */
-async function addToCart(productId, quantity) {
+function getSelectedColorFromPage() {
+  var el = document.getElementById('selected-color');
+  return el ? (el.value || '') : '';
+}
+
+function requireColorIfPresent() {
+  // If the product page exposes color swatches, a colour must be picked.
+  var hidden = document.getElementById('selected-color');
+  if (!hidden) return true; // no color picker on this page
+  if (!document.querySelector('.color-swatch-btn')) return true;
+  if (!hidden.value) {
+    showToast('Please pick a colour first', 'error');
+    return false;
+  }
+  return true;
+}
+
+async function addToCart(productId, quantity, color) {
   quantity = quantity || 1;
+  // If invoked from product detail page, enforce color choice
+  if (color === undefined) {
+    if (!requireColorIfPresent()) return;
+    color = getSelectedColorFromPage();
+  }
   var btn = event && event.target ? event.target.closest('button') : null;
   if (btn) btn.classList.add('btn-loading');
   try {
     var res  = await fetch('/api/add-to-cart.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ product_id: productId, quantity: quantity })
+      body:    JSON.stringify({ product_id: productId, quantity: quantity, selected_color: color || null })
     });
     var data = await res.json();
     if (data.success) {
@@ -32,13 +54,15 @@ async function addToCartWithQty(productId) {
 }
 
 async function buyNow(productId) {
+  if (!requireColorIfPresent()) return;
   var qtyEl = document.getElementById('product-qty');
   var qty   = qtyEl ? parseInt(qtyEl.value) : 1;
+  var color = getSelectedColorFromPage();
   try {
     var res  = await fetch('/api/add-to-cart.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ product_id: productId, quantity: qty })
+      body:    JSON.stringify({ product_id: productId, quantity: qty, selected_color: color || null })
     });
     var data = await res.json();
     if (data.success) window.location.href = '/checkout.php';
