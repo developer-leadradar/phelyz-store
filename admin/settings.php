@@ -28,6 +28,8 @@ $defaults = [
     'enable_local_pickup'     => 1,
     'tax_rate'                => 5,
     'enable_tax'              => 1,
+    'gemini_api_key'          => '',
+    'image_studio_provider'   => 'gemini',
 ];
 
 $saved = [];
@@ -59,6 +61,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'enable_local_pickup'     => isset($_POST['enable_local_pickup']) ? 1 : 0,
         'tax_rate'                => (float)($_POST['tax_rate'] ?? 5),
         'enable_tax'              => isset($_POST['enable_tax']) ? 1 : 0,
+        // Keep the existing key if the user submits empty (treats the input
+        // like a password field — paste once, never see it again).
+        'gemini_api_key'          => !empty($_POST['gemini_api_key']) ? trim($_POST['gemini_api_key']) : ($s['gemini_api_key'] ?? ''),
+        'image_studio_provider'   => sanitize($_POST['image_studio_provider'] ?? 'gemini'),
     ];
 
     $dataDir = __DIR__ . '/../data';
@@ -518,6 +524,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
                 </svg>
                 Save Inventory Settings
+            </button>
+        </div>
+    </div>
+
+    <!-- ── Section 7b: Image Studio ── -->
+    <div class="card" id="image-studio" style="padding:28px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--cream-dark);">
+            <div style="width:4px;height:28px;background:var(--gold);border-radius:2px;flex-shrink:0;"></div>
+            <div>
+                <h3 style="font-family:'Cormorant',serif;font-size:20px;font-weight:700;color:var(--black);margin:0 0 2px;">Image Studio (AI provider)</h3>
+                <p style="font-size:12px;color:var(--stone-mid);margin:0;">API key for generating AI "model wearing the jewellery" shots</p>
+            </div>
+        </div>
+
+        <div class="form-group" style="max-width:240px;">
+            <label class="form-label" for="s_studio_provider">AI Provider</label>
+            <select id="s_studio_provider" name="image_studio_provider" class="form-input form-select">
+                <option value="gemini" <?php echo ($s['image_studio_provider'] ?? 'gemini') === 'gemini' ? 'selected' : ''; ?>>Google Gemini 2.5 Flash Image (Nano Banana)</option>
+            </select>
+            <p class="form-hint">More providers can be plugged in later (OpenAI, Replicate, etc.).</p>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="s_gemini_key">Gemini API Key</label>
+            <input type="password" id="s_gemini_key" name="gemini_api_key" autocomplete="off"
+                   placeholder="<?php echo !empty($s['gemini_api_key']) ? '••••••••••••• (saved — leave empty to keep)' : 'Paste your Gemini API key here'; ?>"
+                   class="form-input">
+            <p class="form-hint">
+                Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600;">aistudio.google.com</a>.
+                Stored locally in <code>/data/settings.json</code> on this server. On Vercel, set <code>GEMINI_API_KEY</code> as an environment variable instead — env vars override what's saved here.
+            </p>
+        </div>
+
+        <div style="margin-top:16px;padding:14px 16px;border-radius:8px;background:rgba(202,138,4,0.06);border:1px solid rgba(202,138,4,0.2);font-size:12.5px;color:var(--stone);line-height:1.55;">
+            <strong style="color:var(--black);">Free tier:</strong> Gemini's free tier allows roughly 10 image generations per minute and ~100 per day — plenty for a jewellery shop's daily uploads. You only need a paid plan if you're regenerating your entire catalogue at once.
+        </div>
+
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--cream-dark);">
+            <button type="submit" class="btn btn-gold btn-sm" style="gap:6px;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:14px;height:14px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                </svg>
+                Save Image Studio Settings
             </button>
         </div>
     </div>
