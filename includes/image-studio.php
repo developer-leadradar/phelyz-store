@@ -31,6 +31,16 @@ function imageStudioProvider() {
     return $s['image_studio_provider'] ?? 'gemini';
 }
 
+function imageStudioModel() {
+    $s = imageStudioSettings();
+    return $s['image_studio_model'] ?? 'gemini-3.1-flash-image';
+}
+
+function imageStudioAspectRatio() {
+    $s = imageStudioSettings();
+    return $s['image_studio_aspect'] ?? '1:1';
+}
+
 // ── AI Provider Interface ───────────────────────────────────────────────────
 
 interface ImageGenProvider {
@@ -41,17 +51,26 @@ interface ImageGenProvider {
 }
 
 /**
- * Gemini 2.5 Flash Image (the model behind "Nano Banana").
- * Endpoint: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent
+ * Gemini image generation / editing.
+ * Default model: gemini-3.1-flash-image (best for image-to-image editing).
+ * Other supported models (set in admin settings):
+ *   - gemini-3-pro-image     — pro quality, higher cost
+ *   - gemini-2.5-flash-image — older flash model (legacy "Nano Banana")
+ *
+ * Endpoint: https://generativelanguage.googleapis.com/v1/models/{MODEL}:generateContent
  */
 class GeminiImageProvider implements ImageGenProvider {
     private string $apiKey;
+    private string $model;
+    private string $aspectRatio;
 
-    public function __construct(string $apiKey = '') {
-        $this->apiKey = $apiKey ?: imageStudioApiKey();
+    public function __construct(string $apiKey = '', string $model = '', string $aspectRatio = '') {
+        $this->apiKey      = $apiKey      ?: imageStudioApiKey();
+        $this->model       = $model       ?: imageStudioModel();
+        $this->aspectRatio = $aspectRatio ?: imageStudioAspectRatio();
     }
 
-    public function providerName(): string { return 'Gemini 2.5 Flash Image'; }
+    public function providerName(): string { return 'Gemini · ' . $this->model; }
 
     public function isConfigured(): bool { return !empty($this->apiKey); }
 
@@ -79,21 +98,29 @@ class GeminiImageProvider implements ImageGenProvider {
                     ]],
                 ],
             ]],
-            // Image-out modality
             'generationConfig' => [
-                'responseModalities' => ['IMAGE'],
+                'responseModalities' => ['TEXT', 'IMAGE'],
+                'responseFormat'     => [
+                    'image' => [
+                        'aspectRatio' => $this->aspectRatio, // e.g. '1:1', '4:5', '3:4', '16:9'
+                        'imageSize'   => '2K',
+                    ],
+                ],
             ],
         ];
 
-        $url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=' . urlencode($this->apiKey);
+        $url = 'https://generativelanguage.googleapis.com/v1/models/' . rawurlencode($this->model) . ':generateContent';
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_POST           => true,
-            CURLOPT_HTTPHEADER     => ['Content-Type: application/json'],
+            CURLOPT_HTTPHEADER     => [
+                'Content-Type: application/json',
+                'x-goog-api-key: ' . $this->apiKey,
+            ],
             CURLOPT_POSTFIELDS     => json_encode($payload),
-            CURLOPT_TIMEOUT        => 90,
+            CURLOPT_TIMEOUT        => 120,
         ]);
         $response = curl_exec($ch);
         $code     = curl_getinfo($ch, CURLINFO_HTTP_CODE);

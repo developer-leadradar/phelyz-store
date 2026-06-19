@@ -30,6 +30,8 @@ $defaults = [
     'enable_tax'              => 1,
     'gemini_api_key'          => '',
     'image_studio_provider'   => 'gemini',
+    'image_studio_model'      => 'gemini-3.1-flash-image',
+    'image_studio_aspect'     => '1:1',
 ];
 
 $saved = [];
@@ -65,6 +67,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // like a password field — paste once, never see it again).
         'gemini_api_key'          => !empty($_POST['gemini_api_key']) ? trim($_POST['gemini_api_key']) : ($s['gemini_api_key'] ?? ''),
         'image_studio_provider'   => sanitize($_POST['image_studio_provider'] ?? 'gemini'),
+        'image_studio_model'      => sanitize($_POST['image_studio_model'] ?? 'gemini-3.1-flash-image'),
+        'image_studio_aspect'     => sanitize($_POST['image_studio_aspect'] ?? '1:1'),
     ];
 
     $dataDir = __DIR__ . '/../data';
@@ -538,23 +542,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
 
-        <div class="form-group" style="max-width:240px;">
-            <label class="form-label" for="s_studio_provider">AI Provider</label>
-            <select id="s_studio_provider" name="image_studio_provider" class="form-input form-select">
-                <option value="gemini" <?php echo ($s['image_studio_provider'] ?? 'gemini') === 'gemini' ? 'selected' : ''; ?>>Google Gemini 2.5 Flash Image (Nano Banana)</option>
-            </select>
-            <p class="form-hint">More providers can be plugged in later (OpenAI, Replicate, etc.).</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="form-row-2col">
+            <div class="form-group" style="margin:0;">
+                <label class="form-label" for="s_studio_provider">AI Provider</label>
+                <select id="s_studio_provider" name="image_studio_provider" class="form-input form-select">
+                    <option value="gemini" <?php echo ($s['image_studio_provider'] ?? 'gemini') === 'gemini' ? 'selected' : ''; ?>>Google Gemini</option>
+                </select>
+                <p class="form-hint">More providers can be plugged in later (OpenAI, Replicate, etc.).</p>
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label" for="s_studio_model">Image Model</label>
+                <select id="s_studio_model" name="image_studio_model" class="form-input form-select">
+                    <?php $curModel = $s['image_studio_model'] ?? 'gemini-3.1-flash-image'; ?>
+                    <option value="gemini-3.1-flash-image" <?php echo $curModel === 'gemini-3.1-flash-image' ? 'selected' : ''; ?>>gemini-3.1-flash-image · Recommended (best for image editing)</option>
+                    <option value="gemini-3-pro-image"     <?php echo $curModel === 'gemini-3-pro-image'     ? 'selected' : ''; ?>>gemini-3-pro-image · Pro quality (higher cost)</option>
+                    <option value="gemini-2.5-flash-image" <?php echo $curModel === 'gemini-2.5-flash-image' ? 'selected' : ''; ?>>gemini-2.5-flash-image · Legacy "Nano Banana"</option>
+                </select>
+                <p class="form-hint"><a href="https://ai.google.dev/gemini-api/docs/image-generation" target="_blank" rel="noopener" style="color:var(--gold);">Compare models →</a></p>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label class="form-label" for="s_gemini_key">Gemini API Key</label>
-            <input type="password" id="s_gemini_key" name="gemini_api_key" autocomplete="off"
-                   placeholder="<?php echo !empty($s['gemini_api_key']) ? '••••••••••••• (saved — leave empty to keep)' : 'Paste your Gemini API key here'; ?>"
-                   class="form-input">
-            <p class="form-hint">
-                Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600;">aistudio.google.com</a>.
-                Stored locally in <code>/data/settings.json</code> on this server. On Vercel, set <code>GEMINI_API_KEY</code> as an environment variable instead — env vars override what's saved here.
-            </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;" class="form-row-2col">
+            <div class="form-group" style="margin:0;">
+                <label class="form-label" for="s_studio_aspect">Output Aspect Ratio</label>
+                <select id="s_studio_aspect" name="image_studio_aspect" class="form-input form-select">
+                    <?php $curA = $s['image_studio_aspect'] ?? '1:1'; ?>
+                    <option value="1:1"  <?php echo $curA === '1:1'  ? 'selected' : ''; ?>>1:1 — square (recommended for product cards)</option>
+                    <option value="4:5"  <?php echo $curA === '4:5'  ? 'selected' : ''; ?>>4:5 — portrait (good for model shots)</option>
+                    <option value="3:4"  <?php echo $curA === '3:4'  ? 'selected' : ''; ?>>3:4 — portrait classic</option>
+                    <option value="16:9" <?php echo $curA === '16:9' ? 'selected' : ''; ?>>16:9 — landscape (hero banners)</option>
+                </select>
+                <p class="form-hint">Output dimensions for AI-generated model shots.</p>
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label" for="s_gemini_key">Gemini API Key</label>
+                <input type="password" id="s_gemini_key" name="gemini_api_key" autocomplete="off"
+                       placeholder="<?php echo !empty($s['gemini_api_key']) ? '••••••••• (saved — leave empty to keep)' : 'Paste your Gemini API key'; ?>"
+                       class="form-input">
+                <p class="form-hint">
+                    Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600;">aistudio.google.com</a>.
+                    On Vercel set <code>GEMINI_API_KEY</code> env var instead (overrides this field).
+                </p>
+            </div>
         </div>
 
         <div style="margin-top:16px;padding:14px 16px;border-radius:8px;background:rgba(202,138,4,0.06);border:1px solid rgba(202,138,4,0.2);font-size:12.5px;color:var(--stone);line-height:1.55;">
