@@ -2,6 +2,7 @@
 $pageTitle = "Checkout";
 require_once 'includes/header.php';
 require_once 'includes/cart-functions.php';
+require_once 'includes/paystack.php';
 
 // Pre-compute state so the summary reflects it on page load
 $checkoutState = sanitize($_POST['shipping_state'] ?? $_SESSION['phelyz_shipping_state'] ?? '');
@@ -11,6 +12,8 @@ $user = isLoggedIn() ? getCurrentUser() : null;
 
 // Which payment methods are allowed for this cart in the chosen state
 $availableMethods = getAvailablePaymentMethods($checkoutState ?: null);
+$paystackReady    = paystackConfigured();
+$checkoutError    = '';
 
 // Handle POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -21,18 +24,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $shippingPhone = sanitize($_POST['shipping_phone'] ?? '');
 
     $shippingState = sanitize($_POST['shipping_state'] ?? '');
+    $customerEmail = sanitize($_POST['email'] ?? '');
     if ($shippingFirst && $shippingLast && $shippingAddr && $shippingCity && $shippingPhone && $shippingState) {
         // Validate chosen payment method against availability for this state + cart
         $methodsForState = getAvailablePaymentMethods($shippingState);
         $chosenMethod = $_POST['payment_method'] ?? 'cod';
         $methodAllowed = ($chosenMethod === 'cod' && $methodsForState['cod'])
-                      || ($chosenMethod === 'bank_transfer' && $methodsForState['bank']);
+                      || ($chosenMethod === 'bank_transfer' && $methodsForState['bank'])
+                      || ($chosenMethod === 'paystack' && paystackConfigured());
+
+        // Card payments need an email for the Paystack receipt
+        if ($chosenMethod === 'paystack' && !filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+            $methodAllowed = false;
+            $checkoutError = 'Please enter a valid email address to pay by card.';
+        }
+
         if ($methodAllowed) {
             $result = processCheckout($_POST);
             if ($result['success']) {
-                redirect('order-details.php?id=' . $result['order_id'] . '&success=1');
+                if ($chosenMethod === 'paystack') {
+                    // Look up the order total, then hand off to Paystack
+                    $db = getDB();
+                    $order = $db->fetchOne("SELECT * FROM orders WHERE id = ?", [(int)$result['order_id']]);
+                    $callback = SITE_URL . '/paystack-callback.php?order=' . (int)$result['order_id'];
+                    $init = paystackInitialize($customerEmail, (float)$order['total'], $callback, [
+                        'order_id'     => (int)$result['order_id'],
+                        'order_number' => $result['order_number'],
+                    ]);
+                    if ($init['ok']) {
+                        try {
+                            $db->update('orders', ['payment_reference' => $init['reference']], 'id = ?', [(int)$result['order_id']]);
+                        } catch (Exception $e) { /* column may not exist yet — non-fatal */ }
+                        redirect($init['authorization_url']);
+                    }
+                    // Init failed — order exists as pending; tell the user
+                    $checkoutError = 'Could not start card payment: ' . ($init['message'] ?? 'unknown error')
+                                   . ' Your order #' . $result['order_number'] . ' was saved — you can pay on delivery or contact us.';
+                } else {
+                    redirect('order-details.php?id=' . $result['order_id'] . '&success=1');
+                }
             }
         }
+    } elseif (!empty($_POST)) {
+        $checkoutError = $checkoutError ?: 'Please fill in all required fields.';
     }
 }
 ?>
@@ -137,6 +171,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                      placeholder="+234 000 000 0000"
                      value="<?php echo htmlspecialchars($user['phone'] ?? ($_POST['shipping_phone'] ?? '')); ?>" required>
             </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Email *</label>
+              <input type="email" name="email" class="form-input"
+                     placeholder="you@example.com"
+                     value="<?php echo htmlspecialchars($user['email'] ?? ($_POST['email'] ?? '')); ?>" required>
+            </div>
           </div>
 
           <div class="form-group" style="margin:0;">
@@ -153,12 +193,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <h2 style="font-family:'Cormorant',serif;font-size:22px;font-weight:700;color:var(--black);">Payment Method</h2>
           </div>
 
+          <?php if (!empty($checkoutError)): ?>
+          <div class="alert alert-error" style="margin-bottom:16px;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>
+            <?php echo htmlspecialchars($checkoutError); ?>
+          </div>
+          <?php endif; ?>
+
           <?php
-          // Decide default selection: prefer COD if allowed, else bank
-          $defaultMethod = $availableMethods['cod'] ? 'cod' : ($availableMethods['bank'] ? 'bank_transfer' : '');
+          // Decide default selection: card first when available, then COD, then bank
+          $defaultMethod = $paystackReady ? 'paystack' : ($availableMethods['cod'] ? 'cod' : ($availableMethods['bank'] ? 'bank_transfer' : ''));
           ?>
 
-          <?php if (!$availableMethods['cod'] && !$availableMethods['bank']): ?>
+          <?php if (!$availableMethods['cod'] && !$availableMethods['bank'] && !$paystackReady): ?>
           <div class="alert alert-error" style="margin:0;">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
             No payment methods are available for the selected state and cart. Please contact support or try a different shipping state.
@@ -166,6 +213,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <?php else: ?>
 
           <div style="display:flex;flex-direction:column;gap:12px;">
+
+            <?php if ($paystackReady): ?>
+            <!-- Card via Paystack -->
+            <label style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border:1.5px solid var(--cream-dark);border-radius:10px;cursor:pointer;transition:border-color 0.2s;" id="paystack-label"
+                   onmouseover="this.style.borderColor='var(--gold)'" onmouseout="updatePaymentBorder()">
+              <input type="radio" name="payment_method" value="paystack" <?php echo $defaultMethod === 'paystack' ? 'checked' : ''; ?>
+                     style="accent-color:var(--gold);margin-top:2px;width:16px;height:16px;flex-shrink:0;"
+                     onchange="updatePaymentBorder()">
+              <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
+                <div style="width:40px;height:40px;border-radius:8px;background:rgba(34,197,94,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#16A34A" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>
+                </div>
+                <div>
+                  <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;">Pay with Card <span style="font-size:10px;font-weight:700;color:#16A34A;background:rgba(34,197,94,0.10);padding:2px 8px;border-radius:99px;margin-left:4px;">Instant · Secure</span></div>
+                  <div style="font-size:12px;color:var(--stone-mid);">Debit/credit card, bank transfer, or USSD — secured by Paystack. Order confirmed immediately.</div>
+                </div>
+              </div>
+            </label>
+            <?php endif; ?>
 
             <?php if ($availableMethods['cod']): ?>
             <!-- Cash on Delivery -->
@@ -378,8 +444,10 @@ function updatePaymentBorder(){
   selected = selected ? selected.value : null;
   var codLabel  = document.getElementById('cod-label');
   var bankLabel = document.getElementById('bank-label');
+  var payLabel  = document.getElementById('paystack-label');
   if (codLabel)  codLabel.style.borderColor  = selected==='cod'           ? 'var(--gold)' : 'var(--cream-dark)';
   if (bankLabel) bankLabel.style.borderColor = selected==='bank_transfer' ? 'var(--gold)' : 'var(--cream-dark)';
+  if (payLabel)  payLabel.style.borderColor  = selected==='paystack'      ? 'var(--gold)' : 'var(--cream-dark)';
   var banner = document.getElementById('cod-info-banner');
   if (banner) banner.style.display = selected==='cod' ? 'block' : 'none';
 }

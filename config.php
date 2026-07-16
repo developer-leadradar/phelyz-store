@@ -72,6 +72,11 @@ if (DB_DRIVER === 'pgsql') {
     session_set_save_handler($handler, true);
 }
 
+// ── Output buffering ──────────────────────────────────────────────────────────
+// Vercel's PHP runtime has output_buffering off; without a buffer, any HTML
+// emitted before redirect() kills the Location header. Buffer everything.
+if (ob_get_level() === 0) { ob_start(); }
+
 // ── Start session ─────────────────────────────────────────────────────────────
 if (session_status() === PHP_SESSION_NONE) {
     session_set_cookie_params([

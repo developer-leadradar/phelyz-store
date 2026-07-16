@@ -82,6 +82,27 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
           <?php elseif (!empty($product['is_new'])): ?>
             <span class="product-card-badge badge-new">New</span>
           <?php endif; ?>
+
+          <?php if (!empty($additionalImages)): ?>
+          <!-- Slider arrows -->
+          <button type="button" onclick="slideGallery(-1)" aria-label="Previous image"
+                  class="gallery-arrow"
+                  style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.92);border:1px solid var(--cream-dark);box-shadow:0 2px 10px rgba(0,0,0,0.10);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.15s,transform 0.15s;z-index:2;"
+                  onmouseover="this.style.background='var(--gold)';this.querySelector('svg').style.stroke='white';"
+                  onmouseout="this.style.background='rgba(255,255,255,0.92)';this.querySelector('svg').style.stroke='#44403C';">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="#44403C" width="18" height="18" style="transition:stroke 0.15s;"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+          </button>
+          <button type="button" onclick="slideGallery(1)" aria-label="Next image"
+                  class="gallery-arrow"
+                  style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,0.92);border:1px solid var(--cream-dark);box-shadow:0 2px 10px rgba(0,0,0,0.10);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.15s,transform 0.15s;z-index:2;"
+                  onmouseover="this.style.background='var(--gold)';this.querySelector('svg').style.stroke='white';"
+                  onmouseout="this.style.background='rgba(255,255,255,0.92)';this.querySelector('svg').style.stroke='#44403C';">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="#44403C" width="18" height="18" style="transition:stroke 0.15s;"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+          </button>
+
+          <!-- Position dots -->
+          <div id="gallery-dots" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:2;"></div>
+          <?php endif; ?>
         </div>
 
         <!-- Thumbnails -->
@@ -638,16 +659,76 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
 </style>
 
 <script>
-// Gallery
+// Gallery — ordered list of all images (primary first), with slide + dots
+var galleryImages = <?php echo json_encode(array_values(array_merge([$product['image']], $additionalImages))); ?>;
+var galleryIndex  = 0;
+
 function setMainImage(src, btn) {
   document.getElementById('main-product-image').src = src;
   document.querySelectorAll('.thumb-btn').forEach(b => {
     b.classList.remove('active', 'border-gold');
     b.classList.add('border-stone-200');
   });
-  btn.classList.add('active', 'border-gold');
-  btn.classList.remove('border-stone-200');
+  if (btn) {
+    btn.classList.add('active', 'border-gold');
+    btn.classList.remove('border-stone-200');
+  }
+  var idx = galleryImages.indexOf(src);
+  if (idx !== -1) galleryIndex = idx;
+  renderGalleryDots();
 }
+
+function slideGallery(dir) {
+  if (galleryImages.length < 2) return;
+  galleryIndex = (galleryIndex + dir + galleryImages.length) % galleryImages.length;
+  var src = galleryImages[galleryIndex];
+  var img = document.getElementById('main-product-image');
+  // Quick fade for a smooth swap
+  img.style.opacity = '0';
+  setTimeout(function() {
+    img.src = src;
+    img.style.opacity = '1';
+  }, 120);
+  img.style.transition = 'opacity 0.15s';
+  // Sync thumbnail highlight
+  var thumbs = document.querySelectorAll('.thumb-btn');
+  thumbs.forEach(function(b, i) {
+    b.classList.toggle('active', i === galleryIndex);
+    b.classList.toggle('border-gold', i === galleryIndex);
+    b.classList.toggle('border-stone-200', i !== galleryIndex);
+  });
+  renderGalleryDots();
+}
+
+function renderGalleryDots() {
+  var box = document.getElementById('gallery-dots');
+  if (!box || galleryImages.length < 2) return;
+  box.innerHTML = galleryImages.map(function(_, i) {
+    return '<span style="width:8px;height:8px;border-radius:50%;background:' +
+           (i === galleryIndex ? 'var(--gold)' : 'rgba(0,0,0,0.18)') +
+           ';transition:background 0.2s;"></span>';
+  }).join('');
+}
+renderGalleryDots();
+
+// Keyboard + touch swipe support on the main image
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowLeft')  slideGallery(-1);
+  if (e.key === 'ArrowRight') slideGallery(1);
+});
+(function() {
+  var img = document.getElementById('main-product-image');
+  if (!img) return;
+  var startX = null;
+  var wrap = img.parentElement;
+  wrap.addEventListener('touchstart', function(e) { startX = e.touches[0].clientX; }, { passive: true });
+  wrap.addEventListener('touchend', function(e) {
+    if (startX === null) return;
+    var dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) slideGallery(dx < 0 ? 1 : -1);
+    startX = null;
+  }, { passive: true });
+})();
 
 // Review modal
 function openReviewModal() {

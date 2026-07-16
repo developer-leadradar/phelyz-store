@@ -675,8 +675,17 @@ function isInWishlist($productId) {
 // ===========================================
 
 function redirect($url) {
-    ob_end_clean();  
-    header("Location: $url");
+    // Discard any buffered output so the Location header can be sent
+    while (ob_get_level() > 0) { @ob_end_clean(); }
+
+    if (!headers_sent()) {
+        header("Location: $url");
+    } else {
+        // Headers already flushed (no output buffering, e.g. Vercel):
+        // fall back to a client-side redirect instead of dying blank.
+        echo '<script>window.location.href=' . json_encode($url) . ';</script>';
+        echo '<noscript><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($url, ENT_QUOTES) . '"></noscript>';
+    }
     exit;
 }
 

@@ -117,6 +117,11 @@
 </footer>
 
 <!-- Scripts -->
+<script>
+// Visitor country from Vercel's edge header (empty locally → defaults to NGN)
+window.PHELYZ_COUNTRY = <?php echo json_encode($_SERVER['HTTP_X_VERCEL_IP_COUNTRY'] ?? ''); ?>;
+</script>
 <script src="<?php echo SITE_URL; ?>/assets/js/main.js"></script>
+<script src="<?php echo SITE_URL; ?>/assets/js/currency.js?v=1"></script>
 </body>
 </html>

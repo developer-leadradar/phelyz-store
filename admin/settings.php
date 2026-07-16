@@ -32,6 +32,8 @@ $defaults = [
     'image_studio_provider'   => 'gemini',
     'image_studio_model'      => 'gemini-3.1-flash-image',
     'image_studio_aspect'     => '1:1',
+    'paystack_public_key'     => '',
+    'paystack_secret_key'     => '',
 ];
 
 $saved = [];
@@ -69,6 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'image_studio_provider'   => sanitize($_POST['image_studio_provider'] ?? 'gemini'),
         'image_studio_model'      => sanitize($_POST['image_studio_model'] ?? 'gemini-3.1-flash-image'),
         'image_studio_aspect'     => sanitize($_POST['image_studio_aspect'] ?? '1:1'),
+        'paystack_public_key'     => !empty($_POST['paystack_public_key']) ? trim($_POST['paystack_public_key']) : ($s['paystack_public_key'] ?? ''),
+        'paystack_secret_key'     => !empty($_POST['paystack_secret_key']) ? trim($_POST['paystack_secret_key']) : ($s['paystack_secret_key'] ?? ''),
     ];
 
     $dataDir = __DIR__ . '/../data';
@@ -596,6 +600,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
                 </svg>
                 Save Image Studio Settings
+            </button>
+        </div>
+    </div>
+
+    <!-- ── Section 7c: Paystack ── -->
+    <div class="card" id="paystack" style="padding:28px;margin-bottom:20px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--cream-dark);">
+            <div style="width:4px;height:28px;background:var(--gold);border-radius:2px;flex-shrink:0;"></div>
+            <div>
+                <h3 style="font-family:'Cormorant',serif;font-size:20px;font-weight:700;color:var(--black);margin:0 0 2px;">Paystack (Card Payments)</h3>
+                <p style="font-size:12px;color:var(--stone-mid);margin:0;">Accept debit/credit card, bank transfer, and USSD payments at checkout</p>
+            </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="form-row-2col">
+            <div class="form-group" style="margin:0;">
+                <label class="form-label" for="s_ps_pub">Public Key</label>
+                <input type="text" id="s_ps_pub" name="paystack_public_key" autocomplete="off"
+                       placeholder="<?php echo !empty($s['paystack_public_key']) ? substr($s['paystack_public_key'], 0, 12) . '… (saved — leave empty to keep)' : 'pk_test_… or pk_live_…'; ?>"
+                       class="form-input">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label class="form-label" for="s_ps_sec">Secret Key</label>
+                <input type="password" id="s_ps_sec" name="paystack_secret_key" autocomplete="off"
+                       placeholder="<?php echo !empty($s['paystack_secret_key']) ? '••••••••• (saved — leave empty to keep)' : 'sk_test_… or sk_live_…'; ?>"
+                       class="form-input">
+            </div>
+        </div>
+        <p class="form-hint" style="margin-top:10px;">
+            Keys are at <a href="https://dashboard.paystack.com/#/settings/developers" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600;">dashboard.paystack.com → Settings → API Keys</a>.
+            Test keys (<code>sk_test_/pk_test_</code>) run in sandbox — use card <code>4084 0840 8408 4081</code>, any future expiry, CVV <code>408</code>.
+            On Vercel, set <code>PAYSTACK_SECRET_KEY</code> and <code>PAYSTACK_PUBLIC_KEY</code> env vars instead (they override these fields).
+            The "Pay with Card" option appears at checkout automatically once a secret key is present.
+        </p>
+
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--cream-dark);">
+            <button type="submit" class="btn btn-gold btn-sm" style="gap:6px;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:14px;height:14px;">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/>
+                </svg>
+                Save Paystack Settings
             </button>
         </div>
     </div>
