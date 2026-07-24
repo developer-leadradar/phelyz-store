@@ -385,6 +385,30 @@ function getOrCreateCart() {
     return $cart;
 }
 
+/**
+ * Effective stock state of a product, reconciling the manual stock_status
+ * flag with the live stock_quantity.
+ *
+ * Returns one of:
+ *   'in_stock'  — available and quantity > 0 (buy now, decrements stock)
+ *   'express'   — admin-marked pre-order
+ *   'preorder'  — out of stock (manual flag OR quantity hit 0) → buyable as pre-order
+ */
+function effectiveStockStatus($product) {
+    $status = $product['stock_status'] ?? 'available';
+    $qty    = (int)($product['stock_quantity'] ?? 0);
+    if ($status === 'express')       return 'express';
+    if ($status === 'out_of_stock')  return 'preorder';
+    // available:
+    return $qty > 0 ? 'in_stock' : 'preorder';
+}
+
+/** Is this product a pre-order (express or sold-out)? Pre-orders bypass stock limits. */
+function isPreorderProduct($product) {
+    $eff = effectiveStockStatus($product);
+    return $eff === 'express' || $eff === 'preorder';
+}
+
 function addToCart($productId, $quantity = 1, $selectedColor = null) {
     $db = getDB();
     $cart = getOrCreateCart();
@@ -395,16 +419,12 @@ function addToCart($productId, $quantity = 1, $selectedColor = null) {
         return false;
     }
 
-    // Express (pre-order) items bypass stock limits
-    $isExpress = ($product['stock_status'] ?? 'available') === 'express';
+    // Pre-order items (express or sold-out) bypass stock limits.
+    // Out-of-stock is now purchasable as a pre-order rather than blocked.
+    $isPreorder = isPreorderProduct($product);
 
-    // Out-of-stock items cannot be added
-    if (($product['stock_status'] ?? 'available') === 'out_of_stock') {
-        return false;
-    }
-
-    // Check stock for non-express items
-    if (!$isExpress && $product['stock_quantity'] < $quantity) {
+    // For in-stock items, don't let the cart exceed available quantity
+    if (!$isPreorder && $product['stock_quantity'] < $quantity) {
         return false;
     }
 
@@ -422,7 +442,7 @@ function addToCart($productId, $quantity = 1, $selectedColor = null) {
     if ($existingItem) {
         // Update quantity
         $newQuantity = $existingItem['quantity'] + $quantity;
-        if (!$isExpress && $newQuantity > $product['stock_quantity']) {
+        if (!$isPreorder && $newQuantity > $product['stock_quantity']) {
             return false;
         }
 
@@ -551,7 +571,7 @@ function createOrder($orderData) {
 
 function addOrderItems($orderId, $items) {
     $db = getDB();
-    
+
     foreach ($items as $item) {
         $db->insert('order_items', [
             'order_id' => $orderId,
@@ -562,14 +582,54 @@ function addOrderItems($orderId, $items) {
             'price_at_purchase' => $item['price'],
             'subtotal' => $item['price'] * $item['quantity']
         ]);
-        
-        // Reduce stock
-        $db->query(
-            "UPDATE products SET stock_quantity = stock_quantity - ? WHERE id = ?",
-            [$item['quantity'], $item['product_id']]
-        );
     }
-    
+    // NOTE: stock is reduced separately via reduceStockForOrder() — only once
+    // the order is actually committed (COD/bank at placement, card on payment).
+    return true;
+}
+
+/**
+ * Reduce stock for a committed order. Idempotent: uses orders.stock_reduced
+ * as a guard so callback + webhook can't double-decrement.
+ * - In-stock ('available') items decrement, floored at 0.
+ * - Pre-order items (express / out_of_stock) are NOT decremented.
+ */
+function reduceStockForOrder($orderId) {
+    $db = getDB();
+
+    // Guard against double reduction
+    try {
+        $order = $db->fetchOne("SELECT id, stock_reduced FROM orders WHERE id = ?", [$orderId]);
+        if (!$order) return false;
+        if (!empty($order['stock_reduced'])) return true; // already done
+    } catch (Exception $e) {
+        // stock_reduced column may not exist yet — fall through and still reduce once
+    }
+
+    $items = $db->fetchAll(
+        "SELECT oi.product_id, oi.quantity, p.stock_status
+         FROM order_items oi JOIN products p ON oi.product_id = p.id
+         WHERE oi.order_id = ?",
+        [$orderId]
+    );
+
+    foreach ($items as $it) {
+        $status = $it['stock_status'] ?? 'available';
+        // Only decrement real in-stock items; pre-orders keep their (0/neg) count
+        if ($status === 'available') {
+            $db->query(
+                "UPDATE products
+                 SET stock_quantity = CASE WHEN stock_quantity - ? < 0 THEN 0 ELSE stock_quantity - ? END
+                 WHERE id = ?",
+                [$it['quantity'], $it['quantity'], $it['product_id']]
+            );
+        }
+    }
+
+    try {
+        $db->update('orders', ['stock_reduced' => 1], 'id = ?', [$orderId]);
+    } catch (Exception $e) { /* column missing — non-fatal */ }
+
     return true;
 }
 

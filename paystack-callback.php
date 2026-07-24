@@ -39,6 +39,8 @@ if ($result['ok'] && $result['paid'] && $result['amount_ngn'] >= ((float)$order[
         'status'            => 'processing',
         'payment_reference' => $reference,
     ], 'id = ?', [$orderId]);
+    // Now that payment is confirmed, reduce stock (idempotent)
+    reduceStockForOrder($orderId);
     redirect('order-details.php?id=' . $orderId . '&success=1');
 }
 

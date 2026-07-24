@@ -53,9 +53,8 @@ if (!empty($availableColors)) {
     }
 }
 
-// Stock check (express bypasses; out_of_stock is rejected by addToCart)
-$stockStatus = $product['stock_status'] ?? 'available';
-if ($stockStatus !== 'express' && $stockStatus !== 'out_of_stock' && $product['stock_quantity'] < $quantity) {
+// Stock check — pre-order items (express or sold-out) bypass the quantity limit
+if (!isPreorderProduct($product) && $product['stock_quantity'] < $quantity) {
     echo json_encode([
         'success' => false,
         'message' => 'Insufficient stock. Only ' . $product['stock_quantity'] . ' available'

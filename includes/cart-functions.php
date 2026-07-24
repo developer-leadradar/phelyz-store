@@ -80,10 +80,13 @@ function validateCartStock() {
     $errors = [];
 
     foreach ($items as $item) {
-        $status = $item['stock_status'] ?? 'available';
-        if ($status === 'out_of_stock') {
-            $errors[] = $item['name'] . ' is currently out of stock';
-        } elseif ($status !== 'express' && $item['stock_quantity'] < $item['quantity']) {
+        // Pre-order items (express or sold-out) are always allowed through —
+        // out-of-stock is now a valid pre-order, not a blocker.
+        if (isPreorderProduct($item)) {
+            continue;
+        }
+        // In-stock items: don't let the ordered quantity exceed availability.
+        if ($item['stock_quantity'] < $item['quantity']) {
             $errors[] = $item['name'] . ' — only ' . $item['stock_quantity'] . ' in stock';
         }
     }
@@ -182,7 +185,15 @@ function processCheckout($formData) {
     
     // Add order items
     addOrderItems($orderResult['order_id'], $cartSummary['items']);
-    
+
+    // Reduce stock immediately for cash-on-delivery / bank transfer (order is
+    // committed). Card (Paystack) orders stay pending until payment is verified —
+    // their stock is reduced in the callback/webhook after a successful charge.
+    $method = $formData['payment_method'] ?? 'cod';
+    if ($method !== 'paystack') {
+        reduceStockForOrder($orderResult['order_id']);
+    }
+
     // Clear cart
     clearCart();
     

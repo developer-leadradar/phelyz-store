@@ -158,10 +158,10 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
             <span class="price-current text-3xl"><?php echo formatPrice($product['price']); ?></span>
           <?php endif; ?>
 
-          <!-- Stock status (admin-controlled) -->
-          <?php $stockStatus = $product['stock_status'] ?? 'available'; ?>
+          <!-- Stock status (reconciles manual flag with live quantity) -->
+          <?php $effStatus = effectiveStockStatus($product); ?>
           <div class="mt-3">
-            <?php if ($stockStatus === 'available'): ?>
+            <?php if ($effStatus === 'in_stock'): ?>
               <?php if ($product['stock_quantity'] > 0 && $product['stock_quantity'] <= 5): ?>
                 <span class="stock-low inline-flex items-center gap-1.5 text-sm">
                   <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
@@ -173,15 +173,15 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
                   In Stock
                 </span>
               <?php endif; ?>
-            <?php elseif ($stockStatus === 'express'): ?>
+            <?php elseif ($effStatus === 'express'): ?>
               <span class="inline-flex items-center gap-1.5 text-sm font-semibold" style="color:#D97706;">
                 <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
                 Express / Pre-Order
               </span>
-            <?php else: ?>
-              <span class="stock-out inline-flex items-center gap-1.5 text-sm">
-                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-                Out of Stock
+            <?php else: /* preorder (sold out or admin-marked out of stock) */ ?>
+              <span class="inline-flex items-center gap-1.5 text-sm font-semibold" style="color:#D97706;">
+                <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                Out of Stock — Available to Pre-Order
               </span>
             <?php endif; ?>
           </div>
@@ -287,16 +287,17 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
 
         <!-- Quantity + Add to Cart -->
         <?php
-        $stockStatus  = $product['stock_status'] ?? 'available';
-        $canPurchase  = ($stockStatus === 'available' && $product['stock_quantity'] > 0) || $stockStatus === 'express';
-        $maxQty       = $stockStatus === 'express' ? 99 : max(1, (int)$product['stock_quantity']);
+        // effectiveStockStatus() already computed as $effStatus above.
+        $isPreorder   = ($effStatus === 'express' || $effStatus === 'preorder');
+        $canPurchase  = ($effStatus === 'in_stock') || $isPreorder; // everything is buyable now
+        $maxQty       = $isPreorder ? 99 : max(1, (int)$product['stock_quantity']);
         ?>
         <?php if ($canPurchase): ?>
         <?php $productColors = parseProductColors($product['colors'] ?? ''); ?>
         <div class="bg-white rounded-xl border border-stone-200 p-5 space-y-4">
-          <?php if ($stockStatus === 'express'): ?>
+          <?php if ($isPreorder): ?>
           <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#92400E;line-height:1.5;">
-            <strong>Pre-Order item:</strong> Ships based on order — allow extra time for delivery.
+            <strong>Pre-Order item:</strong> <?php echo $effStatus === 'preorder' ? 'Currently out of stock — order now and we\'ll ship as soon as it\'s restocked.' : 'Ships based on order — allow extra time for delivery.'; ?>
           </div>
           <?php endif; ?>
 
@@ -334,7 +335,7 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
                 <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
               </button>
             </div>
-            <?php if ($stockStatus === 'available'): ?>
+            <?php if ($effStatus === 'in_stock'): ?>
             <span class="text-xs text-stone-400"><?php echo (int)$product['stock_quantity']; ?> available</span>
             <?php endif; ?>
           </div>
@@ -342,7 +343,7 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
           <button onclick="addToCartWithQty(<?php echo (int)$product['id']; ?>)"
             class="btn btn-gold btn-full flex items-center justify-center gap-2 text-base">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-            <?php echo $stockStatus === 'express' ? 'Pre-Order Now' : 'Add to Cart'; ?>
+            <?php echo $isPreorder ? 'Pre-Order Now' : 'Add to Cart'; ?>
           </button>
 
           <button onclick="buyNow(<?php echo (int)$product['id']; ?>)"
