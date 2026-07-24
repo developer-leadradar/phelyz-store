@@ -196,13 +196,20 @@ function processCheckout($formData) {
 
     // Clear cart
     clearCart();
-    
+
+    // Track this order against the current session so a guest can view their
+    // own confirmation without an account.
+    if (!isset($_SESSION['guest_orders']) || !is_array($_SESSION['guest_orders'])) {
+        $_SESSION['guest_orders'] = [];
+    }
+    $_SESSION['guest_orders'][] = (int)$orderResult['order_id'];
+
     // Send confirmation email
     if (isLoggedIn()) {
         $user = getCurrentUser();
         sendOrderConfirmationEmail($user['email'], $orderResult['order_number']);
     }
-    
+
     return [
         'success' => true,
         'order_id' => $orderResult['order_id'],

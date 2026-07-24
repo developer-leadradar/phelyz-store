@@ -1,13 +1,28 @@
 <?php
 $pageTitle = "Order Details";
 require_once 'includes/header.php';
-requireLogin();
 
 $orderId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-if (!$orderId) redirect('customer-orders.php');
+
+// Guests may view an order they placed in this session (tracked in
+// $_SESSION['guest_orders']); logged-in users view their own orders.
+$guestOrders = $_SESSION['guest_orders'] ?? [];
+$isGuestOwned = in_array($orderId, array_map('intval', (array)$guestOrders), true);
+
+if (!isLoggedIn() && !$isGuestOwned) {
+    redirect('login.php?redirect=order-details.php?id=' . $orderId);
+}
+if (!$orderId) redirect(isLoggedIn() ? 'customer-orders.php' : 'index.php');
 
 $order = getOrderById($orderId);
-if (!$order || $order['user_id'] != $_SESSION['user_id']) redirect('customer-orders.php');
+if (!$order) redirect(isLoggedIn() ? 'customer-orders.php' : 'index.php');
+
+// Ownership: logged-in users must own it; guests must have it in their session
+if (isLoggedIn()) {
+    if ($order['user_id'] != $_SESSION['user_id'] && !$isGuestOwned) redirect('customer-orders.php');
+} elseif (!$isGuestOwned) {
+    redirect('index.php');
+}
 
 $orderItems = getOrderItems($orderId);
 $user       = getCurrentUser();
