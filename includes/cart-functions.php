@@ -147,7 +147,7 @@ function processCheckout($formData) {
     
     // Prepare order data
     $orderData = [
-        'user_id' => isLoggedIn() ? $_SESSION['user_id'] : 0,
+        'user_id' => isLoggedIn() ? $_SESSION['user_id'] : null, // NULL = guest order
         'status' => 'pending',
         'subtotal' => $cartSummary['subtotal'],
         'tax' => $cartSummary['tax'],
