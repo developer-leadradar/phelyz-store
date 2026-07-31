@@ -2,9 +2,11 @@
 $pageTitle = "Home";
 $pageDescription = "Discover exquisite diamonds and fine jewelry at Phelyz Store — certified authentic, free shipping over ₦50,000.";
 require_once 'includes/header.php';
+require_once 'includes/banners.php';
 
 $featuredProducts = getFeaturedProducts(8);
 $newArrivals      = getAllProducts(['sort' => 'newest'], 4);
+$promoBanners     = getActiveBanners();
 
 // Helper: render star SVGs
 function renderStars($rating) {
@@ -19,6 +21,90 @@ function renderStars($rating) {
   return $out;
 }
 ?>
+
+<?php if (!empty($promoBanners)): ?>
+<!-- ═══════════════════════════════════════
+     PROMO BANNER SLIDER (admin-managed)
+══════════════════════════════════════════ -->
+<section id="promo-slider" aria-label="Promotions" style="position:relative;overflow:hidden;">
+  <div id="promo-track" style="display:flex;transition:transform 0.5s cubic-bezier(.4,0,.2,1);">
+    <?php foreach ($promoBanners as $b):
+      $st  = bannerSlideStyle($b);
+      $url = $b['cta_url'] ?: 'shop.php';
+      if (!preg_match('#^https?://#i', $url)) $url = SITE_URL . '/' . ltrim($url, '/');
+    ?>
+      <div class="promo-slide" style="flex:0 0 100%;background:<?php echo $st['bg']; ?>;color:<?php echo $st['text']; ?>;">
+        <div class="container" style="padding:44px 0;display:flex;align-items:center;justify-content:space-between;gap:26px;flex-wrap:wrap;">
+          <div style="min-width:240px;flex:1;">
+            <h2 style="font-family:'Cormorant',serif;font-size:clamp(26px,3.4vw,38px);font-weight:700;line-height:1.15;margin:0;">
+              <?php echo $b['emoji'] ? htmlspecialchars($b['emoji']) . ' ' : ''; ?><?php echo htmlspecialchars($b['title']); ?>
+            </h2>
+            <?php if (!empty($b['subtitle'])): ?>
+              <p style="font-size:15px;opacity:0.9;margin:10px 0 0;max-width:560px;line-height:1.55;"><?php echo htmlspecialchars($b['subtitle']); ?></p>
+            <?php endif; ?>
+          </div>
+          <?php if (!empty($b['cta_text'])): ?>
+            <a href="<?php echo htmlspecialchars($url); ?>"
+               style="background:<?php echo $st['accent']; ?>;color:<?php echo $st['onAcc']; ?>;padding:14px 30px;border-radius:999px;font-size:13.5px;font-weight:700;letter-spacing:0.03em;text-decoration:none;white-space:nowrap;flex-shrink:0;transition:transform 0.15s;"
+               onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+              <?php echo htmlspecialchars($b['cta_text']); ?>
+            </a>
+          <?php endif; ?>
+        </div>
+      </div>
+    <?php endforeach; ?>
+  </div>
+
+  <?php if (count($promoBanners) > 1): ?>
+    <button type="button" onclick="promoGo(-1)" aria-label="Previous promotion" class="promo-arrow" style="left:14px;">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+    </button>
+    <button type="button" onclick="promoGo(1)" aria-label="Next promotion" class="promo-arrow" style="right:14px;">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+    </button>
+    <div id="promo-dots" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:7px;"></div>
+  <?php endif; ?>
+</section>
+
+<style>
+.promo-arrow{position:absolute;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,0.22);border:none;color:#fff;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;backdrop-filter:blur(4px);transition:background 0.2s;z-index:3;}
+.promo-arrow:hover{background:rgba(255,255,255,0.4);}
+@media(max-width:600px){.promo-arrow{display:none;}}
+</style>
+
+<script>
+(function(){
+  var idx = 0, n = <?php echo count($promoBanners); ?>, timer = null;
+  var track = document.getElementById('promo-track');
+  var dots  = document.getElementById('promo-dots');
+
+  function paint(){
+    track.style.transform = 'translateX(' + (-idx * 100) + '%)';
+    if (dots) dots.innerHTML = Array.from({length:n}, function(_,i){
+      return '<span onclick="promoTo('+i+')" style="width:8px;height:8px;border-radius:50%;cursor:pointer;background:'+
+             (i===idx?'rgba(255,255,255,0.95)':'rgba(255,255,255,0.4)')+';transition:background .2s;"></span>';
+    }).join('');
+  }
+  window.promoGo = function(d){ idx = (idx + d + n) % n; paint(); restart(); };
+  window.promoTo = function(i){ idx = i; paint(); restart(); };
+  function restart(){ if (timer) clearInterval(timer); if (n > 1) timer = setInterval(function(){ window.promoGo(1); }, 6000); }
+
+  // Touch swipe
+  var x0 = null;
+  track.addEventListener('touchstart', function(e){ x0 = e.touches[0].clientX; }, {passive:true});
+  track.addEventListener('touchend', function(e){
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 45) window.promoGo(dx < 0 ? 1 : -1);
+    x0 = null;
+  }, {passive:true});
+
+  paint(); restart();
+})();
+</script>
+<?php endif; ?>
 
 <!-- ═══════════════════════════════════════
      HERO
@@ -45,11 +131,7 @@ function renderStars($rating) {
           Perfected
         </h1>
 
-        <p style="font-size:16px;color:rgba(255,255,255,0.60);line-height:1.75;max-width:440px;margin-bottom:36px;">
-          Exquisite diamonds and fine jewelry crafted to last a lifetime. Celebrate your most precious moments with pieces that tell your story.
-        </p>
-
-        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:40px;">
+        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:40px;margin-top:36px;">
           <a href="shop.php" class="btn btn-gold btn-lg">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z"/></svg>
             Shop Collection
@@ -65,7 +147,7 @@ function renderStars($rating) {
           $trustItems = [
             ['Certified Authentic','M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z'],
             ['Free Shipping ₦50k+','M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H3m16.5 0h-1.5m-1.5 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 4.5h19.5M3.75 7.5h16.5'],
-            ['30-Day Returns','M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3'],
+            ['Secure Checkout','M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z'],
           ];
           foreach ($trustItems as [$label, $path]): ?>
             <div style="display:flex;align-items:center;gap:8px;">
@@ -240,7 +322,7 @@ function renderStars($rating) {
         ['Free Delivery','On orders over ₦50,000','M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H3m16.5 0h-1.5m-1.5 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 4.5h19.5M3.75 7.5h16.5'],
         ['Certified Quality','100% authentic stones','M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z'],
         ['Secure Payments','Encrypted transactions','M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z'],
-        ['30-Day Returns','Hassle-free policy','M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3'],
+        ['Dedicated Support','Mon – Sat, 9AM – 6PM','M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155'],
       ];
       foreach ($trustFeatures as $idx => [$title, $sub, $icon]):
       ?>

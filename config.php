@@ -28,13 +28,15 @@ define('DB_DRIVER', getenv('DB_DRIVER') ?: 'mysql'); // 'mysql' or 'pgsql'
 // ── Site ─────────────────────────────────────────────────────────────────────
 define('SITE_NAME',  getenv('SITE_NAME')  ?: 'Phelyz Store');
 define('SITE_URL',   rtrim(getenv('SITE_URL')   ?: 'http://localhost/phelyz-store', '/'));
-define('SITE_EMAIL', getenv('SITE_EMAIL') ?: 'info@phelyz.com');
-define('SITE_PHONE', getenv('SITE_PHONE') ?: '+234 800 000 0000');
-define('SITE_WHATSAPP', getenv('SITE_WHATSAPP') ?: '+2348000000000');
+define('SITE_EMAIL', getenv('SITE_EMAIL') ?: 'support@phelyzstore.com');
+define('SITE_PHONE', getenv('SITE_PHONE') ?: '+234 902 403 3207');
+define('SITE_WHATSAPP', getenv('SITE_WHATSAPP') ?: '+2349024033207');
+define('SITE_ADDRESS', getenv('SITE_ADDRESS') ?: 'Uyo, Akwa Ibom State, Nigeria');
+define('SITE_HOURS',   getenv('SITE_HOURS')   ?: 'Mon – Sat: 9:00 AM – 6:00 PM');
 
 // ── Email (Resend) ────────────────────────────────────────────────────────────
 define('RESEND_API_KEY',   getenv('RESEND_API_KEY')   ?: '');
-define('SMTP_FROM_EMAIL',  getenv('SMTP_FROM_EMAIL')  ?: 'info@phelyz.com');
+define('SMTP_FROM_EMAIL',  getenv('SMTP_FROM_EMAIL')  ?: 'support@phelyzstore.com');
 define('SMTP_FROM_NAME',   getenv('SMTP_FROM_NAME')   ?: 'Phelyz Store');
 
 // Legacy SMTP constants kept for compatibility

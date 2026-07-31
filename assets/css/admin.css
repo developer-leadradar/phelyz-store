@@ -2018,3 +2018,7 @@ code {
     .stats-grid { grid-template-columns: 1fr; }
     .export-buttons { flex-direction: column; }
 }
+/* ── Reports: 2-col analytics blocks collapse on tablet/mobile ───────────── */
+@media (max-width: 1024px) {
+  .report-2col { grid-template-columns: 1fr !important; }
+}

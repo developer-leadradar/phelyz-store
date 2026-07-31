@@ -25,6 +25,8 @@ if (isLoggedIn()) {
 }
 
 $orderItems = getOrderItems($orderId);
+require_once 'includes/tracking.php';
+$orderParcels = getParcelsByOrder($orderId);
 $user       = getCurrentUser();
 $success    = isset($_GET['success']) && $_GET['success'] == '1';
 $statusColors = ['pending'=>'status-pending','processing'=>'status-processing','shipped'=>'status-shipped','delivered'=>'status-delivered','cancelled'=>'status-cancelled'];
@@ -62,6 +64,31 @@ $currentPage=basename($_SERVER['PHP_SELF']);
       </div>
       <span class="status-badge <?php echo $statusColors[$order['status']]??'status-pending'; ?>" style="font-size:12px;"><?php echo ucfirst($order['status']); ?></span>
     </div>
+
+    <!-- Tracking -->
+    <?php if (!empty($orderParcels)): ?>
+      <?php foreach ($orderParcels as $op): $opm = parcelStatusMeta($op['status']); ?>
+        <div class="card" style="padding:20px;margin-bottom:20px;border-left:4px solid <?php echo $opm['colour']; ?>;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:4px;">Tracking ID</div>
+              <div style="font-family:'Cormorant',serif;font-size:21px;font-weight:700;color:var(--black);letter-spacing:0.03em;">
+                <?php echo htmlspecialchars($op['tracking_id']); ?>
+              </div>
+              <div style="font-size:12.5px;color:<?php echo $opm['colour']; ?>;font-weight:700;margin-top:4px;">
+                <?php echo htmlspecialchars($opm['label']); ?>
+                <?php if (!empty($op['current_label'])): ?>
+                  <span style="color:var(--stone-mid);font-weight:500;"> · near <?php echo htmlspecialchars($op['current_label']); ?></span>
+                <?php endif; ?>
+              </div>
+            </div>
+            <a href="track.php?id=<?php echo urlencode($op['tracking_id']); ?>" class="btn btn-gold" style="white-space:nowrap;">
+              Track on Map
+            </a>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    <?php endif; ?>
 
     <!-- Order meta -->
     <div class="card" style="padding:20px;margin-bottom:20px;">

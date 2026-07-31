@@ -35,7 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div class="auth-panel-left-inner">
       <div style="font-family:'Cormorant',serif;font-size:36px;font-weight:700;color:white;margin-bottom:12px;letter-spacing:0.06em;">PHELYZ</div>
       <p style="font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;max-width:300px;margin-bottom:20px;">Certified fine jewelry crafted to celebrate life's most precious moments.</p>
-      <?php foreach(['Certified authentic diamonds','Free shipping on ₦50,000+','30-day hassle-free returns'] as $f): ?>
+      <?php foreach(['Certified authentic diamonds','Free shipping on ₦50,000+','Secure encrypted checkout'] as $f): ?>
         <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,0.70);margin-bottom:8px;">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="#CA8A04" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           <?php echo $f; ?>

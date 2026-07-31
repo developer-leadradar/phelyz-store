@@ -5,26 +5,26 @@ require_once 'includes/header.php';
 $faqs = [
   "Shipping & Delivery" => [
     "How much is shipping?" => "Shipping is FREE on all orders over ₦50,000. A flat-rate fee applies to orders below that threshold.",
-    "How long does delivery take?" => "Standard delivery within Lagos takes 1–2 business days. Nationwide delivery is 3–5 business days.",
-    "Do you ship internationally?" => "Currently we ship within Nigeria and select West African countries. Contact us to discuss international orders.",
-    "Can I track my order?" => "Yes! Once your order is shipped, you'll receive updates in your account under 'My Orders'.",
+    "How long does delivery take?" => "Delivery within Akwa Ibom typically takes 1–2 business days. Nationwide delivery is 3–5 business days depending on your state.",
+    "Do you ship internationally?" => "Currently we ship within Nigeria. Contact us on WhatsApp to discuss international orders.",
+    "Can I track my order?" => "Yes. Once your parcel is dispatched you'll get a tracking ID, and you can follow its progress live on our <a href='track.php' style='color:var(--gold);font-weight:600;'>Track Order</a> page.",
   ],
   "Products & Quality" => [
     "Are all your jewels certified?" => "Absolutely. Every piece comes with a certificate of authenticity from our trusted suppliers.",
     "What materials do you use?" => "We carry 9K, 14K, and 18K Gold in Yellow, White, and Rose Gold varieties, along with Sterling Silver. All stones are certified genuine.",
     "Can I request a custom piece?" => "Yes! Contact us via WhatsApp or our contact form with your design idea and we'll put you in touch with our craftspeople.",
-    "Do you have a physical store?" => "Our showroom is in Victoria Island, Lagos. WhatsApp us to book an appointment.",
+    "Do you have a physical store?" => "We are based in Uyo, Akwa Ibom State. WhatsApp us to book a viewing appointment.",
   ],
   "Orders & Payment" => [
-    "What payment methods do you accept?" => "We accept Cash on Delivery (Lagos) and Bank Transfer. Paystack (card) payments are coming soon.",
-    "Can I modify or cancel my order?" => "Orders can be modified or cancelled within 2 hours of placing. Contact us immediately via WhatsApp.",
-    "Is my payment information secure?" => "Yes. All transactions are encrypted and we never store sensitive payment details.",
+    "What payment methods do you accept?" => "We accept card payments (debit/credit, bank transfer and USSD via Paystack), direct Bank Transfer, and Cash on Delivery where available for your state.",
+    "Can I modify or cancel my order?" => "Orders can be modified or cancelled within 2 hours of placing, provided the parcel has not been dispatched. Contact us immediately via WhatsApp.",
+    "Is my payment information secure?" => "Yes. All card transactions are processed by Paystack over an encrypted connection and we never store your card details.",
   ],
   "Returns & Refunds" => [
-    "What is your return policy?" => "We offer a 30-day return policy on all items in original condition with tags and packaging.",
-    "How do I return an item?" => "Contact us via WhatsApp or email within 30 days of delivery. We'll arrange collection and process your refund.",
-    "How long do refunds take?" => "Refunds are processed within 5–7 business days after we receive the returned item.",
-    "What if my item is damaged?" => "Contact us immediately with photos. Damaged or defective items are replaced at no cost to you.",
+    "Do you accept returns?" => "Returns are accepted only in limited circumstances and strictly subject to our Returns &amp; Refunds Policy. Please read the full conditions on our <a href='terms.php#returns' style='color:var(--gold);font-weight:600;'>Terms &amp; Conditions</a> page before requesting one.",
+    "What if my item is damaged or incorrect?" => "Contact us on WhatsApp within 24 hours of delivery with clear photos and your order number. Verified damaged, defective or incorrect items are replaced at no cost to you.",
+    "How long do refunds take?" => "Where a refund is approved, it is processed within 5–7 business days after the returned item has been received and inspected.",
+    "Do you accept returns on custom or personalised pieces?" => "No. Custom, engraved, resized and personalised pieces, along with earrings and other pierced jewellery, are final sale for hygiene and craftsmanship reasons.",
   ],
 ];
 ?>

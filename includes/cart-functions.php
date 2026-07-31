@@ -131,6 +131,8 @@ function getCartSummary($selectedState = null) {
     ];
 }
 
+require_once __DIR__ . '/tracking.php';
+
 function processCheckout($formData) {
     $db = getDB();
     $cartSummary = getCartSummary($formData['shipping_state'] ?? null);
@@ -172,6 +174,16 @@ function processCheckout($formData) {
         'billing_phone' => $formData['billing_phone'] ?? $formData['shipping_phone'],
         'notes' => $formData['notes'] ?? ''
     ];
+
+    // Attach first-touch marketing attribution so admin reports can credit
+    // the channel that actually produced this sale.
+    if (function_exists('analyticsAttribution')) {
+        $attr = analyticsAttribution();
+        $orderData['channel']      = $attr['channel']      ?? 'direct';
+        $orderData['referrer']     = $attr['referrer']     ?? null;
+        $orderData['utm_source']   = $attr['utm_source']   ?? null;
+        $orderData['utm_campaign'] = $attr['utm_campaign'] ?? null;
+    }
     
     // Create order
     $orderResult = createOrder($orderData);
@@ -192,6 +204,12 @@ function processCheckout($formData) {
     $method = $formData['payment_method'] ?? 'cod';
     if ($method !== 'paystack') {
         reduceStockForOrder($orderResult['order_id']);
+    }
+
+    // Create the parcel record so the customer gets a tracking id straight away.
+    // Everything bought together ships as one parcel with one tracking number.
+    if (function_exists('createParcelForOrder')) {
+        createParcelForOrder($orderResult['order_id']);
     }
 
     // Clear cart

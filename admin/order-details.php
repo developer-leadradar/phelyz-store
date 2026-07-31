@@ -12,6 +12,51 @@ $orderItems = getOrderItems($orderId);
 $db = getDB();
 $customer = $db->fetchOne("SELECT * FROM users WHERE id = ?", [$order['user_id']]);
 
+// ── Parcel tracking ─────────────────────────────────────────────────────────
+require_once __DIR__ . '/../includes/tracking.php';
+$parcelMsg = '';
+$parcelErr = '';
+
+// Create a parcel for legacy orders that predate tracking
+if (isset($_GET['create_parcel'])) {
+    if (createParcelForOrder($orderId)) $parcelMsg = 'Parcel created.';
+    else $parcelErr = 'Could not create parcel.';
+}
+
+// Record a status update
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['parcel_update'])) {
+    $pid       = (int)($_POST['parcel_id'] ?? 0);
+    $newStatus = $_POST['parcel_status'] ?? '';
+    $locLabel  = sanitize($_POST['location_label'] ?? '');
+    $note      = sanitize($_POST['event_note'] ?? '');
+    $lat       = ($_POST['lat'] ?? '') !== '' ? (float)$_POST['lat'] : null;
+    $lng       = ($_POST['lng'] ?? '') !== '' ? (float)$_POST['lng'] : null;
+
+    if ($pid > 0 && isset(parcelStatuses()[$newStatus])) {
+        if (addParcelEvent($pid, $newStatus, $locLabel ?: null, $note ?: null, $lat, $lng)) {
+            // Keep the order's own status roughly in step with the parcel
+            $map = ['picked_up'=>'shipped','in_transit'=>'shipped','arrived_hub'=>'shipped',
+                    'out_for_delivery'=>'shipped','delivered'=>'delivered'];
+            if (isset($map[$newStatus]) && $order['status'] !== $map[$newStatus]) {
+                $db->update('orders', ['status' => $map[$newStatus]], 'id = ?', [$orderId]);
+                $order['status'] = $map[$newStatus];
+                $currentStepRefresh = true;
+            }
+            // ETA can be adjusted at the same time
+            if (!empty($_POST['eta_date'])) {
+                $db->update('parcels', ['eta_date' => $_POST['eta_date']], 'id = ?', [$pid]);
+            }
+            $parcelMsg = 'Tracking updated — the customer can see this immediately.';
+        } else {
+            $parcelErr = 'Could not save the update.';
+        }
+    } else {
+        $parcelErr = 'Pick a valid status.';
+    }
+}
+
+$parcels = getParcelsByOrder($orderId);
+
 $paymentMethods = [
     'cod'           => 'Cash on Delivery',
     'bank_transfer' => 'Bank Transfer',
@@ -28,6 +73,119 @@ $statusSteps = [
 $statusOrder = ['pending' => 0, 'processing' => 1, 'shipped' => 2, 'delivered' => 3, 'cancelled' => -1];
 $currentStep = $statusOrder[$order['status']] ?? 0;
 ?>
+
+<?php if ($parcelMsg): ?>
+<div class="alert alert-success" style="margin-bottom:18px;"><?php echo htmlspecialchars($parcelMsg); ?></div>
+<?php endif; ?>
+<?php if ($parcelErr): ?>
+<div class="alert alert-error" style="margin-bottom:18px;"><?php echo htmlspecialchars($parcelErr); ?></div>
+<?php endif; ?>
+
+<!-- ══════════ PARCEL TRACKING ══════════ -->
+<div class="card" style="padding:24px;margin-bottom:22px;">
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+    <h3 style="font-family:'Cormorant',serif;font-size:19px;font-weight:700;color:var(--black);margin:0;">Parcel &amp; Tracking</h3>
+    <?php if (empty($parcels)): ?>
+      <a href="?id=<?php echo $orderId; ?>&create_parcel=1" class="btn btn-gold btn-sm" style="font-size:12px;">+ Create parcel</a>
+    <?php endif; ?>
+  </div>
+
+  <?php if (empty($parcels)): ?>
+    <p style="font-size:13px;color:var(--stone-mid);margin:0;">
+      No parcel yet for this order. New orders get one automatically — click “Create parcel” for older orders.
+    </p>
+  <?php else: ?>
+    <?php foreach ($parcels as $p):
+      $pm  = parcelStatusMeta($p['status']);
+      $evs = getParcelEvents($p['id']); ?>
+      <div style="border:1px solid var(--cream-dark);border-radius:11px;padding:18px;margin-bottom:14px;">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
+          <div>
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--stone-mid);">Tracking ID</div>
+            <div style="font-size:17px;font-weight:700;color:var(--black);letter-spacing:0.03em;font-family:'Cormorant',serif;">
+              <?php echo htmlspecialchars($p['tracking_id']); ?>
+            </div>
+            <div style="font-size:11.5px;color:var(--stone-mid);margin-top:3px;">
+              Parcel <?php echo htmlspecialchars($p['parcel_number']); ?>
+              &nbsp;·&nbsp; to <?php echo htmlspecialchars($p['dest_label'] ?: '—'); ?>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <span style="background:<?php echo $pm['colour']; ?>1A;color:<?php echo $pm['colour']; ?>;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:700;">
+              <?php echo htmlspecialchars($pm['label']); ?>
+            </span>
+            <a href="../track.php?id=<?php echo urlencode($p['tracking_id']); ?>" target="_blank"
+               style="font-size:12px;font-weight:600;color:var(--gold);text-decoration:none;">Customer view ↗</a>
+          </div>
+        </div>
+
+        <!-- Update form -->
+        <form method="POST" style="border-top:1px solid var(--cream-dark);padding-top:16px;">
+          <input type="hidden" name="parcel_update" value="1">
+          <input type="hidden" name="parcel_id" value="<?php echo (int)$p['id']; ?>">
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;">
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">New status *</label>
+              <select name="parcel_status" required class="form-input form-select">
+                <?php foreach (parcelStatuses() as $key => $s): ?>
+                  <option value="<?php echo $key; ?>" <?php echo $p['status'] === $key ? 'selected' : ''; ?>>
+                    <?php echo htmlspecialchars($s['label']); ?>
+                  </option>
+                <?php endforeach; ?>
+              </select>
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Where is it now?</label>
+              <input type="text" name="location_label" class="form-input" placeholder="e.g. Aba sorting centre">
+            </div>
+            <div class="form-group" style="margin:0;">
+              <label class="form-label">Revised ETA</label>
+              <input type="date" name="eta_date" class="form-input" value="<?php echo htmlspecialchars($p['eta_date'] ?? ''); ?>">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:14px;">
+            <label class="form-label">Note for the customer <span style="color:var(--stone-mid);font-weight:400;">(optional)</span></label>
+            <input type="text" name="event_note" class="form-input" placeholder="e.g. Rider will call on arrival">
+          </div>
+
+          <details style="margin-top:10px;">
+            <summary style="font-size:12px;color:var(--stone-mid);cursor:pointer;">Set exact map coordinates (optional)</summary>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;max-width:400px;">
+              <input type="text" name="lat" class="form-input" placeholder="Latitude e.g. 5.0377">
+              <input type="text" name="lng" class="form-input" placeholder="Longitude e.g. 7.9128">
+            </div>
+            <p class="form-hint">Leave blank and the map position follows the status automatically.</p>
+          </details>
+
+          <button type="submit" class="btn btn-gold btn-sm" style="margin-top:14px;">Post Update</button>
+        </form>
+
+        <!-- Recent events -->
+        <?php if (!empty($evs)): ?>
+          <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--cream-dark);">
+            <div style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:10px;">
+              History (<?php echo count($evs); ?>)
+            </div>
+            <?php foreach (array_slice(array_reverse($evs), 0, 6) as $ev):
+              $em = parcelStatusMeta($ev['status']); ?>
+              <div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:9px;font-size:12.5px;">
+                <span style="width:8px;height:8px;border-radius:50%;background:<?php echo $em['colour']; ?>;margin-top:5px;flex-shrink:0;"></span>
+                <div style="flex:1;">
+                  <strong style="color:var(--black);"><?php echo htmlspecialchars($em['label']); ?></strong>
+                  <?php if ($ev['label']): ?><span style="color:var(--stone);"> — <?php echo htmlspecialchars($ev['label']); ?></span><?php endif; ?>
+                  <?php if ($ev['note']): ?><div style="color:var(--stone-mid);font-size:11.5px;"><?php echo htmlspecialchars($ev['note']); ?></div><?php endif; ?>
+                </div>
+                <span style="color:var(--stone-mid);font-size:11px;white-space:nowrap;"><?php echo date('j M, g:ia', strtotime($ev['created_at'])); ?></span>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        <?php endif; ?>
+      </div>
+    <?php endforeach; ?>
+  <?php endif; ?>
+</div>
 
   <!-- Top bar: Breadcrumb + Actions -->
   <div style="display:flex;align-items:flex-start;justify-content:space-between;

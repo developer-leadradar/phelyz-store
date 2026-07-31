@@ -11,7 +11,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $lastName  = sanitize($_POST['last_name']);
     $phone     = sanitize($_POST['phone']);
     $db        = getDB();
-    if ($db->update('users',['first_name'=>$firstName,'last_name'=>$lastName,'phone'=>$phone],'id = ?',[$_SESSION['user_id']]))
+    // Birthday: day + month only. Stored against a fixed sentinel year (2000)
+    // because we never ask for, display, or use the birth year.
+    $profileData = ['first_name'=>$firstName,'last_name'=>$lastName,'phone'=>$phone];
+    $bDay   = (int)($_POST['birth_day'] ?? 0);
+    $bMonth = (int)($_POST['birth_month'] ?? 0);
+    if ($bDay >= 1 && $bDay <= 31 && $bMonth >= 1 && $bMonth <= 12) {
+        $profileData['date_of_birth'] = sprintf('2000-%02d-%02d', $bMonth, $bDay);
+    } elseif ($bDay === 0 && $bMonth === 0) {
+        $profileData['date_of_birth'] = null;
+    }
+    if ($db->update('users',$profileData,'id = ?',[$_SESSION['user_id']]))
         { $success='Profile updated successfully.'; $user=getCurrentUser(); }
     else { $error='Failed to update profile.'; }
 }
@@ -58,7 +68,32 @@ $currentPage=basename($_SERVER['PHP_SELF']);
           <div class="form-group" style="margin:0;"><label class="form-label">Last Name</label><input type="text" name="last_name" class="form-input" required value="<?php echo htmlspecialchars($user['last_name']); ?>"></div>
         </div>
         <div class="form-group" style="margin-bottom:16px;"><label class="form-label">Email Address <span style="color:var(--stone-mid);font-weight:400;">(cannot be changed)</span></label><input type="email" class="form-input" value="<?php echo htmlspecialchars($user['email']); ?>" disabled style="opacity:0.6;cursor:not-allowed;"></div>
-        <div class="form-group" style="margin-bottom:20px;"><label class="form-label">Phone Number</label><input type="tel" name="phone" class="form-input" value="<?php echo htmlspecialchars($user['phone']??''); ?>"></div>
+        <div class="form-group" style="margin-bottom:16px;"><label class="form-label">Phone Number</label><input type="tel" name="phone" class="form-input" value="<?php echo htmlspecialchars($user['phone']??''); ?>"></div>
+        <?php
+          $curDay = $curMonth = 0;
+          if (!empty($user['date_of_birth'])) {
+              $bts = strtotime($user['date_of_birth']);
+              if ($bts) { $curDay = (int)date('j', $bts); $curMonth = (int)date('n', $bts); }
+          }
+        ?>
+        <div class="form-group" style="margin-bottom:20px;">
+          <label class="form-label">Birthday <span style="color:var(--stone-mid);font-weight:400;">(optional — we don't ask for the year)</span></label>
+          <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:12px;max-width:340px;">
+            <select name="birth_day" class="form-input form-select">
+              <option value="0">Day</option>
+              <?php for ($d = 1; $d <= 31; $d++): ?>
+                <option value="<?php echo $d; ?>" <?php echo $curDay === $d ? 'selected' : ''; ?>><?php echo $d; ?></option>
+              <?php endfor; ?>
+            </select>
+            <select name="birth_month" class="form-input form-select">
+              <option value="0">Month</option>
+              <?php foreach (['January','February','March','April','May','June','July','August','September','October','November','December'] as $i => $mName): ?>
+                <option value="<?php echo $i+1; ?>" <?php echo $curMonth === $i+1 ? 'selected' : ''; ?>><?php echo $mName; ?></option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+          <p class="form-hint">We use this only to send you a birthday treat.</p>
+        </div>
         <button type="submit" class="btn btn-gold">Save Changes</button>
       </form>
     </div>

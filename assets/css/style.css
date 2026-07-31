@@ -99,6 +99,13 @@ input, select, textarea, button { font-family: inherit; }
   display: flex; align-items: center; gap: 8px;
 }
 .nav-logo-gem { width: 30px; height: 30px; color: var(--gold); }
+/* Brand mark (SVG wordmark) */
+.nav-logo-img { height: 34px; width: auto; display: block; }
+.drawer-logo-img { height: 26px; width: auto; display: block; }
+.footer-logo-img { height: 34px; width: auto; display: block; }
+.admin-logo-img { height: 26px; width: auto; display: block; }
+@media (max-width: 767px) { .nav-logo-img { height: 28px; } }
+@media (max-width: 480px) { .nav-logo-img { height: 24px; } }
 .nav-links { display: flex; align-items: center; gap: 2px; flex: 1; }
 .nav-link {
   font-size: 12px; font-weight: 600; letter-spacing: 0.07em;
@@ -587,9 +594,7 @@ input, select, textarea, button { font-family: inherit; }
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 .footer-logo {
-  font-family: 'Cormorant', serif; font-size: 22px; font-weight: 700;
-  letter-spacing: 0.15em; color: var(--white); text-transform: uppercase;
-  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+  margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
 }
 .footer-logo svg { color: var(--gold); }
 .footer-desc { font-size: 13px; line-height: 1.75; margin-bottom: 22px; max-width: 280px; }

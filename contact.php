@@ -47,20 +47,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <p style="font-size:14px;color:var(--stone-mid);margin-bottom:32px;line-height:1.70;">Have questions about an order, a product, or just want advice on choosing the perfect piece? We're here to help.</p>
 
       <?php
+      $waDigits = preg_replace('/\D/','',SITE_WHATSAPP);
       $contacts=[
-        ['Location','Victoria Island, Lagos, Nigeria','M15 10.5a3 3 0 11-6 0 3 3 0 016 0zM19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z'],
-        ['Phone',SITE_PHONE,'M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z'],
-        ['Email',SITE_EMAIL,'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75'],
-        ['Business Hours','Mon – Sat: 9:00 AM – 6:00 PM','M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z'],
+        ['Location', SITE_ADDRESS, '', 'M15 10.5a3 3 0 11-6 0 3 3 0 016 0zM19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z'],
+        ['Phone &amp; WhatsApp', SITE_PHONE, 'tel:'.preg_replace('/\s+/','',SITE_PHONE), 'M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z'],
+        ['Email', SITE_EMAIL, 'mailto:'.SITE_EMAIL, 'M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75'],
+        ['Working Hours', SITE_HOURS, '', 'M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z'],
       ];
-      foreach ($contacts as [$title,$val,$icon]): ?>
+      foreach ($contacts as [$title,$val,$href,$icon]): ?>
         <div style="display:flex;align-items:flex-start;gap:14px;padding:16px 0;border-bottom:1px solid var(--cream-dark);">
           <div style="width:40px;height:40px;border-radius:10px;background:rgba(202,138,4,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="var(--gold)" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="<?php echo $icon; ?>"/></svg>
           </div>
           <div>
             <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:3px;"><?php echo $title; ?></div>
-            <div style="font-size:14px;font-weight:600;color:var(--black);"><?php echo htmlspecialchars($val); ?></div>
+            <div style="font-size:14px;font-weight:600;color:var(--black);">
+              <?php if ($href): ?>
+                <a href="<?php echo htmlspecialchars($href); ?>" style="color:var(--black);text-decoration:none;"
+                   onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--black)'"><?php echo htmlspecialchars($val); ?></a>
+              <?php else: ?>
+                <?php echo htmlspecialchars($val); ?>
+              <?php endif; ?>
+            </div>
           </div>
         </div>
       <?php endforeach; ?>

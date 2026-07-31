@@ -18,6 +18,21 @@ $totalSpent = $db->fetchOne(
 $avgOrderValue = $totalOrders > 0 ? $totalSpent / $totalOrders : 0;
 $wishlistCount = count(getWishlistItems());
 
+// Most recent shipping address actually used by this customer
+$lastShip = $db->fetchOne(
+    "SELECT shipping_first_name, shipping_last_name, shipping_address, shipping_city,
+            shipping_state, shipping_zip, shipping_country, shipping_phone, created_at
+     FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT 1",
+    [$customerId]
+);
+
+// Date of birth — day + month only (year deliberately not shown)
+$dobDisplay = '';
+if (!empty($customer['date_of_birth'])) {
+    $ts = strtotime($customer['date_of_birth']);
+    if ($ts) $dobDisplay = date('j F', $ts);
+}
+
 $initials = strtoupper(
     substr($customer['first_name'], 0, 1) . substr($customer['last_name'], 0, 1)
 );
@@ -150,6 +165,23 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
             </div>
           </div>
 
+          <!-- Date of birth (day + month only) -->
+          <div style="display:flex;align-items:flex-start;gap:10px;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                 stroke-width="1.8" stroke="var(--gold)" width="16" height="16"
+                 style="flex-shrink:0;margin-top:1px;">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M21 11.25v8.25a1.5 1.5 0 01-1.5 1.5H5.25a1.5 1.5 0 01-1.5-1.5v-8.25M12 4.875A2.625 2.625 0 109.375 7.5H12m0-2.625V7.5m0-2.625A2.625 2.625 0 1114.625 7.5H12m0 0V21m-8.625-9.75h18c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125h-18c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/>
+            </svg>
+            <div>
+              <p style="font-size:10px;font-weight:700;letter-spacing:0.07em;
+                        text-transform:uppercase;color:var(--stone-mid);margin-bottom:2px;">Birthday</p>
+              <p style="font-size:13px;color:<?php echo $dobDisplay ? 'var(--black)' : 'var(--stone-mid)'; ?>;">
+                <?php echo $dobDisplay ? htmlspecialchars($dobDisplay) : 'Not provided'; ?>
+              </p>
+            </div>
+          </div>
+
           <?php if (!empty($customer['address'])): ?>
             <div style="display:flex;align-items:flex-start;gap:10px;">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -162,7 +194,7 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
               </svg>
               <div>
                 <p style="font-size:10px;font-weight:700;letter-spacing:0.07em;
-                          text-transform:uppercase;color:var(--stone-mid);margin-bottom:2px;">Address</p>
+                          text-transform:uppercase;color:var(--stone-mid);margin-bottom:2px;">Profile Address</p>
                 <p style="font-size:13px;color:var(--black);line-height:1.55;">
                   <?php echo htmlspecialchars($customer['address']); ?><br>
                   <?php echo htmlspecialchars($customer['city'].', '.$customer['state'].' '.($customer['zip_code']??'')); ?><br>
@@ -172,6 +204,40 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
             </div>
           <?php endif; ?>
         </div>
+
+        <!-- Shipping address actually used on the latest order -->
+        <?php if ($lastShip && !empty($lastShip['shipping_address'])): ?>
+        <div style="padding:0 20px 18px;">
+          <div style="border:1px solid var(--cream-dark);border-radius:10px;padding:14px 16px;background:var(--cream);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="var(--gold)" width="15" height="15" style="flex-shrink:0;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/>
+              </svg>
+              <span style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--stone-mid);">Shipping Address</span>
+              <span style="margin-left:auto;font-size:10px;color:var(--stone-mid);">Last order · <?php echo formatDate($lastShip['created_at']); ?></span>
+            </div>
+            <p style="font-size:13px;color:var(--black);line-height:1.6;margin:0;">
+              <strong><?php echo htmlspecialchars(trim($lastShip['shipping_first_name'].' '.$lastShip['shipping_last_name'])); ?></strong><br>
+              <?php echo htmlspecialchars($lastShip['shipping_address']); ?><br>
+              <?php
+                $line2 = trim($lastShip['shipping_city'] . ', ' . $lastShip['shipping_state']);
+                if (!empty($lastShip['shipping_zip'])) $line2 .= ' ' . $lastShip['shipping_zip'];
+                echo htmlspecialchars($line2);
+              ?><br>
+              <?php echo htmlspecialchars($lastShip['shipping_country'] ?: 'Nigeria'); ?>
+              <?php if (!empty($lastShip['shipping_phone'])): ?>
+                <br><span style="color:var(--stone-mid);">Tel: <?php echo htmlspecialchars($lastShip['shipping_phone']); ?></span>
+              <?php endif; ?>
+            </p>
+            <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode(trim($lastShip['shipping_address'].', '.$lastShip['shipping_city'].', '.$lastShip['shipping_state'].', Nigeria')); ?>"
+               target="_blank" rel="noopener"
+               style="display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:12px;font-weight:600;color:var(--gold);text-decoration:none;">
+              View on map
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="12" height="12"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/></svg>
+            </a>
+          </div>
+        </div>
+        <?php endif; ?>
 
         <!-- Send email CTA -->
         <div style="padding:0 20px 20px;">

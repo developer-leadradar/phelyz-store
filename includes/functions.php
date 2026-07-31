@@ -553,13 +553,58 @@ function clearCart() {
 // ORDER FUNCTIONS
 // ===========================================
 
+/**
+ * Next sequential order number, e.g. PHZ-2026-000417.
+ * Uses an atomic counter row per year so two simultaneous checkouts can never
+ * receive the same number (the old rand() generator collided at ~1-in-9999).
+ */
+function generateOrderNumber() {
+    $db   = getDB();
+    $year = (int)date('Y');
+    $seq  = 0;
+
+    try {
+        $driver = defined('DB_DRIVER') ? DB_DRIVER : 'mysql';
+        if ($driver === 'pgsql') {
+            $row = $db->fetchOne(
+                "INSERT INTO order_counters (year_key, last_seq) VALUES (?, 1)
+                 ON CONFLICT (year_key) DO UPDATE SET last_seq = order_counters.last_seq + 1
+                 RETURNING last_seq",
+                [$year]
+            );
+            $seq = (int)($row['last_seq'] ?? 0);
+        } else {
+            $db->query(
+                "INSERT INTO order_counters (year_key, last_seq) VALUES (?, 1)
+                 ON DUPLICATE KEY UPDATE last_seq = last_seq + 1",
+                [$year]
+            );
+            $row = $db->fetchOne("SELECT last_seq FROM order_counters WHERE year_key = ?", [$year]);
+            $seq = (int)($row['last_seq'] ?? 0);
+        }
+    } catch (Exception $e) {
+        $seq = 0; // counter table missing — fall through
+    }
+
+    if ($seq <= 0) {
+        // Fallback: derive from the current order count so we stay monotonic
+        try {
+            $c = $db->fetchOne("SELECT COUNT(*) AS c FROM orders");
+            $seq = (int)($c['c'] ?? 0) + 1;
+        } catch (Exception $e) {
+            $seq = (int)(microtime(true) * 100) % 1000000;
+        }
+    }
+
+    return sprintf('PHZ-%d-%06d', $year, $seq);
+}
+
 function createOrder($orderData) {
     $db = getDB();
-    
-    // Generate order number
-    $orderNumber = 'ORD-' . date('Y') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+
+    $orderNumber = generateOrderNumber();
     $orderData['order_number'] = $orderNumber;
-    
+
     $orderId = $db->insert('orders', $orderData);
     
     if ($orderId) {

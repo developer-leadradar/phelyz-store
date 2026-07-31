@@ -70,7 +70,7 @@ require_once 'includes/header.php';
   <div class="container">
     <div class="stats-row" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;text-align:center;">
       <?php
-      $stats=[['500+','Unique Pieces'],['2,400+','Happy Customers'],['100%','Certified Authentic'],['30-Day','Return Policy']];
+      $stats=[['500+','Unique Pieces'],['2,400+','Happy Customers'],['100%','Certified Authentic'],['36+','States Delivered']];
       foreach ($stats as $i=>[$n,$l]): ?>
         <div style="padding:24px;<?php echo $i>0?'border-left:1px solid rgba(255,255,255,0.10);':''; ?>">
           <div style="font-family:'Cormorant',serif;font-size:40px;font-weight:700;color:var(--gold);line-height:1;margin-bottom:8px;"><?php echo $n; ?></div>

@@ -8,6 +8,21 @@ require_once __DIR__ . '/functions.php';
 $cartCount  = getCartCount();
 $categories = getAllCategories();
 $currentPage = basename($_SERVER['PHP_SELF']);
+
+// ── First-party analytics ────────────────────────────────────────────────────
+require_once __DIR__ . '/analytics.php';
+$pvTypes = [
+    'index.php'    => 'home',    'shop.php'     => 'shop',
+    'product.php'  => 'product', 'cart.php'     => 'cart',
+    'checkout.php' => 'checkout','search.php'   => 'search',
+    'about.php'    => 'content', 'contact.php'  => 'content',
+    'faq.php'      => 'content', 'terms.php'    => 'content',
+    'track.php'    => 'track',
+];
+trackPageView(
+    $pvTypes[$currentPage] ?? 'other',
+    ($currentPage === 'product.php' && isset($_GET['id'])) ? (int)$_GET['id'] : null
+);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -52,8 +67,8 @@ tailwind.config = {
 
 <!-- ── Announcement Bar ─────────────────────────────── -->
 <div id="announcement-bar">
-  ✦ Free Shipping on Orders Over ₦50,000 &nbsp;·&nbsp; Certified Authentic Diamonds &nbsp;·&nbsp;
-  <a href="tel:<?php echo SITE_PHONE; ?>">Call <?php echo SITE_PHONE; ?></a>
+  ✦ Free Shipping on Orders Over ₦50,000 &nbsp;·&nbsp;
+  <a href="tel:<?php echo preg_replace('/\s+/', '', SITE_PHONE); ?>">Call <?php echo SITE_PHONE; ?></a>
   <button id="close-bar" onclick="this.parentElement.style.display='none'" aria-label="Dismiss">✕</button>
 </div>
 
@@ -77,7 +92,8 @@ tailwind.config = {
 <!-- ── Mobile Drawer ────────────────────────────────── -->
 <nav id="mobile-drawer" aria-label="Mobile navigation">
   <div class="drawer-header">
-    <span class="drawer-logo">PHELYZ</span>
+    <img src="<?php echo SITE_URL; ?>/assets/images/phelyz-logo.svg"
+         alt="<?php echo htmlspecialchars(SITE_NAME); ?>" class="drawer-logo-img">
     <button class="drawer-close" onclick="closeDrawer()" aria-label="Close menu">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
     </button>
@@ -132,12 +148,9 @@ tailwind.config = {
   <div class="nav-inner">
 
     <!-- Logo -->
-    <a href="<?php echo SITE_URL; ?>" class="nav-logo">
-      <svg class="nav-logo-gem" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M6.5 2h11l4 6-9.5 14L2.5 8l4-6zm0 0L2.5 8h19l-4-6z"/>
-        <path d="M2.5 8l9.5 14 9.5-14M8 8l4 10 4-10M6.5 2L8 8h8l1.5-6" stroke="currentColor" stroke-width="0.5" fill="none"/>
-      </svg>
-      PHELYZ
+    <a href="<?php echo SITE_URL; ?>" class="nav-logo" aria-label="<?php echo htmlspecialchars(SITE_NAME); ?> — home">
+      <img src="<?php echo SITE_URL; ?>/assets/images/phelyz-logo.svg"
+           alt="<?php echo htmlspecialchars(SITE_NAME); ?>" class="nav-logo-img" width="1197" height="464">
     </a>
 
     <!-- Desktop links -->
