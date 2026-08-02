@@ -81,6 +81,18 @@ if (ob_get_level() === 0) { ob_start(); }
 
 // ── Start session ─────────────────────────────────────────────────────────────
 if (session_status() === PHP_SESSION_NONE) {
+    // Keep PHP's garbage collector in step with the session store's own 24h TTL.
+    // PHP defaults gc_maxlifetime to 1440s (24 min) and calls gc() with THAT
+    // value, so sessions were being deleted after 24 minutes even though the
+    // handler considered them valid for a day.
+    ini_set('session.gc_maxlifetime', 86400);
+
+    // PHP 7+ enables lazy_write, which skips write() when the session data
+    // hasn't changed. Simply browsing never changes it, so last_activity was
+    // never refreshed and an active user still aged out. Write every request
+    // so activity actually keeps the session alive.
+    ini_set('session.lazy_write', '0');
+
     session_set_cookie_params([
         'lifetime' => 86400,
         'path'     => '/',

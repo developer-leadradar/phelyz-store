@@ -61,10 +61,15 @@ class PgSessionHandler implements SessionHandlerInterface {
 
     public function gc($maxlifetime) {
         try {
+            // Never expire rows sooner than this handler's own TTL. PHP passes
+            // session.gc_maxlifetime here, which defaults to 24 minutes and was
+            // deleting sessions the handler still considered valid for 24 hours.
+            $lifetime = max((int)$maxlifetime, $this->ttl);
             $stmt = $this->getPdo()->prepare("DELETE FROM sessions WHERE last_activity < ?");
-            $stmt->execute([time() - $maxlifetime]);
+            $stmt->execute([time() - $lifetime]);
             return true;
         } catch (Exception $e) {
+            error_log('SESSION GC FAILED: ' . $e->getMessage());
             return false;
         }
     }
