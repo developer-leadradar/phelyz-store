@@ -1088,3 +1088,111 @@ table { max-width: 100% !important; }
   .wa-float { bottom: calc(16px + env(safe-area-inset-bottom)) !important; }
 }
 
+
+/* ============================================================
+   ADMIN · ANALYTICS REPORT
+   These live here (not admin.css) because the admin header only
+   ever loads style.css — admin.css is not wired up to any page.
+   ============================================================ */
+
+/* --- Traffic KPIs: 4 across on desktop, 2 on mobile --- */
+.traffic-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.traffic-kpi {
+  background: #fff;
+  border: 1px solid var(--cream-dark);
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(28,25,23,0.04);
+  padding: 15px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  transition: box-shadow .18s, transform .18s;
+}
+.traffic-kpi:hover { box-shadow: 0 6px 18px rgba(28,25,23,0.09); transform: translateY(-2px); }
+.traffic-kpi-icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.traffic-kpi-num {
+  font-size: 21px; font-weight: 700; line-height: 1.1;
+  color: var(--black);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.traffic-kpi-lbl {
+  font-size: 10.5px; font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; color: var(--stone-mid);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  margin-top: 3px;
+}
+
+/* --- Report panels: equal 2 x 2 --- */
+.report-2col {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+  align-items: start;
+}
+.report-2col > * { min-width: 0; }
+
+/* --- Visitors chart --- */
+.chart-wrap { position: relative; }
+.chart-col { position: relative; }
+.chart-col:hover .chart-bar-v { filter: brightness(1.12); }
+.chart-col:hover .chart-bar-w { background: rgba(202,138,4,.30) !important; }
+.chart-tip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: #1C1917; color: #fff;
+  padding: 7px 11px; border-radius: 8px;
+  font-size: 11px; line-height: 1.45; white-space: nowrap;
+  opacity: 0; pointer-events: none;
+  transition: opacity .13s, transform .13s;
+  z-index: 6;
+  box-shadow: 0 6px 18px rgba(0,0,0,.24);
+}
+.chart-tip::after {
+  content: ''; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: #1C1917;
+}
+.chart-col:hover .chart-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* keep the tooltip inside the panel at the edges */
+.chart-col:first-child .chart-tip { left: 0; transform: translateX(0) translateY(4px); }
+.chart-col:first-child:hover .chart-tip { transform: translateX(0) translateY(0); }
+.chart-col:first-child .chart-tip::after { left: 18px; }
+.chart-col:last-child .chart-tip { left: auto; right: 0; transform: translateX(0) translateY(4px); }
+.chart-col:last-child:hover .chart-tip { transform: translateX(0) translateY(0); }
+.chart-col:last-child .chart-tip::after { left: auto; right: 18px; }
+
+.chart-xlabel {
+  font-size: 9.5px; color: var(--stone-mid);
+  text-align: center; margin-top: 7px;
+  white-space: nowrap; overflow: hidden;
+}
+
+/* --- Mobile --- */
+@media (max-width: 900px) {
+  .report-2col { grid-template-columns: 1fr; gap: 16px; }
+}
+@media (max-width: 640px) {
+  .traffic-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .traffic-kpi { padding: 13px 13px; gap: 10px; }
+  .traffic-kpi-icon { width: 32px; height: 32px; border-radius: 9px; }
+  .traffic-kpi-num { font-size: 18px; }
+  .traffic-kpi-lbl { font-size: 9.5px; }
+  .chart-tip { font-size: 10.5px; padding: 6px 9px; }
+}
+@media (max-width: 420px) {
+  .traffic-kpi { flex-direction: column; align-items: flex-start; gap: 8px; }
+}

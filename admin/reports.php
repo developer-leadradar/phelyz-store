@@ -453,61 +453,73 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
 <?php if (!empty($dailyVisitors)):
   $maxViews = 1;
   foreach ($dailyVisitors as $d) { $maxViews = max($maxViews, (int)$d['views']); }
+  $nDays  = count($dailyVisitors);
   $totalV = array_sum(array_map(fn($d) => (int)$d['visitors'], $dailyVisitors));
-  $avgV   = count($dailyVisitors) ? $totalV / count($dailyVisitors) : 0;
+  $avgV   = $nDays ? $totalV / $nDays : 0;
   $peak   = null;
   foreach ($dailyVisitors as $d) { if ($peak === null || (int)$d['visitors'] > (int)$peak['visitors']) $peak = $d; }
+  // With many days, only label every Nth bar so the axis stays readable
+  $labelEvery = $nDays <= 10 ? 1 : ($nDays <= 20 ? 2 : ($nDays <= 45 ? 5 : 10));
 ?>
-<div class="card" style="padding:24px;margin-bottom:24px;">
-  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px;">
-    <div>
+<div class="card" style="padding:22px;margin-bottom:20px;">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px;">
+    <div style="min-width:0;">
       <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0;">Visitors &amp; page views</h3>
-      <p style="font-size:12px;color:var(--stone-mid);margin:3px 0 0;">Last <?php echo $trafficDays; ?> days · averaging <?php echo number_format($avgV, 1); ?> visitors/day<?php if ($peak): ?> · peak <?php echo (int)$peak['visitors']; ?> on <?php echo htmlspecialchars(date('j M', strtotime($peak['d']))); ?><?php endif; ?></p>
+      <p style="font-size:12px;color:var(--stone-mid);margin:3px 0 0;">
+        Last <?php echo $trafficDays; ?> days · avg <?php echo number_format($avgV, 1); ?> visitors/day<?php if ($peak && (int)$peak['visitors'] > 0): ?> · peak <?php echo (int)$peak['visitors']; ?> on <?php echo htmlspecialchars(date('j M', strtotime($peak['d']))); ?><?php endif; ?>
+      </p>
     </div>
-    <div style="display:flex;gap:14px;font-size:11.5px;color:var(--stone-mid);">
+    <div style="display:flex;gap:14px;font-size:11.5px;color:var(--stone-mid);flex-shrink:0;">
       <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--gold);"></span>Visitors</span>
       <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:rgba(202,138,4,0.22);"></span>Page views</span>
     </div>
   </div>
 
-  <div class="chart-wrap" style="position:relative;padding:18px 0 0 38px;">
-    <!-- horizontal guide lines + y axis -->
+  <div class="chart-wrap" style="padding-left:34px;">
+    <!-- y-axis guides -->
     <?php for ($i = 0; $i <= 3; $i++):
       $frac = $i / 3;
       $val  = round($maxDaily * (1 - $frac)); ?>
-      <div style="position:absolute;left:0;right:0;top:calc(18px + <?php echo $frac * 150; ?>px);height:1px;background:var(--border,rgba(0,0,0,0.07));"></div>
-      <div style="position:absolute;left:0;top:calc(10px + <?php echo $frac * 150; ?>px);font-size:10px;color:var(--stone-mid);width:32px;text-align:right;"><?php echo $val; ?></div>
+      <div style="position:absolute;left:34px;right:0;top:<?php echo $frac * 160; ?>px;height:1px;background:rgba(28,25,23,0.07);"></div>
+      <div style="position:absolute;left:0;top:<?php echo ($frac * 160) - 7; ?>px;width:28px;text-align:right;font-size:10px;color:var(--stone-mid);"><?php echo $val; ?></div>
     <?php endfor; ?>
 
-    <div style="display:flex;align-items:flex-end;gap:2px;height:150px;position:relative;">
-      <?php foreach ($dailyVisitors as $d):
+    <div style="display:flex;align-items:flex-end;gap:<?php echo $nDays > 20 ? 2 : 4; ?>px;height:160px;position:relative;">
+      <?php foreach ($dailyVisitors as $idx => $d):
         $v  = (int)$d['visitors'];
         $vw = (int)$d['views'];
-        $hV = $v  > 0 ? max(3, round(($v  / $maxDaily) * 150)) : 0;
-        $hW = $vw > 0 ? max(3, round(($vw / $maxViews) * 150)) : 0; ?>
-        <div class="chart-col" style="flex:1;min-width:0;height:100%;position:relative;display:flex;align-items:flex-end;justify-content:center;">
-          <!-- page views (soft backdrop bar) -->
-          <div style="position:absolute;bottom:0;width:100%;max-width:26px;height:<?php echo $hW; ?>px;background:rgba(202,138,4,0.16);border-radius:4px 4px 0 0;"></div>
-          <!-- visitors (solid foreground bar) -->
-          <div style="position:relative;width:100%;max-width:14px;height:<?php echo $hV; ?>px;background:linear-gradient(180deg,var(--gold),rgba(202,138,4,0.55));border-radius:3px 3px 0 0;"></div>
-          <div class="chart-tip" style="position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--black,#1C1917);color:#fff;padding:7px 10px;border-radius:7px;font-size:11px;line-height:1.45;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:5;box-shadow:0 4px 14px rgba(0,0,0,0.22);">
-            <strong><?php echo htmlspecialchars(date('D j M', strtotime($d['d']))); ?></strong><br>
-            <?php echo $v; ?> visitor<?php echo $v === 1 ? '' : 's'; ?> · <?php echo $vw; ?> view<?php echo $vw === 1 ? '' : 's'; ?>
+        $hV = $v  > 0 ? max(4, round(($v  / $maxDaily) * 158)) : 0;
+        $hW = $vw > 0 ? max(4, round(($vw / $maxViews) * 158)) : 0;
+        $ts = strtotime($d['d']); ?>
+        <div class="chart-col" style="flex:1;min-width:0;height:100%;display:flex;align-items:flex-end;justify-content:center;cursor:default;">
+          <?php if ($v === 0 && $vw === 0): ?>
+            <div style="width:100%;max-width:26px;height:2px;background:rgba(28,25,23,0.08);border-radius:2px;"></div>
+          <?php else: ?>
+            <div class="chart-bar-w" style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:26px;height:<?php echo $hW; ?>px;background:rgba(202,138,4,0.18);border-radius:4px 4px 0 0;transition:background .15s;"></div>
+            <div class="chart-bar-v" style="position:relative;width:100%;max-width:13px;height:<?php echo $hV; ?>px;background:linear-gradient(180deg,var(--gold),rgba(202,138,4,0.60));border-radius:3px 3px 0 0;transition:filter .15s;"></div>
+          <?php endif; ?>
+          <div class="chart-tip">
+            <strong><?php echo htmlspecialchars(date('D, j M', $ts)); ?></strong><br>
+            <?php echo $v; ?> visitor<?php echo $v === 1 ? '' : 's'; ?> · <?php echo $vw; ?> page view<?php echo $vw === 1 ? '' : 's'; ?>
           </div>
         </div>
       <?php endforeach; ?>
     </div>
-  </div>
 
-  <div style="display:flex;justify-content:space-between;margin-top:10px;padding-left:38px;font-size:11px;color:var(--stone-mid);">
-    <span><?php echo htmlspecialchars(date('j M', strtotime($dailyVisitors[0]['d']))); ?></span>
-    <span><?php echo htmlspecialchars(date('j M', strtotime(end($dailyVisitors)['d']))); ?></span>
+    <!-- x-axis: one label per bar (thinned out when the range is long) -->
+    <div style="display:flex;gap:<?php echo $nDays > 20 ? 2 : 4; ?>px;">
+      <?php foreach ($dailyVisitors as $idx => $d): ?>
+        <div class="chart-xlabel" style="flex:1;min-width:0;">
+          <?php echo ($idx % $labelEvery === 0 || $idx === $nDays - 1) ? htmlspecialchars(date('j M', strtotime($d['d']))) : '&nbsp;'; ?>
+        </div>
+      <?php endforeach; ?>
+    </div>
   </div>
 </div>
 <?php endif; ?>
 
 <!-- Channels + devices -->
-<div style="display:grid;grid-template-columns:1.5fr 1fr;gap:24px;margin-bottom:24px;" class="report-2col">
+<div class="report-2col">
   <!-- Where prospects come from -->
   <div class="card" style="padding:24px;">
     <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0 0 4px;">Where your prospects come from</h3>
@@ -574,7 +586,7 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
 </div>
 
 <!-- Most viewed products + top pages -->
-<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:24px;margin-bottom:24px;" class="report-2col">
+<div class="report-2col">
   <div class="card" style="padding:24px;">
     <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0 0 4px;">Most viewed products</h3>
     <p style="font-size:12px;color:var(--stone-mid);margin:0 0 16px;">What people are looking at — compare this with what actually sells.</p>
