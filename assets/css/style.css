@@ -100,13 +100,16 @@ input, select, textarea, button { font-family: inherit; }
 }
 .nav-logo-gem { width: 30px; height: 30px; color: var(--gold); }
 /* Brand mark (SVG wordmark) */
-.nav-logo-img { height: 52px; width: auto; display: block; }
-.drawer-logo-img { height: 36px; width: auto; display: block; }
-.footer-logo-img { height: 46px; width: auto; display: block; }
-.admin-logo-img { height: 32px; width: auto; display: block; }
-.auth-logo-img  { height: 64px; width: auto; display: block; margin: 0 auto; }
-@media (max-width: 767px) { .nav-logo-img { height: 42px; } }
-@media (max-width: 480px) { .nav-logo-img { height: 36px; } }
+/* The supplied SVG is used byte-for-byte. Its 1478x720 canvas carries a wide
+   empty margin around the wordmark, so the element is sized ~1.5x larger than
+   the visible mark needs and the surplus is trimmed with negative margins. */
+.nav-logo-img { height: 78px; width: auto; display: block; margin: -13px 0; }
+.drawer-logo-img { height: 54px; width: auto; display: block; margin: -9px 0; }
+.footer-logo-img { height: 70px; width: auto; display: block; margin: -12px 0; }
+.admin-logo-img { height: 48px; width: auto; display: block; margin: -8px 0; }
+.auth-logo-img  { height: 96px; width: auto; display: block; margin: -16px auto; }
+@media (max-width: 767px) { .nav-logo-img { height: 63px; margin: -10px 0; } }
+@media (max-width: 480px) { .nav-logo-img { height: 54px; margin: -9px 0; } }
 /* Desktop nav: logo and actions take equal flexible thirds so the menu
    sits dead-centre in the bar instead of hugging the logo. */
 .nav-logo    { flex: 1 1 0; min-width: 0; }
