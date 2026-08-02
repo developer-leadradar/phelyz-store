@@ -13,8 +13,13 @@ $flow     = parcelMainFlow();
 $pos      = $parcel ? parcelMapPosition($parcel) : null;
 $meta     = $parcel ? parcelStatusMeta($parcel['status']) : null;
 
-// How far along the happy-path tracker we are (exceptions sit outside it)
-$flowIndex = $parcel ? array_search($parcel['status'], $flow, true) : false;
+// How far along the happy-path tracker we are.
+// Several real statuses sit OUTSIDE the five-step flow — Packed, Arrived at
+// Hub, Delivery Issue, Returned. Looking the status up by index made those
+// return false and left every step unticked, so progress is measured by each
+// status's `progress` weight instead. A step is complete once the parcel has
+// reached at least that far.
+$currentProgress = $meta ? (float)$meta['progress'] : -1;
 ?>
 
 <div class="page-hero">
@@ -87,11 +92,20 @@ $flowIndex = $parcel ? array_search($parcel['status'], $flow, true) : false;
         <div style="display:flex;align-items:flex-start;position:relative;">
           <!-- connecting line -->
           <div style="position:absolute;top:15px;left:6%;right:6%;height:3px;background:var(--cream-dark);border-radius:99px;"></div>
+          <?php
+          // Count how many main steps are complete so the gold line stops at
+          // the right place even when the parcel is on an off-flow status.
+          $doneCount = 0;
+          foreach ($flow as $s) {
+            if ($currentProgress >= (float)$statuses[$s]['progress']) $doneCount++;
+          }
+          $lineWidth = $doneCount > 1 ? round((($doneCount - 1) / (count($flow) - 1)) * 88) : 0;
+          ?>
           <div style="position:absolute;top:15px;left:6%;height:3px;background:var(--gold);border-radius:99px;transition:width .4s;
-                      width:<?php echo $flowIndex === false ? 0 : round(($flowIndex / (count($flow)-1)) * 88); ?>%;"></div>
+                      width:<?php echo $lineWidth; ?>%;"></div>
           <?php foreach ($flow as $i => $s):
             $sm   = $statuses[$s];
-            $done = ($flowIndex !== false && $i <= $flowIndex); ?>
+            $done = ($currentProgress >= (float)$sm['progress']); ?>
             <div style="flex:1;position:relative;z-index:2;text-align:center;">
               <div style="width:32px;height:32px;border-radius:50%;margin:0 auto 9px;display:flex;align-items:center;justify-content:center;
                           background:<?php echo $done ? 'var(--gold)' : 'var(--white)'; ?>;
