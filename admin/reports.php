@@ -237,201 +237,6 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
     </div>
 </div>
 
-<!-- ═══════════ WEBSITE TRAFFIC ═══════════ -->
-<div style="display:flex;align-items:center;justify-content:space-between;margin:34px 0 16px;flex-wrap:wrap;gap:12px;">
-  <div>
-    <div style="font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Audience</div>
-    <h3 style="font-family:'Cormorant',serif;font-size:22px;font-weight:700;color:var(--black);margin:0;">Website Traffic</h3>
-  </div>
-  <div style="display:flex;gap:6px;flex-wrap:wrap;">
-    <?php foreach ([7=>'7 days', 30=>'30 days', 90=>'90 days'] as $d => $lbl):
-      $qs = $_GET; $qs['traffic_days'] = $d; ?>
-      <a href="?<?php echo htmlspecialchars(http_build_query($qs)); ?>"
-         class="btn <?php echo $trafficDays === $d ? 'btn-gold' : 'btn-outline'; ?> btn-sm"
-         style="font-size:12px;padding:7px 14px;"><?php echo $lbl; ?></a>
-    <?php endforeach; ?>
-  </div>
-</div>
-
-<?php if ($overview['views'] === 0): ?>
-  <div class="card" style="padding:28px;margin-bottom:24px;text-align:center;">
-    <p style="font-size:14px;color:var(--stone-mid);margin:0 0 6px;">No traffic recorded yet for this period.</p>
-    <p style="font-size:12.5px;color:var(--stone-mid);margin:0;">
-      Visits start recording as soon as customers browse the live site. Add <code>?utm_source=whatsapp</code> to links you
-      share so you can see exactly which channel each visitor came from.
-    </p>
-  </div>
-<?php else: ?>
-
-<!-- Traffic KPIs -->
-<div class="stats-grid" style="margin-bottom:24px;">
-  <div class="stat-card">
-    <div class="stat-icon-box" style="background:rgba(14,165,233,0.12);">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#0EA5E9" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>
-    </div>
-    <div class="stat-number"><?php echo number_format($overview['visitors']); ?></div>
-    <div class="stat-label">Unique Visitors</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon-box" style="background:rgba(202,138,4,0.12);">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#CA8A04" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-    </div>
-    <div class="stat-number"><?php echo number_format($overview['views']); ?></div>
-    <div class="stat-label">Page Views</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon-box" style="background:rgba(139,92,246,0.12);">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#8B5CF6" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"/></svg>
-    </div>
-    <div class="stat-number"><?php echo number_format($overview['sessions']); ?></div>
-    <div class="stat-label">Sessions</div>
-  </div>
-  <div class="stat-card">
-    <div class="stat-icon-box" style="background:rgba(34,197,94,0.12);">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#22C55E" style="width:22px;height:22px;"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/></svg>
-    </div>
-    <div class="stat-number"><?php echo number_format($conversionRate, 2); ?>%</div>
-    <div class="stat-label">Visitor → Order Rate</div>
-  </div>
-</div>
-
-<!-- Visitors trend -->
-<?php if (!empty($dailyVisitors)): ?>
-<div class="card" style="padding:24px;margin-bottom:24px;">
-  <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0 0 18px;">Visitors — last <?php echo $trafficDays; ?> days</h3>
-  <div style="display:flex;align-items:flex-end;gap:3px;height:140px;">
-    <?php foreach ($dailyVisitors as $d):
-      $h = max(3, round(((int)$d['visitors'] / $maxDaily) * 130)); ?>
-      <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;"
-           title="<?php echo htmlspecialchars($d['d']); ?> — <?php echo (int)$d['visitors']; ?> visitors, <?php echo (int)$d['views']; ?> views">
-        <div style="width:100%;max-width:22px;height:<?php echo $h; ?>px;background:linear-gradient(180deg,var(--gold),rgba(202,138,4,0.45));border-radius:4px 4px 0 0;"></div>
-      </div>
-    <?php endforeach; ?>
-  </div>
-  <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--stone-mid);">
-    <span><?php echo htmlspecialchars(date('j M', strtotime($dailyVisitors[0]['d']))); ?></span>
-    <span><?php echo htmlspecialchars(date('j M', strtotime(end($dailyVisitors)['d']))); ?></span>
-  </div>
-</div>
-<?php endif; ?>
-
-<!-- Channels + devices -->
-<div style="display:grid;grid-template-columns:1.5fr 1fr;gap:24px;margin-bottom:24px;" class="report-2col">
-  <!-- Where prospects come from -->
-  <div class="card" style="padding:24px;">
-    <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0 0 4px;">Where your prospects come from</h3>
-    <p style="font-size:12px;color:var(--stone-mid);margin:0 0 18px;">Traffic source, and the revenue each one actually produced.</p>
-    <?php if (empty($byChannel)): ?>
-      <p style="font-size:13px;color:var(--stone-mid);">No channel data yet.</p>
-    <?php else: ?>
-      <div style="display:flex;flex-direction:column;gap:14px;">
-        <?php foreach ($byChannel as $c):
-          [$label, $colour] = analyticsChannelMeta($c['channel']);
-          $pct  = ((int)$c['visitors'] / $channelVisitorTotal) * 100;
-          $rev  = $revLookup[$c['channel']] ?? null; ?>
-          <div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:10px;">
-              <span style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--black);">
-                <span style="width:10px;height:10px;border-radius:50%;background:<?php echo $colour; ?>;flex-shrink:0;"></span>
-                <?php echo htmlspecialchars($label); ?>
-              </span>
-              <span style="font-size:12px;color:var(--stone-mid);white-space:nowrap;">
-                <strong style="color:var(--black);"><?php echo number_format((int)$c['visitors']); ?></strong> visitors
-                <?php if ($rev): ?>
-                  · <strong style="color:#16A34A;"><?php echo formatPrice($rev['revenue']); ?></strong>
-                  <span style="opacity:0.7;">(<?php echo (int)$rev['orders']; ?>)</span>
-                <?php endif; ?>
-              </span>
-            </div>
-            <div style="height:8px;background:var(--cream-dark);border-radius:99px;overflow:hidden;">
-              <div style="height:100%;width:<?php echo round($pct,1); ?>%;background:<?php echo $colour; ?>;border-radius:99px;"></div>
-            </div>
-          </div>
-        <?php endforeach; ?>
-      </div>
-      <p style="font-size:11.5px;color:var(--stone-mid);margin:16px 0 0;line-height:1.5;border-top:1px solid var(--cream-dark);padding-top:12px;">
-        <strong style="color:var(--black);">Tip:</strong> tag the links you share so attribution is exact —
-        e.g. <code style="font-size:11px;">?utm_source=whatsapp&amp;utm_campaign=december</code> on a status link,
-        <code style="font-size:11px;">?utm_source=instagram</code> in your bio.
-      </p>
-    <?php endif; ?>
-  </div>
-
-  <!-- Devices -->
-  <div class="card" style="padding:24px;">
-    <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0 0 18px;">Devices</h3>
-    <?php if (empty($byDevice)): ?>
-      <p style="font-size:13px;color:var(--stone-mid);">No data yet.</p>
-    <?php else: ?>
-      <?php
-      $devColours = ['mobile'=>'#CA8A04','desktop'=>'#0EA5E9','tablet'=>'#8B5CF6','unknown'=>'#A8A29E'];
-      foreach ($byDevice as $dv):
-        $pct = ((int)$dv['visitors'] / $deviceTotal) * 100;
-        $col = $devColours[$dv['device']] ?? '#A8A29E'; ?>
-        <div style="margin-bottom:14px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;">
-            <span style="font-weight:600;color:var(--black);text-transform:capitalize;"><?php echo htmlspecialchars($dv['device']); ?></span>
-            <span style="color:var(--stone-mid);"><?php echo round($pct); ?>%</span>
-          </div>
-          <div style="height:8px;background:var(--cream-dark);border-radius:99px;overflow:hidden;">
-            <div style="height:100%;width:<?php echo round($pct,1); ?>%;background:<?php echo $col; ?>;border-radius:99px;"></div>
-          </div>
-        </div>
-      <?php endforeach; ?>
-    <?php endif; ?>
-  </div>
-</div>
-
-<!-- Most viewed products + top pages -->
-<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:24px;margin-bottom:24px;" class="report-2col">
-  <div class="card" style="padding:24px;">
-    <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0 0 4px;">Most viewed products</h3>
-    <p style="font-size:12px;color:var(--stone-mid);margin:0 0 16px;">What people are looking at — compare this with what actually sells.</p>
-    <?php if (empty($topViewed)): ?>
-      <p style="font-size:13px;color:var(--stone-mid);">No product views recorded yet.</p>
-    <?php else: ?>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <?php foreach ($topViewed as $i => $p): ?>
-          <div style="display:flex;align-items:center;gap:12px;padding:8px;border-radius:8px;<?php echo $i%2 ? 'background:var(--cream);' : ''; ?>">
-            <span style="width:22px;font-size:12px;font-weight:700;color:var(--stone-mid);flex-shrink:0;"><?php echo $i+1; ?></span>
-            <img src="<?php echo htmlspecialchars($p['image']); ?>" alt=""
-                 style="width:40px;height:40px;object-fit:cover;border-radius:7px;flex-shrink:0;background:var(--cream-dark);"
-                 onerror="this.src='https://placehold.co/40x40/F5F5F4/78716C?text=J'">
-            <div style="flex:1;min-width:0;">
-              <a href="../product.php?id=<?php echo (int)$p['product_id']; ?>" target="_blank"
-                 style="font-size:13px;font-weight:600;color:var(--black);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($p['name']); ?></a>
-              <span style="font-size:11.5px;color:var(--gold);font-weight:600;"><?php echo formatPrice($p['price']); ?></span>
-            </div>
-            <div style="text-align:right;flex-shrink:0;">
-              <div style="font-size:14px;font-weight:700;color:var(--black);"><?php echo number_format((int)$p['views']); ?></div>
-              <div style="font-size:10.5px;color:var(--stone-mid);"><?php echo number_format((int)$p['unique_views']); ?> people</div>
-            </div>
-          </div>
-        <?php endforeach; ?>
-      </div>
-    <?php endif; ?>
-  </div>
-
-  <div class="card" style="padding:24px;">
-    <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0 0 16px;">Top pages</h3>
-    <?php if (empty($topPages)): ?>
-      <p style="font-size:13px;color:var(--stone-mid);">No data yet.</p>
-    <?php else: ?>
-      <div style="display:flex;flex-direction:column;gap:9px;">
-        <?php foreach ($topPages as $pg): ?>
-          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--cream-dark);">
-            <span style="font-size:12.5px;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?php echo htmlspecialchars($pg['path']); ?>">
-              <?php echo htmlspecialchars($pg['path']); ?>
-            </span>
-            <span style="font-size:12px;font-weight:700;color:var(--black);flex-shrink:0;"><?php echo number_format((int)$pg['views']); ?></span>
-          </div>
-        <?php endforeach; ?>
-      </div>
-    <?php endif; ?>
-  </div>
-</div>
-
-<?php endif; /* traffic data exists */ ?>
 
 <!-- ── Order Status Breakdown ── -->
 <div class="card" style="padding:24px;margin-bottom:24px;">
@@ -595,6 +400,229 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
         </div>
     <?php endif; ?>
 </div>
+
+<!-- ═══════════ WEBSITE TRAFFIC ═══════════ -->
+<div style="display:flex;align-items:center;justify-content:space-between;margin:34px 0 16px;flex-wrap:wrap;gap:12px;">
+  <div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Audience</div>
+    <h3 style="font-family:'Cormorant',serif;font-size:22px;font-weight:700;color:var(--black);margin:0;">Website Traffic</h3>
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+    <?php foreach ([7=>'7 days', 30=>'30 days', 90=>'90 days'] as $d => $lbl):
+      $qs = $_GET; $qs['traffic_days'] = $d; ?>
+      <a href="?<?php echo htmlspecialchars(http_build_query($qs)); ?>"
+         class="btn <?php echo $trafficDays === $d ? 'btn-gold' : 'btn-outline'; ?> btn-sm"
+         style="font-size:12px;padding:7px 14px;"><?php echo $lbl; ?></a>
+    <?php endforeach; ?>
+  </div>
+</div>
+
+<?php if ($overview['views'] === 0): ?>
+  <div class="card" style="padding:28px;margin-bottom:24px;text-align:center;">
+    <p style="font-size:14px;color:var(--stone-mid);margin:0 0 6px;">No traffic recorded yet for this period.</p>
+    <p style="font-size:12.5px;color:var(--stone-mid);margin:0;">
+      Visits start recording as soon as customers browse the live site. Add <code>?utm_source=whatsapp</code> to links you
+      share so you can see exactly which channel each visitor came from.
+    </p>
+  </div>
+<?php else: ?>
+
+<!-- Traffic KPIs -->
+<div class="traffic-kpis">
+  <?php
+  $trafficCards = [
+    ['Unique Visitors', number_format($overview['visitors']), '#0EA5E9', 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z'],
+    ['Page Views',      number_format($overview['views']),    '#CA8A04', 'M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z'],
+    ['Sessions',        number_format($overview['sessions']), '#8B5CF6', 'M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z'],
+    ['Order Rate',      number_format($conversionRate, 2) . '%', '#22C55E', 'M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941'],
+  ];
+  foreach ($trafficCards as [$label, $value, $colour, $icon]): ?>
+    <div class="traffic-kpi">
+      <div class="traffic-kpi-icon" style="background:<?php echo $colour; ?>1F;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.9" stroke="<?php echo $colour; ?>" width="17" height="17"><path stroke-linecap="round" stroke-linejoin="round" d="<?php echo $icon; ?>"/></svg>
+      </div>
+      <div style="min-width:0;">
+        <div class="traffic-kpi-num"><?php echo $value; ?></div>
+        <div class="traffic-kpi-lbl"><?php echo $label; ?></div>
+      </div>
+    </div>
+  <?php endforeach; ?>
+</div>
+
+<!-- Visitors trend -->
+<?php if (!empty($dailyVisitors)):
+  $maxViews = 1;
+  foreach ($dailyVisitors as $d) { $maxViews = max($maxViews, (int)$d['views']); }
+  $totalV = array_sum(array_map(fn($d) => (int)$d['visitors'], $dailyVisitors));
+  $avgV   = count($dailyVisitors) ? $totalV / count($dailyVisitors) : 0;
+  $peak   = null;
+  foreach ($dailyVisitors as $d) { if ($peak === null || (int)$d['visitors'] > (int)$peak['visitors']) $peak = $d; }
+?>
+<div class="card" style="padding:24px;margin-bottom:24px;">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px;">
+    <div>
+      <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0;">Visitors &amp; page views</h3>
+      <p style="font-size:12px;color:var(--stone-mid);margin:3px 0 0;">Last <?php echo $trafficDays; ?> days · averaging <?php echo number_format($avgV, 1); ?> visitors/day<?php if ($peak): ?> · peak <?php echo (int)$peak['visitors']; ?> on <?php echo htmlspecialchars(date('j M', strtotime($peak['d']))); ?><?php endif; ?></p>
+    </div>
+    <div style="display:flex;gap:14px;font-size:11.5px;color:var(--stone-mid);">
+      <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:var(--gold);"></span>Visitors</span>
+      <span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:3px;background:rgba(202,138,4,0.22);"></span>Page views</span>
+    </div>
+  </div>
+
+  <div class="chart-wrap" style="position:relative;padding:18px 0 0 38px;">
+    <!-- horizontal guide lines + y axis -->
+    <?php for ($i = 0; $i <= 3; $i++):
+      $frac = $i / 3;
+      $val  = round($maxDaily * (1 - $frac)); ?>
+      <div style="position:absolute;left:0;right:0;top:calc(18px + <?php echo $frac * 150; ?>px);height:1px;background:var(--border,rgba(0,0,0,0.07));"></div>
+      <div style="position:absolute;left:0;top:calc(10px + <?php echo $frac * 150; ?>px);font-size:10px;color:var(--stone-mid);width:32px;text-align:right;"><?php echo $val; ?></div>
+    <?php endfor; ?>
+
+    <div style="display:flex;align-items:flex-end;gap:2px;height:150px;position:relative;">
+      <?php foreach ($dailyVisitors as $d):
+        $v  = (int)$d['visitors'];
+        $vw = (int)$d['views'];
+        $hV = $v  > 0 ? max(3, round(($v  / $maxDaily) * 150)) : 0;
+        $hW = $vw > 0 ? max(3, round(($vw / $maxViews) * 150)) : 0; ?>
+        <div class="chart-col" style="flex:1;min-width:0;height:100%;position:relative;display:flex;align-items:flex-end;justify-content:center;">
+          <!-- page views (soft backdrop bar) -->
+          <div style="position:absolute;bottom:0;width:100%;max-width:26px;height:<?php echo $hW; ?>px;background:rgba(202,138,4,0.16);border-radius:4px 4px 0 0;"></div>
+          <!-- visitors (solid foreground bar) -->
+          <div style="position:relative;width:100%;max-width:14px;height:<?php echo $hV; ?>px;background:linear-gradient(180deg,var(--gold),rgba(202,138,4,0.55));border-radius:3px 3px 0 0;"></div>
+          <div class="chart-tip" style="position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--black,#1C1917);color:#fff;padding:7px 10px;border-radius:7px;font-size:11px;line-height:1.45;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:5;box-shadow:0 4px 14px rgba(0,0,0,0.22);">
+            <strong><?php echo htmlspecialchars(date('D j M', strtotime($d['d']))); ?></strong><br>
+            <?php echo $v; ?> visitor<?php echo $v === 1 ? '' : 's'; ?> · <?php echo $vw; ?> view<?php echo $vw === 1 ? '' : 's'; ?>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:space-between;margin-top:10px;padding-left:38px;font-size:11px;color:var(--stone-mid);">
+    <span><?php echo htmlspecialchars(date('j M', strtotime($dailyVisitors[0]['d']))); ?></span>
+    <span><?php echo htmlspecialchars(date('j M', strtotime(end($dailyVisitors)['d']))); ?></span>
+  </div>
+</div>
+<?php endif; ?>
+
+<!-- Channels + devices -->
+<div style="display:grid;grid-template-columns:1.5fr 1fr;gap:24px;margin-bottom:24px;" class="report-2col">
+  <!-- Where prospects come from -->
+  <div class="card" style="padding:24px;">
+    <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0 0 4px;">Where your prospects come from</h3>
+    <p style="font-size:12px;color:var(--stone-mid);margin:0 0 18px;">Traffic source, and the revenue each one actually produced.</p>
+    <?php if (empty($byChannel)): ?>
+      <p style="font-size:13px;color:var(--stone-mid);">No channel data yet.</p>
+    <?php else: ?>
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <?php foreach ($byChannel as $c):
+          [$label, $colour] = analyticsChannelMeta($c['channel']);
+          $pct  = ((int)$c['visitors'] / $channelVisitorTotal) * 100;
+          $rev  = $revLookup[$c['channel']] ?? null; ?>
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:10px;">
+              <span style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--black);">
+                <span style="width:10px;height:10px;border-radius:50%;background:<?php echo $colour; ?>;flex-shrink:0;"></span>
+                <?php echo htmlspecialchars($label); ?>
+              </span>
+              <span style="font-size:12px;color:var(--stone-mid);white-space:nowrap;">
+                <strong style="color:var(--black);"><?php echo number_format((int)$c['visitors']); ?></strong> visitors
+                <?php if ($rev): ?>
+                  · <strong style="color:#16A34A;"><?php echo formatPrice($rev['revenue']); ?></strong>
+                  <span style="opacity:0.7;">(<?php echo (int)$rev['orders']; ?>)</span>
+                <?php endif; ?>
+              </span>
+            </div>
+            <div style="height:8px;background:var(--cream-dark);border-radius:99px;overflow:hidden;">
+              <div style="height:100%;width:<?php echo round($pct,1); ?>%;background:<?php echo $colour; ?>;border-radius:99px;"></div>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+      <p style="font-size:11.5px;color:var(--stone-mid);margin:16px 0 0;line-height:1.5;border-top:1px solid var(--cream-dark);padding-top:12px;">
+        <strong style="color:var(--black);">Tip:</strong> tag the links you share so attribution is exact —
+        e.g. <code style="font-size:11px;">?utm_source=whatsapp&amp;utm_campaign=december</code> on a status link,
+        <code style="font-size:11px;">?utm_source=instagram</code> in your bio.
+      </p>
+    <?php endif; ?>
+  </div>
+
+  <!-- Devices -->
+  <div class="card" style="padding:24px;">
+    <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0 0 18px;">Devices</h3>
+    <?php if (empty($byDevice)): ?>
+      <p style="font-size:13px;color:var(--stone-mid);">No data yet.</p>
+    <?php else: ?>
+      <?php
+      $devColours = ['mobile'=>'#CA8A04','desktop'=>'#0EA5E9','tablet'=>'#8B5CF6','unknown'=>'#A8A29E'];
+      foreach ($byDevice as $dv):
+        $pct = ((int)$dv['visitors'] / $deviceTotal) * 100;
+        $col = $devColours[$dv['device']] ?? '#A8A29E'; ?>
+        <div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;">
+            <span style="font-weight:600;color:var(--black);text-transform:capitalize;"><?php echo htmlspecialchars($dv['device']); ?></span>
+            <span style="color:var(--stone-mid);"><?php echo round($pct); ?>%</span>
+          </div>
+          <div style="height:8px;background:var(--cream-dark);border-radius:99px;overflow:hidden;">
+            <div style="height:100%;width:<?php echo round($pct,1); ?>%;background:<?php echo $col; ?>;border-radius:99px;"></div>
+          </div>
+        </div>
+      <?php endforeach; ?>
+    <?php endif; ?>
+  </div>
+</div>
+
+<!-- Most viewed products + top pages -->
+<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:24px;margin-bottom:24px;" class="report-2col">
+  <div class="card" style="padding:24px;">
+    <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0 0 4px;">Most viewed products</h3>
+    <p style="font-size:12px;color:var(--stone-mid);margin:0 0 16px;">What people are looking at — compare this with what actually sells.</p>
+    <?php if (empty($topViewed)): ?>
+      <p style="font-size:13px;color:var(--stone-mid);">No product views recorded yet.</p>
+    <?php else: ?>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <?php foreach ($topViewed as $i => $p): ?>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px;border-radius:8px;<?php echo $i%2 ? 'background:var(--cream);' : ''; ?>">
+            <span style="width:22px;font-size:12px;font-weight:700;color:var(--stone-mid);flex-shrink:0;"><?php echo $i+1; ?></span>
+            <img src="<?php echo htmlspecialchars($p['image']); ?>" alt=""
+                 style="width:40px;height:40px;object-fit:cover;border-radius:7px;flex-shrink:0;background:var(--cream-dark);"
+                 onerror="this.src='https://placehold.co/40x40/F5F5F4/78716C?text=J'">
+            <div style="flex:1;min-width:0;">
+              <a href="../product.php?id=<?php echo (int)$p['product_id']; ?>" target="_blank"
+                 style="font-size:13px;font-weight:600;color:var(--black);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($p['name']); ?></a>
+              <span style="font-size:11.5px;color:var(--gold);font-weight:600;"><?php echo formatPrice($p['price']); ?></span>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="font-size:14px;font-weight:700;color:var(--black);"><?php echo number_format((int)$p['views']); ?></div>
+              <div style="font-size:10.5px;color:var(--stone-mid);"><?php echo number_format((int)$p['unique_views']); ?> people</div>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+  </div>
+
+  <div class="card" style="padding:24px;">
+    <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0 0 16px;">Top pages</h3>
+    <?php if (empty($topPages)): ?>
+      <p style="font-size:13px;color:var(--stone-mid);">No data yet.</p>
+    <?php else: ?>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <?php foreach ($topPages as $pg): ?>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--cream-dark);">
+            <span style="font-size:12.5px;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?php echo htmlspecialchars($pg['path']); ?>">
+              <?php echo htmlspecialchars($pg['path']); ?>
+            </span>
+            <span style="font-size:12px;font-weight:700;color:var(--black);flex-shrink:0;"><?php echo number_format((int)$pg['views']); ?></span>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    <?php endif; ?>
+  </div>
+</div>
+
+<?php endif; /* traffic data exists */ ?>
 
 <!-- ── Export ── -->
 <div class="card" style="padding:20px;">

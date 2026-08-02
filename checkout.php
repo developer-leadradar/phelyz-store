@@ -10,10 +10,10 @@ $cartSummary = getCartSummary($checkoutState ?: null);
 if (empty($cartSummary['items'])) redirect('cart.php');
 $user = isLoggedIn() ? getCurrentUser() : null;
 
-// Which payment methods are allowed for this cart in the chosen state
-$availableMethods = getAvailablePaymentMethods($checkoutState ?: null);
-$paystackReady    = paystackConfigured();
-$checkoutError    = '';
+// All payments go through Paystack (card, bank transfer and USSD are all
+// handled inside Paystack's own checkout).
+$paystackReady = paystackConfigured();
+$checkoutError = '';
 
 // Handle POST
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -26,23 +26,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $shippingState = sanitize($_POST['shipping_state'] ?? '');
     $customerEmail = sanitize($_POST['email'] ?? '');
     if ($shippingFirst && $shippingLast && $shippingAddr && $shippingCity && $shippingPhone && $shippingState) {
-        // Validate chosen payment method against availability for this state + cart
-        $methodsForState = getAvailablePaymentMethods($shippingState);
-        $chosenMethod = $_POST['payment_method'] ?? 'cod';
-        $methodAllowed = ($chosenMethod === 'cod' && $methodsForState['cod'])
-                      || ($chosenMethod === 'bank_transfer' && $methodsForState['bank'])
-                      || ($chosenMethod === 'paystack' && paystackConfigured());
+        // Paystack is the only payment route.
+        $chosenMethod  = 'paystack';
+        $methodAllowed = paystackConfigured();
 
-        // Card payments need an email for the Paystack receipt
-        if ($chosenMethod === 'paystack' && !filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
+        if (!$methodAllowed) {
+            $checkoutError = 'Online payment is temporarily unavailable. Please contact us on WhatsApp to complete your order.';
+        } elseif (!filter_var($customerEmail, FILTER_VALIDATE_EMAIL)) {
             $methodAllowed = false;
-            $checkoutError = 'Please enter a valid email address to pay by card.';
+            $checkoutError = 'Please enter a valid email address so we can send your payment receipt.';
         }
 
         if ($methodAllowed) {
+            $_POST['payment_method'] = 'paystack';
             $result = processCheckout($_POST);
             if ($result['success']) {
-                if ($chosenMethod === 'paystack') {
+                {
                     // Look up the order total, then hand off to Paystack
                     $db = getDB();
                     $order = $db->fetchOne("SELECT * FROM orders WHERE id = ?", [(int)$result['order_id']]);
@@ -58,10 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         redirect($init['authorization_url']);
                     }
                     // Init failed — order exists as pending; tell the user
-                    $checkoutError = 'Could not start card payment: ' . ($init['message'] ?? 'unknown error')
-                                   . ' Your order #' . $result['order_number'] . ' was saved — you can pay on delivery or contact us.';
-                } else {
-                    redirect('order-details.php?id=' . $result['order_id'] . '&success=1');
+                    $checkoutError = 'Could not start payment: ' . ($init['message'] ?? 'unknown error')
+                                   . ' Your order #' . $result['order_number'] . ' was saved — please contact us on WhatsApp to complete it.';
                 }
             }
         }
@@ -200,103 +197,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           </div>
           <?php endif; ?>
 
-          <?php
-          // Decide default selection: card first when available, then COD, then bank
-          $defaultMethod = $paystackReady ? 'paystack' : ($availableMethods['cod'] ? 'cod' : ($availableMethods['bank'] ? 'bank_transfer' : ''));
-          ?>
-
-          <?php if (!$availableMethods['cod'] && !$availableMethods['bank'] && !$paystackReady): ?>
+          <?php if (!$paystackReady): ?>
           <div class="alert alert-error" style="margin:0;">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
-            No payment methods are available for the selected state and cart. Please contact support or try a different shipping state.
+            Online payment is temporarily unavailable. Please contact us on WhatsApp to complete your order.
           </div>
           <?php else: ?>
 
-          <div style="display:flex;flex-direction:column;gap:12px;">
+          <input type="hidden" name="payment_method" value="paystack">
 
-            <?php if ($paystackReady): ?>
-            <!-- Card via Paystack -->
-            <label style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border:1.5px solid var(--cream-dark);border-radius:10px;cursor:pointer;transition:border-color 0.2s;" id="paystack-label"
-                   onmouseover="this.style.borderColor='var(--gold)'" onmouseout="updatePaymentBorder()">
-              <input type="radio" name="payment_method" value="paystack" <?php echo $defaultMethod === 'paystack' ? 'checked' : ''; ?>
-                     style="accent-color:var(--gold);margin-top:2px;width:16px;height:16px;flex-shrink:0;"
-                     onchange="updatePaymentBorder()">
-              <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
-                <div style="width:40px;height:40px;border-radius:8px;background:rgba(34,197,94,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#16A34A" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>
-                </div>
-                <div>
-                  <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;">Pay with Card <span style="font-size:10px;font-weight:700;color:#16A34A;background:rgba(34,197,94,0.10);padding:2px 8px;border-radius:99px;margin-left:4px;">Instant · Secure</span></div>
-                  <div style="font-size:12px;color:var(--stone-mid);">Debit/credit card, bank transfer, or USSD — secured by Paystack. Order confirmed immediately.</div>
-                </div>
+          <div style="border:1.5px solid var(--gold);border-radius:12px;padding:20px;background:rgba(202,138,4,0.04);">
+            <div style="display:flex;align-items:flex-start;gap:14px;">
+              <div style="width:44px;height:44px;border-radius:10px;background:rgba(34,197,94,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#16A34A" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>
               </div>
-            </label>
-            <?php endif; ?>
-
-            <?php if ($availableMethods['cod']): ?>
-            <!-- Cash on Delivery -->
-            <label style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border:1.5px solid var(--cream-dark);border-radius:10px;cursor:pointer;transition:border-color 0.2s;" id="cod-label"
-                   onmouseover="this.style.borderColor='var(--gold)'" onmouseout="updatePaymentBorder()">
-              <input type="radio" name="payment_method" value="cod" <?php echo $defaultMethod === 'cod' ? 'checked' : ''; ?>
-                     style="accent-color:var(--gold);margin-top:2px;width:16px;height:16px;flex-shrink:0;"
-                     onchange="updatePaymentBorder()">
-              <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
-                <div style="width:40px;height:40px;border-radius:8px;background:rgba(202,138,4,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#CA8A04" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75"/></svg>
+              <div style="flex:1;">
+                <div style="font-size:15px;font-weight:700;color:var(--black);margin-bottom:4px;">
+                  Secure Online Payment
+                  <span style="font-size:10px;font-weight:700;color:#16A34A;background:rgba(34,197,94,0.12);padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:middle;">Instant</span>
                 </div>
-                <div>
-                  <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;">Cash on Delivery</div>
-                  <div style="font-size:12px;color:var(--stone-mid);">Pay only your shipping fee now (bank transfer) — pay the balance in cash when your order arrives.</div>
+                <div style="font-size:13px;color:var(--stone-mid);line-height:1.6;">
+                  You'll be taken to Paystack to complete payment. Choose <strong style="color:var(--black);">card, bank transfer or USSD</strong> there — your order is confirmed the moment payment clears.
                 </div>
-              </div>
-            </label>
-            <?php endif; ?>
-
-            <?php if ($availableMethods['bank']): ?>
-            <!-- Bank Transfer -->
-            <label style="display:flex;align-items:flex-start;gap:14px;padding:16px 18px;border:1.5px solid var(--cream-dark);border-radius:10px;cursor:pointer;transition:border-color 0.2s;" id="bank-label"
-                   onmouseover="this.style.borderColor='var(--gold)'" onmouseout="updatePaymentBorder()">
-              <input type="radio" name="payment_method" value="bank_transfer" <?php echo $defaultMethod === 'bank_transfer' ? 'checked' : ''; ?>
-                     style="accent-color:var(--gold);margin-top:2px;width:16px;height:16px;flex-shrink:0;"
-                     onchange="updatePaymentBorder()">
-              <div style="display:flex;align-items:flex-start;gap:12px;flex:1;">
-                <div style="width:40px;height:40px;border-radius:8px;background:rgba(59,130,246,0.10);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#3B82F6" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18M12 6.75h.008v.008H12V6.75z"/></svg>
-                </div>
-                <div>
-                  <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;">Bank Transfer</div>
-                  <div style="font-size:12px;color:var(--stone-mid);">Direct transfer of the full amount to our corporate account. We'll confirm your order once payment clears.</div>
-                </div>
-              </div>
-            </label>
-            <?php endif; ?>
-
-          </div>
-
-          <!-- COD banner: pay-shipping-now-balance-later -->
-          <?php if ($availableMethods['cod']):
-            $codShipping  = (float)$cartSummary['shipping'];
-            $codSubtotal  = (float)$cartSummary['subtotal'];
-          ?>
-          <div id="cod-info-banner" style="margin-top:16px;padding:16px;border-radius:10px;background:rgba(202,138,4,0.08);border:1px solid rgba(202,138,4,0.25);display:<?php echo $defaultMethod === 'cod' ? 'block' : 'none'; ?>;">
-            <div style="display:flex;align-items:flex-start;gap:10px;">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#CA8A04" style="width:20px;height:20px;flex-shrink:0;margin-top:1px;">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75"/>
-              </svg>
-              <div style="font-size:13px;color:var(--stone);line-height:1.55;">
-                <strong style="color:var(--black);">How Cash on Delivery works:</strong>
-                <div style="margin-top:8px;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:12.5px;">
-                  <span style="color:var(--gold);font-weight:700;">1.</span>
-                  <span>Pay only the <strong id="cod-shipping-amount"><?php echo $codShipping > 0 ? formatPrice($codShipping) : 'FREE shipping'; ?></strong> shipping fee now via bank transfer — this confirms your order.</span>
-                  <span style="color:var(--gold);font-weight:700;">2.</span>
-                  <span>Pay the remaining <strong id="cod-balance-amount"><?php echo formatPrice($codSubtotal); ?></strong> in cash to the courier when your items arrive.</span>
+                <div style="display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap;">
+                  <?php foreach ([['Card','M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z'],['Bank Transfer','M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18'],['USSD','M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3']] as [$lbl,$ic]): ?>
+                  <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--stone);">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="var(--gold)" width="15" height="15"><path stroke-linecap="round" stroke-linejoin="round" d="<?php echo $ic; ?>"/></svg>
+                    <?php echo $lbl; ?>
+                  </span>
+                  <?php endforeach; ?>
                 </div>
               </div>
             </div>
           </div>
-          <?php endif; ?>
 
-          <?php endif; // any method available ?>
+          <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;font-size:11px;color:var(--stone-mid);">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="13" height="13"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+            We never see or store your card details
+          </div>
+
+          <?php endif; ?>
         </div>
       </div>
 
@@ -401,36 +341,8 @@ function updateCheckoutShipping(state) {
           if (lbl) lbl.innerHTML = 'Shipping <span style="font-size:11px;">(' + d.state + ')</span>';
         }
       }
-      // Update payment-method availability based on the new state
-      if (d.methods) applyPaymentAvailability(d.methods, d);
     })
     .catch(function() {});
-}
-
-function applyPaymentAvailability(methods, rateData) {
-  var codLabel  = document.getElementById('cod-label');
-  var bankLabel = document.getElementById('bank-label');
-  var codRadio  = codLabel  ? codLabel.querySelector('input[type=radio]')  : null;
-  var bankRadio = bankLabel ? bankLabel.querySelector('input[type=radio]') : null;
-
-  if (codLabel)  codLabel.style.display  = methods.cod  ? '' : 'none';
-  if (bankLabel) bankLabel.style.display = methods.bank ? '' : 'none';
-
-  // If the currently-selected method is no longer available, pick a fallback
-  var cur = document.querySelector('input[name="payment_method"]:checked');
-  if (cur) {
-    if (cur.value === 'cod' && !methods.cod && bankRadio) bankRadio.checked = true;
-    if (cur.value === 'bank_transfer' && !methods.bank && codRadio) codRadio.checked = true;
-  } else {
-    if (methods.cod && codRadio) codRadio.checked = true;
-    else if (methods.bank && bankRadio) bankRadio.checked = true;
-  }
-
-  // Update COD banner amounts (shipping changes per state)
-  var amt = document.getElementById('cod-shipping-amount');
-  if (amt) amt.textContent = rateData.is_free ? 'FREE shipping' : rateData.formatted;
-
-  updatePaymentBorder();
 }
 
 // Auto-fire on page load if state already selected
@@ -438,21 +350,6 @@ function applyPaymentAvailability(methods, rateData) {
   var sel = document.getElementById('co-state-select');
   if (sel && sel.value) updateCheckoutShipping(sel.value);
 })();
-
-function updatePaymentBorder(){
-  var selected = document.querySelector('input[name="payment_method"]:checked');
-  selected = selected ? selected.value : null;
-  var codLabel  = document.getElementById('cod-label');
-  var bankLabel = document.getElementById('bank-label');
-  var payLabel  = document.getElementById('paystack-label');
-  if (codLabel)  codLabel.style.borderColor  = selected==='cod'           ? 'var(--gold)' : 'var(--cream-dark)';
-  if (bankLabel) bankLabel.style.borderColor = selected==='bank_transfer' ? 'var(--gold)' : 'var(--cream-dark)';
-  if (payLabel)  payLabel.style.borderColor  = selected==='paystack'      ? 'var(--gold)' : 'var(--cream-dark)';
-  var banner = document.getElementById('cod-info-banner');
-  if (banner) banner.style.display = selected==='cod' ? 'block' : 'none';
-}
-updatePaymentBorder();
-document.querySelectorAll('input[name="payment_method"]').forEach(function(r){ r.addEventListener('change',updatePaymentBorder); });
 </script>
 
 <?php require_once 'includes/footer.php'; ?>

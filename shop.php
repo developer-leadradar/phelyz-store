@@ -1,6 +1,7 @@
 <?php
 $pageTitle = "Shop";
 require_once 'includes/header.php';
+require_once 'includes/product-card.php';
 
 // ── Filters from GET ────────────────────────────────────
 $filters = [];
@@ -240,77 +241,31 @@ if (!empty($activeFilters)):
       <!-- Product Grid -->
       <?php if (!empty($products)): ?>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;" id="product-grid">
-          <?php foreach ($products as $p): ?>
-            <div class="product-card" onclick="window.location='product.php?id=<?php echo $p['id']; ?>'">
-              <div class="product-card-img">
-                <img src="<?php echo htmlspecialchars($p['image']); ?>"
-                     alt="<?php echo htmlspecialchars($p['name']); ?>" loading="lazy"
-                     onerror="this.src='https://placehold.co/400x400/F5F5F4/78716C?text=Jewelry'">
-                <?php if ($p['compare_price'] > $p['price']): ?>
-                  <span class="product-card-badge badge-sale">Sale</span>
-                <?php elseif ($p['is_featured']): ?>
-                  <span class="product-card-badge badge-featured">Featured</span>
-                <?php endif; ?>
-                <?php $pEff = effectiveStockStatus($p); ?>
-                <?php if ($pEff === 'express'): ?>
-                  <span class="product-card-badge" style="top:auto;bottom:10px;left:10px;right:auto;background:#D97706;color:white;font-size:9px;padding:3px 8px;border-radius:20px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Express</span>
-                <?php elseif ($pEff === 'preorder'): ?>
-                  <span class="product-card-badge" style="top:auto;bottom:10px;left:10px;right:auto;background:#D97706;color:white;font-size:9px;padding:3px 8px;border-radius:20px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">Pre-Order</span>
-                <?php endif; ?>
-                <div class="product-card-actions">
-                  <button onclick="event.stopPropagation();addToCart(<?php echo $p['id']; ?>)" class="icon-btn" title="Add to Cart">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007z"/></svg>
-                  </button>
-                  <?php if (isLoggedIn()): ?>
-                  <button onclick="event.stopPropagation();addToWishlist(<?php echo $p['id']; ?>)" class="icon-btn" title="Wishlist">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/></svg>
-                  </button>
-                  <?php endif; ?>
-                </div>
-              </div>
-              <div class="product-card-body">
-                <div class="product-card-cat"><?php echo htmlspecialchars($p['category_name']); ?></div>
-                <h3 class="product-card-name"><a href="product.php?id=<?php echo $p['id']; ?>" onclick="event.stopPropagation()"><?php echo htmlspecialchars($p['name']); ?></a></h3>
-                <?php if ($p['material']): ?><div class="product-card-meta"><?php echo htmlspecialchars($p['metal_purity'].' '.$p['material']); ?></div><?php endif; ?>
-                <div class="stars" style="margin-bottom:8px;"><?php echo renderStars((int)$p['rating']); ?><span style="font-size:11px;color:var(--stone-mid);margin-left:4px;">(<?php echo $p['review_count']; ?>)</span></div>
-                <div class="product-card-price">
-                  <span class="price-current"><?php echo formatPrice($p['price']); ?></span>
-                  <?php if ($p['compare_price']>$p['price']): ?><span class="price-original"><?php echo formatPrice($p['compare_price']); ?></span><?php endif; ?>
-                </div>
-                <?php $pEff = effectiveStockStatus($p); ?>
-                <?php if ($pEff === 'preorder'): ?>
-                  <div style="font-size:11px;font-weight:700;color:#D97706;margin-top:4px;">Out of Stock — Pre-Order</div>
-                <?php elseif ($pEff === 'express'): ?>
-                  <div style="font-size:11px;font-weight:700;color:#D97706;margin-top:4px;">Express / Pre-Order</div>
-                <?php elseif ($p['stock_quantity']<=5 && $p['stock_quantity']>0): ?>
-                  <div class="stock-low">Only <?php echo $p['stock_quantity']; ?> left!</div>
-                <?php endif; ?>
-              </div>
-            </div>
-          <?php endforeach; ?>
+          <?php foreach ($products as $p) renderProductCard($p); ?>
         </div>
 
-        <!-- Pagination -->
-        <?php if ($totalPages > 1): ?>
-        <div class="pagination">
-          <?php if ($page > 1): ?>
-            <a href="?<?php echo http_build_query(array_merge($_GET,['page'=>$page-1])); ?>" class="page-btn">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
-            </a>
-          <?php else: ?><span class="page-btn disabled"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg></span><?php endif; ?>
-          <?php
-          $start=max(1,$page-2); $end=min($totalPages,$page+2);
-          if($start>1){echo '<a href="?'.http_build_query(array_merge($_GET,['page'=>1])).'" class="page-btn">1</a>'; if($start>2) echo '<span class="page-btn" style="cursor:default;border:none;">…</span>';}
-          for($i=$start;$i<=$end;$i++) echo '<a href="?'.http_build_query(array_merge($_GET,['page'=>$i])).'" class="page-btn'.($i==$page?' active':'').'">'.$i.'</a>';
-          if($end<$totalPages){if($end<$totalPages-1) echo '<span class="page-btn" style="cursor:default;border:none;">…</span>'; echo '<a href="?'.http_build_query(array_merge($_GET,['page'=>$totalPages])).'" class="page-btn">'.$totalPages.'</a>';}
-          ?>
-          <?php if ($page < $totalPages): ?>
-            <a href="?<?php echo http_build_query(array_merge($_GET,['page'=>$page+1])); ?>" class="page-btn">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
-            </a>
-          <?php else: ?><span class="page-btn disabled"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" width="16" height="16"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg></span><?php endif; ?>
+        <!-- Infinite scroll sentinel + end-of-results notice -->
+        <div id="scroll-sentinel" style="height:1px;"></div>
+
+        <div id="scroll-loader" style="display:none;text-align:center;padding:34px 20px;">
+          <div class="scroll-spinner" style="width:26px;height:26px;border:2.5px solid var(--cream-dark);border-top-color:var(--gold);border-radius:50%;margin:0 auto 10px;animation:spin 0.8s linear infinite;"></div>
+          <span style="font-size:12.5px;color:var(--stone-mid);">Loading more pieces…</span>
         </div>
-        <?php endif; ?>
+
+        <div id="scroll-end" style="display:none;text-align:center;padding:38px 20px 10px;">
+          <div style="display:inline-flex;align-items:center;gap:10px;color:var(--stone-mid);font-size:13px;">
+            <span style="height:1px;width:36px;background:var(--cream-dark);"></span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="var(--gold)" width="14" height="14"><path d="M11.48 3.5a.56.56 0 011.04 0l2.12 5.11c.09.2.28.34.48.35l5.52.44c.5.04.7.66.32.99l-4.2 3.6a.56.56 0 00-.19.56l1.29 5.38a.56.56 0 01-.84.61l-4.73-2.88a.56.56 0 00-.58 0l-4.73 2.88a.56.56 0 01-.84-.61l1.29-5.38a.56.56 0 00-.19-.56l-4.2-3.6a.56.56 0 01.32-.99l5.52-.44c.2-.01.39-.15.48-.35L11.48 3.5z"/></svg>
+            <span id="scroll-end-text">You've reached the end</span>
+            <span style="height:1px;width:36px;background:var(--cream-dark);"></span>
+          </div>
+        </div>
+
+        <noscript>
+          <div style="text-align:center;padding:24px;font-size:13px;color:var(--stone-mid);">
+            Enable JavaScript to browse the full collection.
+          </div>
+        </noscript>
 
       <?php else: ?>
         <!-- Empty state -->
@@ -351,6 +306,89 @@ function closeFilterSheet(){
   setTimeout(function(){s.style.display='none';document.getElementById('filter-backdrop').style.display='none';},350);
   document.body.style.overflow='';
 }
+
+/* ── Infinite scroll ─────────────────────────────────────────
+   Loads the next 12 cards as the shopper nears the bottom, keeping whatever
+   category/filters are active (they're already in the query string). */
+(function () {
+  var grid     = document.getElementById('product-grid');
+  var sentinel = document.getElementById('scroll-sentinel');
+  var loader   = document.getElementById('scroll-loader');
+  var endBox   = document.getElementById('scroll-end');
+  if (!grid || !sentinel) return;
+
+  var page    = <?php echo (int)$page; ?>;
+  var total   = <?php echo (int)$totalProducts; ?>;
+  var hasMore = grid.children.length < total;
+  var loading = false;
+
+  if (!hasMore) { showEnd(); return; }
+
+  function showEnd() {
+    if (!endBox) return;
+    var t = document.getElementById('scroll-end-text');
+    if (t) {
+      t.textContent = total === 0
+        ? 'No pieces found'
+        : "That's all " + total + (total === 1 ? ' piece' : ' pieces');
+    }
+    endBox.style.display = 'block';
+  }
+
+  // Preserve the current filters, swap in the next page number
+  function nextUrl() {
+    var params = new URLSearchParams(window.location.search);
+    params.set('page', page + 1);
+    return '<?php echo SITE_URL; ?>/api/load-products.php?' + params.toString();
+  }
+
+  function loadMore() {
+    if (loading || !hasMore) return;
+    loading = true;
+    if (loader) loader.style.display = 'block';
+
+    fetch(nextUrl())
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d || !d.ok) throw new Error('bad response');
+        if (d.html && d.html.trim()) {
+          var tmp = document.createElement('div');
+          tmp.innerHTML = d.html;
+          while (tmp.firstElementChild) grid.appendChild(tmp.firstElementChild);
+        }
+        page    = d.page;
+        total   = d.total;
+        hasMore = !!d.has_more;
+        if (loader) loader.style.display = 'none';
+        loading = false;
+        if (!hasMore) { showEnd(); if (io) io.disconnect(); }
+      })
+      .catch(function () {
+        if (loader) loader.style.display = 'none';
+        loading = false;
+        hasMore = false;
+        showEnd();
+      });
+  }
+
+  var io = null;
+  if ('IntersectionObserver' in window) {
+    io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) loadMore(); });
+    }, { rootMargin: '600px 0px' });   // start fetching before it's visible
+    io.observe(sentinel);
+  } else {
+    // Older browsers: fall back to a throttled scroll check
+    window.addEventListener('scroll', function () {
+      if (loading || !hasMore) return;
+      if (sentinel.getBoundingClientRect().top - window.innerHeight < 600) loadMore();
+    }, { passive: true });
+  }
+})();
 </script>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
 
 <?php require_once 'includes/footer.php'; ?>

@@ -95,7 +95,7 @@ $currentPage=basename($_SERVER['PHP_SELF']);
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;">
         <div><div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:4px;">Date Placed</div><div style="font-size:13px;font-weight:600;"><?php echo formatDate($order['created_at']); ?></div></div>
         <div><div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:4px;">Payment Method</div><div style="font-size:13px;font-weight:600;"><?php
-$pmLabels = ['cod'=>'Cash on Delivery','bank_transfer'=>'Bank Transfer','card'=>'Card Payment'];
+$pmLabels = ['paystack'=>'Paid Online (Paystack)','cod'=>'Cash on Delivery','bank_transfer'=>'Bank Transfer','card'=>'Card Payment'];
 echo htmlspecialchars($pmLabels[$order['payment_method']] ?? ucwords(str_replace('_',' ',$order['payment_method'])));
 ?></div></div>
         <div><div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:4px;">Ship To</div><div style="font-size:13px;font-weight:600;"><?php echo htmlspecialchars($order['shipping_first_name'].' '.$order['shipping_last_name']); ?></div></div>

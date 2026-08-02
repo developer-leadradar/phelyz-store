@@ -26,7 +26,7 @@ function parcelStatuses() {
     return [
         'processing'       => ['label' => 'Order Processing',   'desc' => 'We are preparing your item for dispatch', 'icon' => 'box',   'colour' => '#A8A29E', 'progress' => 0.00],
         'packed'           => ['label' => 'Packed & Ready',     'desc' => 'Your parcel is sealed and awaiting pickup','icon' => 'box',   'colour' => '#8B5CF6', 'progress' => 0.05],
-        'picked_up'        => ['label' => 'Picked Up',          'desc' => 'Collected by our delivery partner',        'icon' => 'truck', 'colour' => '#0EA5E9', 'progress' => 0.15],
+        'picked_up'        => ['label' => 'Shipped',            'desc' => 'Dispatched and collected by our courier',  'icon' => 'truck', 'colour' => '#0EA5E9', 'progress' => 0.15],
         'in_transit'       => ['label' => 'In Transit',         'desc' => 'On the way to your state',                 'icon' => 'truck', 'colour' => '#CA8A04', 'progress' => 0.55],
         'arrived_hub'      => ['label' => 'Arrived at Hub',     'desc' => 'Reached the delivery hub in your area',    'icon' => 'pin',   'colour' => '#CA8A04', 'progress' => 0.85],
         'out_for_delivery' => ['label' => 'Out for Delivery',   'desc' => 'With the rider — arriving today',          'icon' => 'truck', 'colour' => '#F59E0B', 'progress' => 0.95],

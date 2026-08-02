@@ -33,22 +33,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $subtitle = sanitize($_POST['subtitle'] ?? '');
     $ctaText  = sanitize($_POST['cta_text'] ?? '');
     $ctaUrl   = sanitize($_POST['cta_url'] ?? '');
-    $preset   = isset($presets[$_POST['preset'] ?? '']) ? $_POST['preset'] : 'gold';
+    // 'custom' = the owner uploaded a finished design (Canva etc.); it's a
+    // valid mode even though it isn't one of the colour presets.
+    $rawPreset = $_POST['preset'] ?? '';
+    $preset    = ($rawPreset === 'custom' || isset($presets[$rawPreset])) ? $rawPreset : 'gold';
     $emoji    = trim($_POST['emoji'] ?? '');
     $starts   = trim($_POST['starts_at'] ?? '') ?: null;
     $ends     = trim($_POST['ends_at'] ?? '') ?: null;
     $active   = isset($_POST['is_active']) ? 1 : 0;
     $sort     = (int)($_POST['sort_order'] ?? 0);
 
+    $bgImage = $_POST['existing_bg'] ?? null;
+    if (isset($_FILES['bg_image']) && $_FILES['bg_image']['error'] === 0 && $_FILES['bg_image']['size'] > 0) {
+        $up = uploadImage($_FILES['bg_image'], 'banners');
+        if ($up) $bgImage = $up;
+    }
+    if (!empty($_POST['remove_bg'])) $bgImage = null;
+
     if ($title === '') {
         $error = 'A headline is required.';
+    } elseif ($preset === 'custom' && empty($bgImage)) {
+        $error = 'Please upload your banner image — "My own design" shows the artwork on its own.';
     } else {
-        $bgImage = $_POST['existing_bg'] ?? null;
-        if (isset($_FILES['bg_image']) && $_FILES['bg_image']['error'] === 0 && $_FILES['bg_image']['size'] > 0) {
-            $up = uploadImage($_FILES['bg_image'], 'banners');
-            if ($up) $bgImage = $up;
-        }
-        if (!empty($_POST['remove_bg'])) $bgImage = null;
 
         $data = [
             'title' => $title, 'subtitle' => $subtitle ?: null,
@@ -131,32 +137,52 @@ $fActive   = $editing ? (int)$editing['is_active'] : 1;
           </div>
         </button>
       <?php endforeach; ?>
+
+      <!-- Bring-your-own artwork (Canva, designer, etc.) -->
+      <button type="button" class="preset-btn" data-preset="custom"
+              onclick="pickPreset('custom')"
+              style="border:2px solid <?php echo $fPreset === 'custom' ? 'var(--gold)' : 'transparent'; ?>;border-radius:10px;padding:0;cursor:pointer;overflow:hidden;background:none;text-align:left;">
+        <div style="background:repeating-linear-gradient(45deg,#F5F5F4,#F5F5F4 8px,#E7E5E4 8px,#E7E5E4 16px);height:52px;display:flex;align-items:center;justify-content:center;">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="var(--stone)" width="22" height="22"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
+        </div>
+        <div style="padding:7px 9px;background:white;font-size:11.5px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+          My own design
+        </div>
+      </button>
     </div>
     <input type="hidden" name="preset" id="preset-input" value="<?php echo htmlspecialchars($fPreset); ?>">
 
-    <p style="font-size:12.5px;color:var(--stone-mid);margin:0 0 14px;padding-top:6px;border-top:1px solid var(--cream-dark);">Step 2 — your message.</p>
+    <!-- Shown only in "my own design" mode -->
+    <div id="custom-art-note" style="display:<?php echo $fPreset === 'custom' ? 'block' : 'none'; ?>;background:rgba(202,138,4,0.07);border:1px solid rgba(202,138,4,0.25);border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--stone);line-height:1.6;">
+      <strong style="color:var(--black);">Upload a finished banner.</strong>
+      Design it anywhere you like — Canva, a designer, your phone — then upload it below.
+      It's shown exactly as-is with no text or button placed over it.
+      <br><span style="color:var(--stone-mid);font-size:12px;">Best results at <strong>1600 × 500 px</strong> (roughly 3:1). Headline is still used as the image's alt text, and the button link still controls where a click goes.</span>
+    </div>
+
+    <p id="step2-label" style="font-size:12.5px;color:var(--stone-mid);margin:0 0 14px;padding-top:6px;border-top:1px solid var(--cream-dark);">Step 2 — your message.</p>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;" class="form-row-2col">
       <div class="form-group" style="margin:0;">
-        <label class="form-label">Headline *</label>
+        <label class="form-label" id="f-title-label">Headline *</label>
         <input type="text" name="title" id="f-title" required maxlength="160" class="form-input"
                value="<?php echo htmlspecialchars($fTitle); ?>" oninput="renderPreview()">
       </div>
-      <div class="form-group" style="margin:0;">
+      <div class="form-group" id="f-emoji-wrap" style="margin:0;">
         <label class="form-label">Emoji <span style="color:var(--stone-mid);font-weight:400;">(optional)</span></label>
         <input type="text" name="emoji" id="f-emoji" maxlength="8" class="form-input" style="max-width:100px;"
                value="<?php echo htmlspecialchars($fEmoji); ?>" oninput="renderPreview()">
       </div>
     </div>
 
-    <div class="form-group" style="margin-top:16px;">
+    <div class="form-group" id="f-subtitle-wrap" style="margin-top:16px;">
       <label class="form-label">Sub-line</label>
       <input type="text" name="subtitle" id="f-subtitle" maxlength="255" class="form-input"
              value="<?php echo htmlspecialchars($fSubtitle); ?>" oninput="renderPreview()">
     </div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px;" class="form-row-2col">
-      <div class="form-group" style="margin:0;">
+      <div class="form-group" id="f-cta-wrap" style="margin:0;">
         <label class="form-label">Button text</label>
         <input type="text" name="cta_text" id="f-cta" maxlength="60" class="form-input"
                value="<?php echo htmlspecialchars($fCta); ?>" oninput="renderPreview()">
@@ -266,30 +292,64 @@ const PRESETS = <?php echo json_encode(array_map(function($p){
 const EXISTING_BG = <?php echo json_encode($editing['bg_image'] ?? ''); ?>;
 let currentPreset = <?php echo json_encode($fPreset); ?>;
 
+function isCustom(key) { return key === 'custom'; }
+
+function applyCustomMode(key) {
+  const custom = isCustom(key);
+  const note   = document.getElementById('custom-art-note');
+  const step2  = document.getElementById('step2-label');
+  if (note)  note.style.display  = custom ? 'block' : 'none';
+  if (step2) step2.textContent   = custom
+    ? 'Step 2 — give it a name (used for accessibility) and choose where a click goes.'
+    : 'Step 2 — your message.';
+  // Hide the copy fields that have no meaning when the artwork carries the message
+  ['f-subtitle-wrap','f-cta-wrap','f-emoji-wrap'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = custom ? 'none' : '';
+  });
+  const tLabel = document.getElementById('f-title-label');
+  if (tLabel) tLabel.textContent = custom ? 'Banner name *' : 'Headline *';
+}
+
 function pickPreset(key) {
   currentPreset = key;
   document.getElementById('preset-input').value = key;
   document.querySelectorAll('.preset-btn').forEach(b => {
     b.style.borderColor = b.dataset.preset === key ? 'var(--gold)' : 'transparent';
   });
-  // Fill empty fields with the preset's suggested wording so there's always
-  // something sensible in place — never overwrite what the owner already typed.
+  applyCustomMode(key);
+
+  // Clicking a festive look swaps in that occasion's wording. Previously this
+  // only filled *empty* fields, so switching presets appeared to do nothing
+  // once any text existed.
   const p = PRESETS[key];
-  const t = document.getElementById('f-title');
-  const s = document.getElementById('f-subtitle');
-  const c = document.getElementById('f-cta');
-  const e = document.getElementById('f-emoji');
-  if (!t.value.trim()) t.value = p.copy[0];
-  if (!s.value.trim()) s.value = p.copy[1];
-  if (!c.value.trim()) c.value = p.copy[2];
-  if (!e.value.trim()) e.value = p.emoji;
+  if (p) {
+    document.getElementById('f-title').value    = p.copy[0];
+    document.getElementById('f-subtitle').value = p.copy[1];
+    document.getElementById('f-cta').value      = p.copy[2];
+    document.getElementById('f-emoji').value    = p.emoji;
+  }
   renderPreview();
 }
+
+// Reflect the saved mode on page load (e.g. when editing an existing banner)
+applyCustomMode(currentPreset);
 
 function esc(s) {
   return String(s == null ? '' : s).replace(/[&<>"']/g, c =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
+
+// Preview a just-picked file before it's uploaded
+let PICKED_BG = '';
+document.addEventListener('change', function (ev) {
+  if (!ev.target || ev.target.name !== 'bg_image') return;
+  const f = ev.target.files && ev.target.files[0];
+  if (!f) { PICKED_BG = ''; renderPreview(); return; }
+  const r = new FileReader();
+  r.onload = e => { PICKED_BG = e.target.result; renderPreview(); };
+  r.readAsDataURL(f);
+});
 
 function renderPreview() {
   const p = PRESETS[currentPreset] || PRESETS.gold;
@@ -297,8 +357,20 @@ function renderPreview() {
   const sub   = document.getElementById('f-subtitle').value;
   const cta   = document.getElementById('f-cta').value;
   const emoji = document.getElementById('f-emoji').value;
-  const bg = EXISTING_BG
-    ? `linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.45)), url('${EXISTING_BG}') center/cover no-repeat`
+  const art   = PICKED_BG || EXISTING_BG;
+
+  // "My own design" — show the artwork alone, exactly as customers will see it
+  if (isCustom(currentPreset)) {
+    document.getElementById('banner-preview').innerHTML = art
+      ? `<img src="${art}" alt="" style="width:100%;height:auto;display:block;">`
+      : `<div style="padding:44px 20px;text-align:center;background:repeating-linear-gradient(45deg,#F5F5F4,#F5F5F4 10px,#EDEBE9 10px,#EDEBE9 20px);color:var(--stone-mid);font-size:13.5px;">
+           Upload your finished banner below to preview it here
+         </div>`;
+    return;
+  }
+
+  const bg = art
+    ? `linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.45)), url('${art}') center/cover no-repeat`
     : p.grad;
 
   document.getElementById('banner-preview').innerHTML = `

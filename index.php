@@ -32,7 +32,20 @@ function renderStars($rating) {
       $st  = bannerSlideStyle($b);
       $url = $b['cta_url'] ?: 'shop.php';
       if (!preg_match('#^https?://#i', $url)) $url = SITE_URL . '/' . ltrim($url, '/');
+      // "Bring your own design" banners (made in Canva etc.) are shown as the
+      // artwork alone — no text or button is overlaid on top of it.
+      $isCustomArt = (($b['preset'] ?? '') === 'custom') && !empty($b['bg_image']);
     ?>
+      <?php if ($isCustomArt): ?>
+        <div class="promo-slide promo-slide-art" style="flex:0 0 100%;">
+          <a href="<?php echo htmlspecialchars($url); ?>" style="display:block;">
+            <img src="<?php echo htmlspecialchars($b['bg_image']); ?>"
+                 alt="<?php echo htmlspecialchars($b['title'] ?: 'Promotion'); ?>"
+                 style="width:100%;height:auto;display:block;">
+          </a>
+        </div>
+        <?php continue; ?>
+      <?php endif; ?>
       <div class="promo-slide" style="flex:0 0 100%;background:<?php echo $st['bg']; ?>;color:<?php echo $st['text']; ?>;">
         <div class="container" style="padding:44px 0;display:flex;align-items:center;justify-content:space-between;gap:26px;flex-wrap:wrap;">
           <div style="min-width:240px;flex:1;">
@@ -174,14 +187,14 @@ function renderStars($rating) {
           <div style="font-family:'Cormorant',serif;font-size:26px;font-weight:700;color:var(--black);line-height:1;">500+</div>
           <div style="font-size:12px;font-weight:600;color:var(--stone-mid);letter-spacing:0.06em;text-transform:uppercase;margin-top:2px;">Unique Pieces</div>
         </div>
-        <!-- Floating rating card -->
+        <!-- Floating delivery card -->
         <div style="position:absolute;top:28px;right:-20px;background:rgba(250,250,249,0.90);backdrop-filter:blur(16px);border:1px solid rgba(202,138,4,0.20);border-radius:16px;padding:14px 18px;box-shadow:0 8px 32px rgba(28,25,23,0.20);display:flex;align-items:center;gap:10px;">
           <div style="background:linear-gradient(135deg,#CA8A04,#D97706);border-radius:10px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            <svg viewBox="0 0 20 20" fill="white" width="18" height="18"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="white" width="19" height="19"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"/></svg>
           </div>
           <div>
-            <div style="font-size:14px;font-weight:700;color:var(--black);line-height:1.2;">4.9/5 Rating</div>
-            <div style="font-size:11px;color:var(--stone-mid);">2,400+ Reviews</div>
+            <div style="font-size:14px;font-weight:700;color:var(--black);line-height:1.2;">Nationwide Delivery</div>
+            <div style="font-size:11px;color:var(--stone-mid);">All 36 states &amp; FCT</div>
           </div>
         </div>
       </div>

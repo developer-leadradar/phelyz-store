@@ -2022,3 +2022,50 @@ code {
 @media (max-width: 1024px) {
   .report-2col { grid-template-columns: 1fr !important; }
 }
+
+/* ============================================================
+   TRAFFIC KPIs — compact, stays 4-across on normal screens
+   (the generic .stats-grid cards were too wide and wrapped to
+   one-per-row inside the admin content column)
+   ============================================================ */
+.traffic-kpis {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.traffic-kpi {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-xs);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+}
+.traffic-kpi-icon {
+    width: 34px; height: 34px;
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.traffic-kpi-num {
+    font-size: 20px; font-weight: 700; line-height: 1.1;
+    color: var(--black);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.traffic-kpi-lbl {
+    font-size: 10.5px; font-weight: 600; letter-spacing: 0.05em;
+    text-transform: uppercase; color: var(--stone-mid);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-top: 2px;
+}
+@media (max-width: 640px) {
+    .traffic-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Chart hover tooltips */
+.chart-col:hover .chart-tip { opacity: 1; }
+.chart-col:hover > div:not(.chart-tip) { filter: brightness(1.08); }

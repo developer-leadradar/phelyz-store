@@ -62,7 +62,7 @@ $waDigits    = preg_replace('/\D/', '', SITE_WHATSAPP);
       <ul>
         <li>All prices are listed in Nigerian Naira (₦) and are inclusive of applicable charges unless stated otherwise.</li>
         <li>Prices displayed in other currencies are indicative conversions provided for convenience only. <strong>All orders are charged in Naira.</strong></li>
-        <li>Placing an order constitutes an offer to buy. A contract is formed only when we confirm the order and payment has been received or, for Cash on Delivery, when we accept the order for dispatch.</li>
+        <li>Placing an order constitutes an offer to buy. A contract is formed only when we confirm the order and payment has been received in full.</li>
         <li>We reserve the right to refuse or cancel any order — including after confirmation — where an item is out of stock, a price or description error has occurred, payment cannot be verified, or we suspect fraud.</li>
         <li>Product photographs are representative. Natural stones and handcrafted pieces vary slightly in tone, inclusion and finish; such variation is not a defect.</li>
         <li>Pre-order and "Express" items are made or sourced to order. Estimated timelines are indicative, not guaranteed, and delays alone do not entitle you to cancel a confirmed pre-order.</li>
@@ -70,10 +70,10 @@ $waDigits    = preg_replace('/\D/', '', SITE_WHATSAPP);
 
       <h2 id="payment">3. Payment</h2>
       <ul>
-        <li>We accept card payments (debit/credit, bank transfer and USSD) processed securely by Paystack, direct bank transfer, and Cash on Delivery where enabled for your state.</li>
-        <li>We do not see or store your card details at any point.</li>
-        <li>Where Cash on Delivery is selected, the shipping fee is payable up-front to confirm and dispatch the order. The balance is payable in cash to the courier on delivery. <strong>Up-front shipping fees are non-refundable once a parcel has been dispatched.</strong></li>
-        <li>Refusal to accept or pay for a Cash on Delivery parcel on arrival may result in the loss of Cash on Delivery privileges on future orders.</li>
+        <li>All payments are processed securely online by Paystack. Within Paystack's checkout you may pay by debit or credit card, bank transfer, or USSD.</li>
+        <li>We do not see or store your card or banking details at any point.</li>
+        <li><strong>Orders are dispatched only after payment has cleared in full.</strong> An order that is created but not paid is held as pending and may be cancelled automatically.</li>
+        <li>We do not offer cash on delivery or off-platform payment. Anyone requesting payment outside our Paystack checkout is not acting for us — please report it to us immediately.</li>
       </ul>
 
       <h2 id="delivery">4. Delivery</h2>

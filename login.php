@@ -33,7 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <div class="auth-panel-left">
     <img src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=700&h=900&fit=crop&q=80" alt="Luxury diamond jewelry">
     <div class="auth-panel-left-inner">
-      <div style="font-family:'Cormorant',serif;font-size:36px;font-weight:700;color:white;margin-bottom:12px;letter-spacing:0.06em;">PHELYZ</div>
+      <img src="<?php echo SITE_URL; ?>/assets/images/phelyz-logo-light.svg"
+           alt="<?php echo htmlspecialchars(SITE_NAME); ?>"
+           style="height:58px;width:auto;display:block;margin-bottom:16px;">
       <p style="font-size:15px;color:rgba(255,255,255,0.65);line-height:1.7;max-width:300px;margin-bottom:20px;">Certified fine jewelry crafted to celebrate life's most precious moments.</p>
       <?php foreach(['Certified authentic diamonds','Free shipping on ₦50,000+','Secure encrypted checkout'] as $f): ?>
         <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(255,255,255,0.70);margin-bottom:8px;">
@@ -47,10 +49,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <!-- Right form panel -->
   <div class="auth-panel-right">
     <div class="auth-form-inner">
-      <div class="auth-logo-text">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6.5 2h11l4 6-9.5 14L2.5 8l4-6z"/></svg>
-        PHELYZ
-      </div>
+      <a href="<?php echo SITE_URL; ?>" style="display:block;margin-bottom:22px;">
+        <img src="<?php echo SITE_URL; ?>/assets/images/phelyz-logo.svg"
+             alt="<?php echo htmlspecialchars(SITE_NAME); ?>" class="auth-logo-img">
+      </a>
       <h1 class="auth-heading">Welcome back</h1>
       <p class="auth-sub">Sign in to your account to continue shopping</p>
 
