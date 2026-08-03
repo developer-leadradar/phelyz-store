@@ -33,3 +33,4 @@ desktop.ini
 
 # cPanel migration artefacts (large binaries / local-only)
 migrations/cpanel/uploads-images.zip
+migrations/cpanel/FULL_IMPORT.sql

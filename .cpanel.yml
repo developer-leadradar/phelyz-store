@@ -15,7 +15,7 @@
 #   .git, migrations, tests and local tooling
 deployment:
   tasks:
-    - export DEPLOYPATH=/home/CPANELUSER/public_html
+    - export DEPLOYPATH=/home/cimedgec/phelyzstore.com
     - /bin/mkdir -p $DEPLOYPATH
 
     # Sync the application, preserving anything that must not be overwritten
@@ -35,6 +35,12 @@ deployment:
     - /bin/mkdir -p $DEPLOYPATH/uploads/products
     - /bin/mkdir -p $DEPLOYPATH/uploads/banners
     - /bin/mkdir -p $DEPLOYPATH/uploads/templates
+
+    # Seed the product images that were rescued off Supabase Storage.
+    # -n (no-clobber) means this only ever fills in missing files: images you
+    # upload later from the admin dashboard are never overwritten by a deploy.
+    - /bin/cp -rn storage/seed-images/products/. $DEPLOYPATH/uploads/products/ || true
+
     - /bin/chmod -R 755 $DEPLOYPATH/uploads
 
     # Never serve the raw config or dotfiles
