@@ -1,0 +1,41 @@
+---
+# cPanel Git Version Control deployment
+#
+# cPanel runs these tasks when you hit "Deploy HEAD Commit" in
+# Git Version Control (or when a webhook/cron triggers a pull+deploy).
+#
+# IMPORTANT: replace CPANELUSER below with your actual cPanel username, and
+# adjust DEPLOYPATH if phelyzstore.com is an addon domain pointing somewhere
+# other than public_html (addon domains usually live in
+# /home/CPANELUSER/phelyzstore.com/ or /home/CPANELUSER/public_html/).
+#
+# Deliberately NOT copied to the live site:
+#   .env            - real credentials live only on the server
+#   uploads/        - customer/product uploads must survive deployments
+#   .git, migrations, tests and local tooling
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/CPANELUSER/public_html
+    - /bin/mkdir -p $DEPLOYPATH
+
+    # Sync the application, preserving anything that must not be overwritten
+    - >
+      /usr/bin/rsync -a --delete
+      --exclude '.git'
+      --exclude '.github'
+      --exclude '.env'
+      --exclude 'uploads/'
+      --exclude 'migrations/'
+      --exclude '.cpanel.yml'
+      --exclude 'README.md'
+      --exclude '*.md'
+      ./ $DEPLOYPATH/
+
+    # uploads/ must exist and be writable for product images and banners
+    - /bin/mkdir -p $DEPLOYPATH/uploads/products
+    - /bin/mkdir -p $DEPLOYPATH/uploads/banners
+    - /bin/mkdir -p $DEPLOYPATH/uploads/templates
+    - /bin/chmod -R 755 $DEPLOYPATH/uploads
+
+    # Never serve the raw config or dotfiles
+    - /bin/chmod 644 $DEPLOYPATH/config.php

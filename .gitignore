@@ -30,3 +30,6 @@ desktop.ini
 # PHP cache
 /cache/
 *.cache
+
+# cPanel migration artefacts (large binaries / local-only)
+migrations/cpanel/uploads-images.zip

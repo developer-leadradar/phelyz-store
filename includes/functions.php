@@ -911,7 +911,118 @@ function uploadImage($file, $directory = 'products') {
     return false;
 }
 
+/**
+ * Minimal SMTP client — no Composer, no PHPMailer.
+ *
+ * Shared cPanel hosting has no `composer install` step and vendor/ is not in
+ * the repo, so the PHPMailer branch below never runs in production. This talks
+ * SMTP directly so mail is sent authenticated as the real mailbox (which keeps
+ * SPF/DKIM aligned) instead of falling back to a bare mail() call.
+ *
+ * @return array{ok:bool, error:string}
+ */
+function smtpSend($to, $subject, $htmlBody) {
+    $host = SMTP_HOST;
+    $port = (int)SMTP_PORT;
+    $user = SMTP_USERNAME;
+    $pass = SMTP_PASSWORD;
+    $enc  = strtolower(SMTP_ENCRYPTION);
+
+    if ($host === '' || $user === '' || $pass === '') {
+        return ['ok' => false, 'error' => 'SMTP not configured'];
+    }
+
+    $remote = ($enc === 'ssl' ? 'ssl://' : '') . $host . ':' . $port;
+    $ctx = stream_context_create(['ssl' => [
+        'verify_peer'       => false,
+        'verify_peer_name'  => false,
+        'allow_self_signed' => true,
+    ]]);
+
+    $fp = @stream_socket_client($remote, $errno, $errstr, 20, STREAM_CLIENT_CONNECT, $ctx);
+    if (!$fp) return ['ok' => false, 'error' => "connect failed: $errstr ($errno)"];
+    stream_set_timeout($fp, 20);
+
+    $read = function () use ($fp) {
+        $data = '';
+        while (($line = fgets($fp, 515)) !== false) {
+            $data .= $line;
+            if (strlen($line) < 4 || $line[3] === ' ') break;
+        }
+        return $data;
+    };
+    $cmd = function ($line, $expect) use ($fp, $read) {
+        if ($line !== null) fwrite($fp, $line . "\r\n");
+        $res  = $read();
+        $code = (int)substr(ltrim($res), 0, 3);
+        return in_array($code, (array)$expect, true) ? ['ok' => true, 'res' => $res]
+                                                     : ['ok' => false, 'res' => trim($res)];
+    };
+
+    $host_name = parse_url(SITE_URL, PHP_URL_HOST) ?: 'localhost';
+
+    $steps = [];
+    $steps[] = $cmd(null, 220);                       // greeting
+    $steps[] = $cmd('EHLO ' . $host_name, 250);
+
+    if ($enc === 'tls') {
+        $steps[] = $cmd('STARTTLS', 220);
+        if (!@stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+            fclose($fp);
+            return ['ok' => false, 'error' => 'STARTTLS negotiation failed'];
+        }
+        $steps[] = $cmd('EHLO ' . $host_name, 250);
+    }
+
+    $steps[] = $cmd('AUTH LOGIN', 334);
+    $steps[] = $cmd(base64_encode($user), 334);
+    $steps[] = $cmd(base64_encode($pass), 235);
+    $steps[] = $cmd('MAIL FROM:<' . SMTP_FROM_EMAIL . '>', 250);
+    $steps[] = $cmd('RCPT TO:<' . $to . '>', [250, 251]);
+    $steps[] = $cmd('DATA', 354);
+
+    foreach ($steps as $i => $s) {
+        if (!$s['ok']) {
+            fclose($fp);
+            return ['ok' => false, 'error' => 'SMTP step ' . $i . ' rejected: ' . $s['res']];
+        }
+    }
+
+    $boundary = 'phelyz_' . bin2hex(random_bytes(8));
+    $headers  = 'From: ' . SMTP_FROM_NAME . ' <' . SMTP_FROM_EMAIL . ">\r\n";
+    $headers .= 'To: <' . $to . ">\r\n";
+    $headers .= 'Subject: ' . $subject . "\r\n";
+    $headers .= 'Date: ' . date('r') . "\r\n";
+    $headers .= 'Message-ID: <' . bin2hex(random_bytes(12)) . '@' . $host_name . ">\r\n";
+    $headers .= "MIME-Version: 1.0\r\n";
+    $headers .= 'Content-Type: multipart/alternative; boundary="' . $boundary . "\"\r\n";
+
+    $plain = trim(html_entity_decode(strip_tags($htmlBody), ENT_QUOTES, 'UTF-8'));
+    $body  = "--$boundary\r\nContent-Type: text/plain; charset=UTF-8\r\n\r\n$plain\r\n";
+    $body .= "--$boundary\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n$htmlBody\r\n";
+    $body .= "--$boundary--\r\n";
+
+    // Dot-stuffing: a line that is just "." would otherwise end the message
+    $data = preg_replace('/^\./m', '..', $headers . "\r\n" . $body);
+    fwrite($fp, $data . "\r\n.\r\n");
+
+    $final = $cmd(null, 250);
+    $cmd('QUIT', [221, 250]);
+    fclose($fp);
+
+    return $final['ok'] ? ['ok' => true, 'error' => '']
+                        : ['ok' => false, 'error' => 'message rejected: ' . $final['res']];
+}
+
 function sendEmail($to, $subject, $message) {
+    // Preferred on cPanel: authenticated SMTP through the domain mailbox.
+    if (SMTP_HOST !== '' && SMTP_USERNAME !== '' && SMTP_PASSWORD !== '') {
+        $r = smtpSend($to, $subject, $message);
+        if ($r['ok']) return true;
+        error_log('SMTP send failed: ' . $r['error']);
+        // fall through to the other transports rather than silently dropping mail
+    }
+
     // Use Resend API if key is set
     if (!empty(RESEND_API_KEY)) {
         $payload = [
