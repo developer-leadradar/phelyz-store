@@ -15,7 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please enter both email and password.';
     } elseif (login($email, $password)) {
         if (isAdmin()) {
-            // Admin accounts must use /admin/login.php — boot them out
+            // Admin accounts must use /admin/login.php - boot them out
             session_destroy();
             $error = 'No customer account found with those credentials.';
         } else {

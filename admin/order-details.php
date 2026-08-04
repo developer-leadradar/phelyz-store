@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['parcel_update'])) {
             if (!empty($_POST['eta_date'])) {
                 $db->update('parcels', ['eta_date' => $_POST['eta_date']], 'id = ?', [$pid]);
             }
-            $parcelMsg = 'Tracking updated — the customer can see this immediately.';
+            $parcelMsg = 'Tracking updated - the customer can see this immediately.';
         } else {
             $parcelErr = 'Could not save the update.';
         }
@@ -92,7 +92,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
 
   <?php if (empty($parcels)): ?>
     <p style="font-size:13px;color:var(--stone-mid);margin:0;">
-      No parcel yet for this order. New orders get one automatically — click “Create parcel” for older orders.
+      No parcel yet for this order. New orders get one automatically - click “Create parcel” for older orders.
     </p>
   <?php else: ?>
     <?php foreach ($parcels as $p):
@@ -107,7 +107,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
             </div>
             <div style="font-size:11.5px;color:var(--stone-mid);margin-top:3px;">
               Parcel <?php echo htmlspecialchars($p['parcel_number']); ?>
-              &nbsp;·&nbsp; to <?php echo htmlspecialchars($p['dest_label'] ?: '—'); ?>
+              &nbsp;·&nbsp; to <?php echo htmlspecialchars($p['dest_label'] ?: '-'); ?>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -174,7 +174,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
                 <span style="width:8px;height:8px;border-radius:50%;background:<?php echo $em['colour']; ?>;margin-top:5px;flex-shrink:0;"></span>
                 <div style="flex:1;">
                   <strong style="color:var(--black);"><?php echo htmlspecialchars($em['label']); ?></strong>
-                  <?php if ($ev['label']): ?><span style="color:var(--stone);"> — <?php echo htmlspecialchars($ev['label']); ?></span><?php endif; ?>
+                  <?php if ($ev['label']): ?><span style="color:var(--stone);"> - <?php echo htmlspecialchars($ev['label']); ?></span><?php endif; ?>
                   <?php if ($ev['note']): ?><div style="color:var(--stone-mid);font-size:11.5px;"><?php echo htmlspecialchars($ev['note']); ?></div><?php endif; ?>
                 </div>
                 <span style="color:var(--stone-mid);font-size:11px;white-space:nowrap;"><?php echo date('j M, g:ia', strtotime($ev['created_at'])); ?></span>
@@ -270,7 +270,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
           <input type="hidden" name="id" value="<?php echo $order['id']; ?>">
           <select name="status" class="form-input form-select"
                   style="padding:9px 36px 9px 12px;font-size:13px;width:auto;min-width:200px;">
-            <option value="">— Choose new status —</option>
+            <option value="">Choose new status</option>
             <?php if ($order['status'] === 'pending'): ?>
               <option value="processing">Mark as Processing</option>
               <option value="shipped">Mark as Shipped</option>
@@ -528,7 +528,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
             </a>
           </div>
         <?php else: ?>
-          <p style="font-size:13px;color:var(--stone-mid);">Guest Checkout — no account linked.</p>
+          <p style="font-size:13px;color:var(--stone-mid);">Guest Checkout - no account linked.</p>
         <?php endif; ?>
       </div>
 

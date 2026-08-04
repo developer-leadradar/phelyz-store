@@ -8,7 +8,7 @@ function toggleSidebar() {
     }
 }
 
-// Delete confirmation — used as onclick="return confirmDelete('message')"
+// Delete confirmation - used as onclick="return confirmDelete('message')"
 // Returns true (proceed with href) or false (cancel)
 function confirmDelete(message) {
     return confirm(message || 'Are you sure you want to delete this?');

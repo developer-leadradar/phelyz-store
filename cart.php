@@ -34,7 +34,7 @@ $items = $cartSummary['items'];
           </svg>
         </div>
         <h2 class="font-display text-2xl font-semibold text-stone-800 mb-2">Your cart is empty</h2>
-        <p class="text-stone-500 mb-8 max-w-sm">Add some beautiful jewellery pieces to your cart and come back here to checkout.</p>
+        <p class="text-stone-500 mb-8 max-w-sm">Add some beautiful jewelry pieces to your cart and come back here to checkout.</p>
         <a href="shop.php" class="btn btn-gold flex items-center gap-2">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
           Start Shopping
@@ -297,7 +297,7 @@ $items = $cartSummary['items'];
     flex: 0 0 auto !important;
     margin-left: 0 !important;
   }
-  /* Hide the mobile "Subtotal:" label — price already shows in product section */
+  /* Hide the mobile "Subtotal:" label - price already shows in product section */
   .cart-item .text-xs.text-stone-400 { display: none !important; }
 
   /* Cart page title: center on mobile */

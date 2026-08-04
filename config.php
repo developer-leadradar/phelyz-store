@@ -32,7 +32,16 @@ define('SITE_EMAIL', getenv('SITE_EMAIL') ?: 'support@phelyzstore.com');
 define('SITE_PHONE', getenv('SITE_PHONE') ?: '+234 902 403 3207');
 define('SITE_WHATSAPP', getenv('SITE_WHATSAPP') ?: '+2349024033207');
 define('SITE_ADDRESS', getenv('SITE_ADDRESS') ?: 'Uyo, Akwa Ibom State, Nigeria');
-define('SITE_HOURS',   getenv('SITE_HOURS')   ?: 'Mon – Sat: 9:00 AM – 6:00 PM');
+define('SITE_HOURS',   getenv('SITE_HOURS')   ?: 'Mon - Sat: 9:00 AM - 6:00 PM');
+
+// ── Social accounts ──────────────────────────────────────────────────────────
+// Leave a value blank and its icon simply disappears from the site, so we never
+// show a link to an account that does not exist.
+define('SOCIAL_INSTAGRAM', getenv('SOCIAL_INSTAGRAM') ?: 'https://www.instagram.com/_phelyz_stores');
+define('SOCIAL_TIKTOK',    getenv('SOCIAL_TIKTOK')    ?: 'https://www.tiktok.com/@phelyz_stores');
+define('SOCIAL_FACEBOOK',  getenv('SOCIAL_FACEBOOK')  ?: 'https://www.facebook.com/share/1Eq9mDH5yC/');
+define('SOCIAL_TWITTER',   getenv('SOCIAL_TWITTER')   ?: '');
+define('SOCIAL_PINTEREST', getenv('SOCIAL_PINTEREST') ?: '');
 
 // ── Email (Resend) ────────────────────────────────────────────────────────────
 define('RESEND_API_KEY',   getenv('RESEND_API_KEY')   ?: '');
@@ -58,6 +67,10 @@ define('UPLOAD_URL',  SITE_URL . '/uploads/');
 // ── Security ──────────────────────────────────────────────────────────────────
 define('PASSWORD_HASH_ALGO', PASSWORD_BCRYPT);
 define('PASSWORD_HASH_COST', 12);
+
+// Used to sign one-click links (e.g. email unsubscribe) so they cannot be
+// guessed. Set APP_SECRET in .env on the server to something long and random.
+define('APP_SECRET', getenv('APP_SECRET') ?: ('phelyz-fallback-' . DB_NAME . DB_USER));
 
 // ── Error reporting ───────────────────────────────────────────────────────────
 $isProduction = !empty(getenv('VERCEL')) || !empty(getenv('VERCEL_ENV'));

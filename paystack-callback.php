@@ -4,7 +4,7 @@
  * Paystack appends ?reference=… (and trxref=…) to the callback we supplied,
  * which already carries ?order=<id>.
  *
- * We NEVER trust the redirect alone — the transaction is verified against
+ * We NEVER trust the redirect alone - the transaction is verified against
  * Paystack's API and the paid amount is checked against the order total.
  */
 define('PHELYZ_ACCESS', true);

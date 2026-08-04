@@ -35,7 +35,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db->insert('email_verifications', ['user_id'=>$userId,'email'=>$email,'token'=>$token,'expires_at'=>$expiresAt]);
             $verifyLink = SITE_URL . '/verify-email.php?token=' . $token;
             $subject = 'Verify Your Phelyz Store Email Address';
-            $message = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 20px;"><tr><td align="center"><table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);"><tr><td style="background:#1C1917;padding:36px 40px;text-align:center;"><h1 style="color:#CA8A04;font-size:26px;font-weight:800;letter-spacing:3px;margin:0;">PHELYZ</h1><p style="color:rgba(255,255,255,0.6);font-size:13px;margin:6px 0 0;">Confirm Your Email Address</p></td></tr><tr><td style="padding:40px;"><p style="color:#1C1917;font-size:16px;margin:0 0 12px;">Hello <strong>'.htmlspecialchars($firstName).'</strong>,</p><p style="color:#44403C;font-size:15px;line-height:1.7;margin:0 0 28px;">Welcome to Phelyz Store! Please verify your email to activate your account. This link expires in 24 hours.</p><div style="text-align:center;margin:32px 0;"><a href="'.$verifyLink.'" style="display:inline-block;background:#CA8A04;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:8px;font-size:16px;font-weight:700;">Verify My Email</a></div><p style="color:#78716C;font-size:13px;margin:0 0 8px;">Or copy this link:</p><p style="background:#f8f9fb;border:1px solid #e4e8ef;border-radius:6px;padding:12px;font-size:12px;color:#44403C;word-break:break-all;margin:0 0 28px;">'.$verifyLink.'</p></td></tr><tr><td style="background:#f8f9fb;border-top:1px solid #e4e8ef;padding:20px 40px;text-align:center;"><p style="color:#78716C;font-size:12px;margin:0;">&copy; '.date('Y').' Phelyz Store &middot; Uyo, Akwa Ibom State, Nigeria</p></td></tr></table></td></tr></table></body></html>';
+            $message = phelyzEmailTemplate(
+                '<p style="margin:0 0 12px;font-size:16px;">Hello <strong>' . htmlspecialchars($firstName) . '</strong>,</p>'
+              . '<p style="margin:0 0 4px;color:#44403C;">Welcome to Phelyz Store. Please confirm your email address to activate your account.</p>'
+              . phelyzEmailButton('Verify My Email', $verifyLink)
+              . '<p style="margin:0 0 8px;color:#78716C;font-size:13px;">Or paste this link into your browser:</p>'
+              . '<p style="background:#FAFAF9;border:1px solid #E7E5E4;border-radius:6px;padding:12px;font-size:12px;color:#44403C;word-break:break-all;margin:0 0 22px;">' . htmlspecialchars($verifyLink) . '</p>'
+              . '<p style="margin:0;color:#78716C;font-size:13px;">This link expires in 24 hours. If you did not create an account, you can ignore this email.</p>',
+                'Confirm your email address to activate your Phelyz Store account.'
+            );
             sendEmail($email, $subject, $message);
             $success = 'Account created! Check your email and click the verification link to activate your account.';
         } else {

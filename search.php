@@ -15,6 +15,25 @@ $perPage      = 12;
 $offset       = ($page-1)*$perPage;
 $products     = getAllProducts($filters, $perPage, $offset);
 $totalResults = countProducts($filters);
+
+// Nothing matched? The shopper has most likely mistyped, so try the closest
+// real words from the catalogue before showing an empty page.
+$correctedFrom = '';
+if ($totalResults === 0) {
+    [$corrected, $didChange] = searchCorrectQuery($searchQuery);
+    if ($didChange) {
+        $altFilters = ['search' => $corrected];
+        $altTotal   = countProducts($altFilters);
+        if ($altTotal > 0) {
+            $correctedFrom = $searchQuery;
+            $searchQuery   = $corrected;
+            $filters       = $altFilters;
+            $totalResults  = $altTotal;
+            $products      = getAllProducts($filters, $perPage, $offset);
+        }
+    }
+}
+
 $totalPages   = ceil($totalResults/$perPage);
 
 function renderStars($r){
@@ -38,6 +57,11 @@ function renderStars($r){
       <?php echo number_format($totalResults); ?> result<?php echo $totalResults!=1?'s':''; ?> for
       &ldquo;<strong style="color:#FEF3C7;"><?php echo htmlspecialchars($searchQuery); ?></strong>&rdquo;
     </p>
+    <?php if ($correctedFrom !== ''): ?>
+      <p style="font-size:13px;color:rgba(255,255,255,0.62);margin-top:6px;">
+        No matches for &ldquo;<?php echo htmlspecialchars($correctedFrom); ?>&rdquo;, so we showed you the closest thing we sell.
+      </p>
+    <?php endif; ?>
   </div>
 </div>
 

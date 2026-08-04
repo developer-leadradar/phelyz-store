@@ -5,12 +5,12 @@ if (!defined('PHELYZ_ACCESS')) { exit; }
  * Parcel tracking.
  *
  * Model:
- *   order   — what the customer bought (one order number, e.g. PHZ-2026-000417)
- *   parcel  — the physical box that ships. Every item bought together normally
+ *   order   - what the customer bought (one order number, e.g. PHZ-2026-000417)
+ *   parcel  - the physical box that ships. Every item bought together normally
  *             travels in ONE parcel, so they share one parcel/tracking number.
  *             If a shipment has to be split, extra parcels are added to the
  *             same order and numbered -P1, -P2 …
- *   events  — the timeline; each status change appends one row.
+ *   events  - the timeline; each status change appends one row.
  *
  * The map position is derived from the parcel's status (origin → destination)
  * unless a specific location has been set by hand in the admin, which always wins.
@@ -29,9 +29,9 @@ function parcelStatuses() {
         'picked_up'        => ['label' => 'Shipped',            'desc' => 'Dispatched and collected by our courier',  'icon' => 'truck', 'colour' => '#0EA5E9', 'progress' => 0.15],
         'in_transit'       => ['label' => 'In Transit',         'desc' => 'On the way to your state',                 'icon' => 'truck', 'colour' => '#CA8A04', 'progress' => 0.55],
         'arrived_hub'      => ['label' => 'Arrived at Hub',     'desc' => 'Reached the delivery hub in your area',    'icon' => 'pin',   'colour' => '#CA8A04', 'progress' => 0.85],
-        'out_for_delivery' => ['label' => 'Out for Delivery',   'desc' => 'With the rider — arriving today',          'icon' => 'truck', 'colour' => '#F59E0B', 'progress' => 0.95],
+        'out_for_delivery' => ['label' => 'Out for Delivery',   'desc' => 'With the rider - arriving today',          'icon' => 'truck', 'colour' => '#F59E0B', 'progress' => 0.95],
         'delivered'        => ['label' => 'Delivered',          'desc' => 'Handed over successfully',                 'icon' => 'check', 'colour' => '#22C55E', 'progress' => 1.00],
-        'exception'        => ['label' => 'Delivery Issue',     'desc' => 'We hit a problem — our team is on it',     'icon' => 'alert', 'colour' => '#EF4444', 'progress' => 0.60],
+        'exception'        => ['label' => 'Delivery Issue',     'desc' => 'We hit a problem - our team is on it',     'icon' => 'alert', 'colour' => '#EF4444', 'progress' => 0.60],
         'returned'         => ['label' => 'Returned to Us',     'desc' => 'The parcel came back to our facility',     'icon' => 'alert', 'colour' => '#EF4444', 'progress' => 0.00],
     ];
 }

@@ -63,7 +63,7 @@ function renderStars($r) {
       <span style="color:rgba(255,255,255,0.8);">Shop</span>
     </nav>
     <h1 class="page-hero-title">Shop Our Collection</h1>
-    <p class="page-hero-sub"><?php echo number_format($totalProducts); ?> piece<?php echo $totalProducts!=1?'s':''; ?> of fine jewellery</p>
+    <p class="page-hero-sub"><?php echo number_format($totalProducts); ?> piece<?php echo $totalProducts!=1?'s':''; ?> of fine jewelry</p>
   </div>
 </div>
 
@@ -184,7 +184,7 @@ if (!empty($activeFilters)):
           // Price Range
           $priceContent = '<div style="display:flex;gap:8px;align-items:center;">
             <input type="number" name="min_price" placeholder="Min ₦" value="'.($filters['min_price']??'').'" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-dark);border-radius:6px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor=\'var(--gold)\'" onblur="this.style.borderColor=\'var(--cream-dark)\'">
-            <span style="color:var(--stone-mid);">–</span>
+            <span style="color:var(--stone-mid);">-</span>
             <input type="number" name="max_price" placeholder="Max ₦" value="'.($filters['max_price']??'').'" style="width:100%;padding:8px 10px;border:1.5px solid var(--cream-dark);border-radius:6px;font-size:13px;font-family:inherit;outline:none;" onfocus="this.style.borderColor=\'var(--gold)\'" onblur="this.style.borderColor=\'var(--cream-dark)\'">
           </div>';
           echo filterSection('Price Range', $priceContent);
@@ -206,7 +206,7 @@ if (!empty($activeFilters)):
           echo filterSection('Availability', $inStockContent);
           ?>
 
-          <!-- Apply button (desktop only — hidden when cloned into mobile sheet) -->
+          <!-- Apply button (desktop only - hidden when cloned into mobile sheet) -->
           <div class="desktop-apply-wrap" style="padding:14px 18px;">
             <button type="submit" class="btn btn-gold btn-full btn-sm">Apply Filters</button>
           </div>
@@ -294,7 +294,7 @@ function openFilterSheet(){
     var original=document.getElementById('filter-form');
     var clone=original.cloneNode(true);
     clone.id='mobile-filter-form';
-    // Remove the desktop Apply button from the clone — the sheet has its own sticky button
+    // Remove the desktop Apply button from the clone - the sheet has its own sticky button
     var innerApply=clone.querySelector('.desktop-apply-wrap');
     if(innerApply) innerApply.remove();
     document.getElementById('filter-sheet-content').appendChild(clone);

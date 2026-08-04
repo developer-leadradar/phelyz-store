@@ -1,6 +1,6 @@
 <?php
 /**
- * Phelyz Store — Vercel PHP Entry Point
+ * Phelyz Store - Vercel PHP Entry Point
  * All requests route through here; this is the only PHP lambda.
  */
 
@@ -50,7 +50,7 @@ if ($targetFile === null) {
         chdir(dirname($root . '/404.php'));
         require $root . '/404.php';
     } else {
-        echo '<!DOCTYPE html><html><body><h1>404 — Page Not Found</h1></body></html>';
+        echo '<!DOCTYPE html><html><body><h1>404 - Page Not Found</h1></body></html>';
     }
     exit;
 }

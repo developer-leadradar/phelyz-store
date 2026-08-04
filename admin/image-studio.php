@@ -32,7 +32,7 @@ $presetsJs = array_map(function($p) {
   <div>
     <div style="font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Image Studio</div>
     <h2 style="font-family:'Cormorant',serif;font-size:28px;font-weight:700;color:var(--black);letter-spacing:-0.02em;margin:0 0 6px;">Batch Editor</h2>
-    <p style="font-size:13px;color:var(--stone-mid);margin:0;max-width:640px;">Drop in up to 10 product photos. The studio removes the original background, drops each piece onto your chosen template, compresses to WebP, and lets you assign the result to a product. Optionally generate a "model wearing the jewellery" shot with AI.</p>
+    <p style="font-size:13px;color:var(--stone-mid);margin:0;max-width:640px;">Drop in up to 10 product photos. The studio removes the original background, drops each piece onto your chosen template, compresses to WebP, and lets you assign the result to a product. Optionally generate a "model wearing the jewelry" shot with AI.</p>
   </div>
   <div style="font-size:11px;color:var(--stone-mid);text-align:right;">
     <?php if ($apiKeyConfigured): ?>
@@ -65,7 +65,7 @@ $presetsJs = array_map(function($p) {
     <div class="form-group" style="margin:0;">
       <label class="form-label">Template background</label>
       <select id="opt-template" class="form-input form-select">
-        <option value="">— Pick a template —</option>
+        <option value="">Pick a template</option>
         <?php foreach ($templates as $t): ?>
         <option value="<?php echo (int)$t['id']; ?>" <?php echo $t['is_default'] ? 'selected' : ''; ?>>
           <?php echo htmlspecialchars($t['name']); ?><?php echo $t['is_default'] ? ' (default)' : ''; ?>
@@ -114,7 +114,7 @@ $presetsJs = array_map(function($p) {
     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
   </svg>
   <p style="font-size:16px;font-weight:700;color:var(--black);margin:0 0 4px;">Drop up to 10 product photos here</p>
-  <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse · PNG / JPG / WebP · works best on a plain or busy background — the studio removes it for you</p>
+  <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse · PNG / JPG / WebP · works best on a plain or busy background - the studio removes it for you</p>
   <input type="file" id="studio-input" accept="image/*" multiple style="display:none;" onchange="studioHandleFiles(this.files)">
 </div>
 
@@ -141,7 +141,7 @@ window.STUDIO_PROVIDER_READY = <?php echo $apiKeyConfigured ? 'true' : 'false'; 
 window.STUDIO_BASE_URL  = '<?php echo defined('SITE_URL') ? SITE_URL : ''; ?>';
 </script>
 
-<!-- @imgly/background-removal — runs locally in browser, no API key -->
+<!-- @imgly/background-removal - runs locally in browser, no API key -->
 <script type="module">
 import { removeBackground } from "https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.5.5/+esm";
 window.studioRemoveBackground = removeBackground;

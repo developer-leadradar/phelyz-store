@@ -59,7 +59,7 @@ $statusColors=['pending'=>'status-pending','processing'=>'status-processing','sh
                 <div style="font-size:11px;color:var(--stone-mid);"><?php echo htmlspecialchars($o['email']??''); ?></div>
               </td>
               <td style="color:var(--stone-mid);font-size:12px;"><?php echo formatDate($o['created_at']); ?></td>
-              <td style="color:var(--stone-mid);">—</td>
+              <td style="color:var(--stone-mid);">-</td>
               <td style="font-weight:700;"><?php echo formatPrice($o['total']); ?></td>
               <td style="font-size:12px;color:var(--stone-mid);"><?php echo ucwords(str_replace('_',' ',$o['payment_method'])); ?></td>
               <td><span class="status-badge <?php echo $statusColors[$o['status']]??'status-pending'; ?>"><?php echo ucfirst($o['status']); ?></span></td>

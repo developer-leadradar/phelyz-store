@@ -176,12 +176,12 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
             <?php elseif ($effStatus === 'express'): ?>
               <span class="inline-flex items-center gap-1.5 text-sm font-semibold" style="color:#D97706;">
                 <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
-                Express / Pre-Order
+                Express
               </span>
             <?php else: /* preorder (sold out or admin-marked out of stock) */ ?>
               <span class="inline-flex items-center gap-1.5 text-sm font-semibold" style="color:#D97706;">
                 <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
-                Out of Stock — Available to Pre-Order
+                Express
               </span>
             <?php endif; ?>
           </div>
@@ -296,8 +296,17 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
         <?php $productColors = parseProductColors($product['colors'] ?? ''); ?>
         <div class="bg-white rounded-xl border border-stone-200 p-5 space-y-4">
           <?php if ($isPreorder): ?>
-          <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#92400E;line-height:1.5;">
-            <strong>Pre-Order item:</strong> <?php echo $effStatus === 'preorder' ? 'Currently out of stock — order now and we\'ll ship as soon as it\'s restocked.' : 'Ships based on order — allow extra time for delivery.'; ?>
+          <?php
+          // Express pieces are made or sourced to order. Quote a live 3-4 week
+          // window counted from the moment the customer is looking at the page.
+          $expressFrom = strtotime('+3 weeks');
+          $expressTo   = strtotime('+4 weeks');
+          $sameYear    = date('Y', $expressFrom) === date('Y', $expressTo);
+          $expressWindow = date($sameYear ? 'j M' : 'j M Y', $expressFrom) . ' - ' . date('j M Y', $expressTo);
+          ?>
+          <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:10px 14px;font-size:12px;color:#92400E;line-height:1.55;">
+            <strong>Express item:</strong> made to order especially for you.
+            <br>Estimated delivery <strong><?php echo $expressWindow; ?></strong> (3 to 4 weeks).
           </div>
           <?php endif; ?>
 
@@ -343,7 +352,7 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
           <button onclick="addToCartWithQty(<?php echo (int)$product['id']; ?>)"
             class="btn btn-gold btn-full flex items-center justify-center gap-2 text-base">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-            <?php echo $isPreorder ? 'Pre-Order Now' : 'Add to Cart'; ?>
+            Add to Cart
           </button>
 
           <button onclick="buyNow(<?php echo (int)$product['id']; ?>)"
@@ -387,7 +396,7 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24" class="text-gold flex-shrink-0"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/></svg>
             <div>
               <p class="text-xs font-bold text-stone-800">Here to Help</p>
-              <p class="text-xs text-stone-400">Mon–Sat, 9AM–6PM</p>
+              <p class="text-xs text-stone-400">Mon-Sat, 9AM-6PM</p>
             </div>
           </div>
         </div>
@@ -576,7 +585,7 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
               </div>
             </div>
             <div class="product-card-body">
-              <p class="product-card-cat"><?php echo htmlspecialchars($rp['category_name'] ?? 'Jewellery'); ?></p>
+              <p class="product-card-cat"><?php echo htmlspecialchars($rp['category_name'] ?? 'Jewelry'); ?></p>
               <h3 class="product-card-name">
                 <a href="product.php?id=<?php echo (int)$rp['id']; ?>"><?php echo htmlspecialchars($rp['name']); ?></a>
               </h3>
@@ -660,7 +669,7 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
 </style>
 
 <script>
-// Gallery — ordered list of all images (primary first), with slide + dots
+// Gallery - ordered list of all images (primary first), with slide + dots
 var galleryImages = <?php echo json_encode(array_values(array_merge([$product['image']], $additionalImages))); ?>;
 var galleryIndex  = 0;
 

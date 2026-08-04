@@ -26,7 +26,7 @@ $lastShip = $db->fetchOne(
     [$customerId]
 );
 
-// Date of birth — day + month only (year deliberately not shown)
+// Date of birth - day + month only (year deliberately not shown)
 $dobDisplay = '';
 if (!empty($customer['date_of_birth'])) {
     $ts = strtotime($customer['date_of_birth']);
@@ -69,9 +69,8 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
     </a>
   </div>
 
-  <!-- 2-column layout: 1fr | 2fr -->
-  <div style="display:grid;grid-template-columns:1fr 2fr;gap:22px;align-items:start;"
-       class="customer-detail-grid">
+  <!-- 2-column layout on desktop, single column on phones (see style.css) -->
+  <div class="customer-detail-grid">
 
     <!-- LEFT COLUMN -->
     <div style="display:flex;flex-direction:column;gap:20px;">
@@ -257,7 +256,7 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
       </div>
 
       <!-- Stats Row -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="cd-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <!-- Total Orders -->
         <div class="card" style="padding:16px;text-align:center;">
           <div style="width:38px;height:38px;border-radius:10px;background:rgba(202,138,4,0.10);
@@ -492,7 +491,7 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
                   </div>
                   <p style="font-size:12px;color:var(--stone-mid);margin-top:2px;">
                     <?php echo formatDate($order['created_at']); ?>
-                    &mdash;
+                    -
                     <strong style="color:var(--black);"><?php echo formatPrice($order['total']); ?></strong>
                   </p>
                 </div>

@@ -4,6 +4,18 @@ require_once 'includes/header.php';
 
 $db = getDB();
 
+// Clear the recorded traffic. Useful once, at the end of the build phase, to
+// throw away hits from testing and from the robots that scan every new domain.
+$trafficNotice = '';
+if (isset($_POST['reset_traffic']) && $_POST['reset_traffic'] === 'yes') {
+    try {
+        $db->query("DELETE FROM page_views");
+        $trafficNotice = 'Visitor history cleared. Counting starts fresh from now.';
+    } catch (Exception $e) {
+        $trafficNotice = 'Could not clear the visitor history.';
+    }
+}
+
 // Date range filter
 $startDate = isset($_GET['start_date']) ? $_GET['start_date'] : date('Y-m-01');
 $endDate = isset($_GET['end_date']) ? $_GET['end_date'] : date('Y-m-d');
@@ -184,7 +196,7 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
     </form>
     <p style="font-size:12px;color:var(--stone-mid);margin:12px 0 0;font-weight:500;text-align:center;">
         Report period: <strong style="color:var(--black);"><?php echo date('M d, Y', strtotime($startDate)); ?></strong>
-        &mdash;
+        -
         <strong style="color:var(--black);"><?php echo date('M d, Y', strtotime($endDate)); ?></strong>
     </p>
 </div>
@@ -407,15 +419,26 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
     <div style="font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Audience</div>
     <h3 style="font-family:'Cormorant',serif;font-size:22px;font-weight:700;color:var(--black);margin:0;">Website Traffic</h3>
   </div>
-  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
     <?php foreach ([7=>'7 days', 30=>'30 days', 90=>'90 days'] as $d => $lbl):
       $qs = $_GET; $qs['traffic_days'] = $d; ?>
       <a href="?<?php echo htmlspecialchars(http_build_query($qs)); ?>"
          class="btn <?php echo $trafficDays === $d ? 'btn-gold' : 'btn-outline'; ?> btn-sm"
          style="font-size:12px;padding:7px 14px;"><?php echo $lbl; ?></a>
     <?php endforeach; ?>
+    <form method="POST" style="display:inline;margin:0;"
+          onsubmit="return confirm('Clear all recorded visitor history?\n\nUse this once when you finish building, so test visits and scanner traffic do not count. This cannot be undone.');">
+      <input type="hidden" name="reset_traffic" value="yes">
+      <button type="submit" class="btn btn-outline btn-sm" style="font-size:12px;padding:7px 14px;color:#B91C1C;border-color:#FECACA;">
+        Reset
+      </button>
+    </form>
   </div>
 </div>
+
+<?php if ($trafficNotice): ?>
+  <div class="alert alert-success" style="margin-bottom:16px;"><?php echo htmlspecialchars($trafficNotice); ?></div>
+<?php endif; ?>
 
 <?php if ($overview['views'] === 0): ?>
   <div class="card" style="padding:28px;margin-bottom:24px;text-align:center;">
@@ -553,7 +576,7 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
         <?php endforeach; ?>
       </div>
       <p style="font-size:11.5px;color:var(--stone-mid);margin:16px 0 0;line-height:1.5;border-top:1px solid var(--cream-dark);padding-top:12px;">
-        <strong style="color:var(--black);">Tip:</strong> tag the links you share so attribution is exact —
+        <strong style="color:var(--black);">Tip:</strong> tag the links you share so attribution is exact -
         e.g. <code style="font-size:11px;">?utm_source=whatsapp&amp;utm_campaign=december</code> on a status link,
         <code style="font-size:11px;">?utm_source=instagram</code> in your bio.
       </p>
@@ -589,7 +612,7 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
 <div class="report-2col">
   <div class="card" style="padding:24px;">
     <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin:0 0 4px;">Most viewed products</h3>
-    <p style="font-size:12px;color:var(--stone-mid);margin:0 0 16px;">What people are looking at — compare this with what actually sells.</p>
+    <p style="font-size:12px;color:var(--stone-mid);margin:0 0 16px;">What people are looking at - compare this with what actually sells.</p>
     <?php if (empty($topViewed)): ?>
       <p style="font-size:13px;color:var(--stone-mid);">No product views recorded yet.</p>
     <?php else: ?>
@@ -675,7 +698,7 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
 
 <script>
 function exportToCSV(reportType) {
-    alert('Export functionality — implement CSV export for: ' + reportType);
+    alert('Export functionality - implement CSV export for: ' + reportType);
 }
 </script>
 

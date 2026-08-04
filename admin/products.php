@@ -72,8 +72,8 @@ $categories = getAllCategories();
                 <div style="font-weight:700;font-size:13px;color:var(--black);"><?php echo htmlspecialchars($p['name']); ?></div>
                 <?php if ($p['is_featured']): ?><span style="font-size:10px;font-weight:700;background:rgba(202,138,4,0.10);color:var(--gold);padding:2px 6px;border-radius:4px;">Featured</span><?php endif; ?>
               </td>
-              <td style="font-size:12px;color:var(--stone-mid);"><?php echo htmlspecialchars($p['sku']??'—'); ?></td>
-              <td style="font-size:13px;"><?php echo htmlspecialchars($p['category_name']??'—'); ?></td>
+              <td style="font-size:12px;color:var(--stone-mid);"><?php echo htmlspecialchars($p['sku']??'-'); ?></td>
+              <td style="font-size:13px;"><?php echo htmlspecialchars($p['category_name']??'-'); ?></td>
               <td style="font-weight:700;"><?php echo formatPrice($p['price']); ?></td>
               <td>
                 <?php if ($p['stock_quantity']===0||$p['stock_quantity']==='0'): ?>

@@ -2,7 +2,7 @@
 if (!defined('PHELYZ_ACCESS')) { exit; }
 
 /**
- * Phelyz Image Studio — helpers & AI provider abstraction.
+ * Phelyz Image Studio - helpers & AI provider abstraction.
  *
  * The pluggable provider layer means swapping Gemini for OpenAI / Replicate /
  * Stability later is a single class swap, not a rewrite of any UI.
@@ -54,8 +54,8 @@ interface ImageGenProvider {
  * Gemini image generation / editing.
  * Default model: gemini-3.1-flash-image (best for image-to-image editing).
  * Other supported models (set in admin settings):
- *   - gemini-3-pro-image     — pro quality, higher cost
- *   - gemini-2.5-flash-image — older flash model (legacy "Nano Banana")
+ *   - gemini-3-pro-image     - pro quality, higher cost
+ *   - gemini-2.5-flash-image - older flash model (legacy "Nano Banana")
  *
  * Endpoint: https://generativelanguage.googleapis.com/v1/models/{MODEL}:generateContent
  */
@@ -169,7 +169,7 @@ function imageStudioGetProvider(): ImageGenProvider {
 // ── Prompt builder ──────────────────────────────────────────────────────────
 
 /**
- * Build the model-shot prompt from a preset + jewellery category.
+ * Build the model-shot prompt from a preset + jewelry category.
  * The prompt mirrors the user's original Nano-Banana brief, with the preset's
  * details injected so each shoot can match the brand's chosen "look".
  */
@@ -197,17 +197,17 @@ function buildModelShotPrompt(array $preset, string $category): string {
     return <<<PROMPT
 You are an expert product-photography AI. Generate ONE ultra-realistic, ultra-sharp commercial product photograph (8k style).
 
-ABSOLUTE PRODUCT INTEGRITY — DO NOT alter, redesign, or hallucinate features of the jewellery shown in the reference image. Preserve every diamond, stone, prong, link, and metallic finish exactly. Only adjust positioning, angle, contact shadows, and lighting so it sits naturally on the model.
+ABSOLUTE PRODUCT INTEGRITY - DO NOT alter, redesign, or hallucinate features of the jewelry shown in the reference image. Preserve every diamond, stone, prong, link, and metallic finish exactly. Only adjust positioning, angle, contact shadows, and lighting so it sits naturally on the model.
 
 Subject: a professional {$skin}-skinned {$gender} fashion model, age {$age}, with hyper-realistic skin (subtle pores, natural texture, no AI-smoothing). Pose: {$pose}.
 
-Placement: the jewellery is worn {$mount}. The piece must interact with the skin with realistic micro-shadows and reflections.
+Placement: the jewelry is worn {$mount}. The piece must interact with the skin with realistic micro-shadows and reflections.
 
-Setting: clean high-end studio backdrop, soft-focus luxury feel, {$light} lighting. Commercial product photography sharpness — the jewellery must be tack-sharp with zero blur.
+Setting: clean high-end studio backdrop, soft-focus luxury feel, {$light} lighting. Commercial product photography sharpness - the jewelry must be tack-sharp with zero blur.
 
 {$extra}
 
-Output ONLY the image. No text overlays, no watermarks, no extra ornaments on the jewellery.
+Output ONLY the image. No text overlays, no watermarks, no extra ornaments on the jewelry.
 PROMPT;
 }
 

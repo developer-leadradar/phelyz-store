@@ -26,7 +26,7 @@ class PgSessionHandler implements SessionHandlerInterface {
             $row = $stmt->fetch();
             return $row ? ($row['data'] ?? '') : '';
         } catch (Exception $e) {
-            // Log loudly — a silent failure here logs every user out on the
+            // Log loudly - a silent failure here logs every user out on the
             // next request, which is very hard to diagnose from the outside.
             error_log('SESSION READ FAILED: ' . $e->getMessage());
             return '';

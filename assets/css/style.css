@@ -1,5 +1,5 @@
 /* =========================================================
-   PHELYZ STORE — Design System
+   PHELYZ STORE - Design System
    Stack: Tailwind CDN + Custom CSS
    Style: Luxury Glass Morphism
    Palette: Warm Black + Gold + Cream
@@ -691,7 +691,7 @@ input, select, textarea, button { font-family: inherit; }
   font-size: 10px; font-weight: 700; border-radius: 99px; padding: 2px 7px;
 }
 .admin-main { padding: 28px; overflow-x: hidden; overflow-y: auto; min-width: 0; }
-/* Table scroll wrapper — used by admin pages that use class instead of inline style */
+/* Table scroll wrapper - used by admin pages that use class instead of inline style */
 .table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; width: 100%; }
 /* Constrain ALL overflow-x:auto wrappers inside admin-main to container width */
 .admin-main [style*="overflow-x:auto"],
@@ -758,14 +758,14 @@ input, select, textarea, button { font-family: inherit; }
   /* Push actions to right edge now that nav-links (flex:1) is hidden */
   .nav-inner { justify-content: space-between !important; }
 
-  /* Hero — center everything on mobile */
+  /* Hero - center everything on mobile */
   .hero-grid { text-align: center !important; }
   .hero-grid > div:first-child > div:first-child { justify-content: center !important; }
   .hero-grid p { max-width: 100% !important; margin-left: auto !important; margin-right: auto !important; }
   .hero-grid > div:first-child > div[style*="display:flex"] { justify-content: center !important; }
 
   .footer-grid { grid-template-columns: 1fr; gap: 28px; }
-  /* Footer — center every column */
+  /* Footer - center every column */
   .footer-grid > div { text-align: center; }
   .footer-col { text-align: center; }
 
@@ -774,7 +774,7 @@ input, select, textarea, button { font-family: inherit; }
   .footer-desc { text-align: center; margin-left: auto; margin-right: auto; }
   .footer-social { justify-content: center; }
 
-  /* Contact column — center each icon+text row */
+  /* Contact column - center each icon+text row */
   .footer-contact-row { justify-content: center; }
 
   /* Footer bottom */
@@ -785,15 +785,15 @@ input, select, textarea, button { font-family: inherit; }
   .admin-main { padding: 16px; }
   .wa-float { bottom: 16px; right: 16px; width: 50px; height: 50px; }
 
-  /* About page — story section single col + center */
+  /* About page - story section single col + center */
   .story-grid { grid-template-columns: 1fr !important; gap: 32px !important; }
   .story-grid > div:first-child { text-align: center !important; }
   .story-grid > div:first-child .section-eyebrow { text-align: center !important; }
   .story-grid > div:first-child h2 { text-align: center !important; }
 
-  /* Contact page — grid collapses to single col */
+  /* Contact page - grid collapses to single col */
   .contact-grid { grid-template-columns: 1fr !important; }
-  /* Center only the heading + description — contact item rows stay left-aligned */
+  /* Center only the heading + description - contact item rows stay left-aligned */
   .contact-grid > div:first-child > h2 { text-align: center !important; }
   .contact-grid > div:first-child > p { text-align: center !important; }
   .contact-grid > div:first-child a[href*="wa.me"] { justify-content: center !important; }
@@ -852,7 +852,7 @@ input, select, textarea, button { font-family: inherit; }
   /* Hero fully single-col */
   .hero-grid { padding-top: 32px !important; padding-bottom: 32px !important; }
 
-  /* Product grids – 2 col on mobile */
+  /* Product grids - 2 col on mobile */
   #product-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
   .product-card-name { font-size: 13px !important; }
   .price-current { font-size: 15px !important; }
@@ -900,11 +900,11 @@ input, select, textarea, button { font-family: inherit; }
   .page-hero-title { font-size: 28px !important; }
   .page-hero-sub { font-size: 12px !important; }
 
-  /* Page hero — center heading & sub on mobile */
+  /* Page hero - center heading & sub on mobile */
   .page-hero .container { text-align: center !important; }
   .breadcrumb { justify-content: center !important; }
 
-  /* Auth pages — center logo + headings on mobile */
+  /* Auth pages - center logo + headings on mobile */
   .auth-logo-text { justify-content: center !important; }
   .auth-heading, .auth-sub { text-align: center !important; }
 
@@ -980,13 +980,13 @@ input, select, textarea, button { font-family: inherit; }
 }
 
 /* ═══════════════════════════════════════════════════
-   ADMIN PANEL — PRODUCTION MOBILE FIXES
+   ADMIN PANEL - PRODUCTION MOBILE FIXES
    Covers every page: Dashboard, Orders, Products,
    Categories, Customers, Order Details, Reports,
    Add/Edit Product, Settings.
    ═══════════════════════════════════════════════════ */
 
-/* CSS-level topbar switching (JS in footer.php also does this — CSS is instant fallback) */
+/* CSS-level topbar switching (JS in footer.php also does this - CSS is instant fallback) */
 @media (max-width: 1023px) {
   #admin-desktop-topbar { display: none !important; }
   #admin-mobile-topbar  { display: flex !important; }
@@ -997,7 +997,7 @@ input, select, textarea, button { font-family: inherit; }
   /* Reduce card padding so content has more room */
   .admin-main .card { padding: 18px !important; }
 
-  /* Page action bars — stack heading + CTA button vertically */
+  /* Page action bars - stack heading + CTA button vertically */
   .admin-main > div[style*="justify-content:space-between"],
   .admin-main > div[style*="justify-content: space-between"] {
     flex-direction: column !important;
@@ -1013,14 +1013,14 @@ input, select, textarea, button { font-family: inherit; }
     text-align: center !important;
   }
 
-  /* All GET filter/search forms — wrap and go full-width */
+  /* All GET filter/search forms - wrap and go full-width */
   .admin-main form[method=GET] { flex-wrap: wrap !important; gap: 8px !important; }
   .admin-main form[method=GET] input,
   .admin-main form[method=GET] select { width: 100% !important; min-width: 0 !important; }
   .admin-main form[method=GET] button,
   .admin-main form[method=GET] a.btn { width: 100% !important; justify-content: center !important; }
 
-  /* Status filter tabs (orders page) — horizontal scroll strip */
+  /* Status filter tabs (orders page) - horizontal scroll strip */
   .admin-status-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; padding-bottom: 4px; }
   .admin-status-tabs > a { white-space: nowrap; flex-shrink: 0; }
 
@@ -1049,26 +1049,26 @@ input, select, textarea, button { font-family: inherit; }
   /* Form cards (add/edit product, settings) */
   .admin-main .card[style*="padding:28px"] { padding: 14px !important; }
 
-  /* Status badges — compact */
+  /* Status badges - compact */
   .status-badge { font-size: 9px !important; padding: 2px 5px !important; }
 
-  /* Data table — minimal */
+  /* Data table - minimal */
   .data-table { font-size: 12px !important; }
   .data-table th { padding: 7px 8px; font-size: 8.5px; letter-spacing: 0.05em; }
   .data-table td { padding: 8px 8px; }
 
-  /* Mobile topbar: always row — Menu left, title right */
+  /* Mobile topbar: always row - Menu left, title right */
   #admin-mobile-topbar { flex-direction: row !important; align-items: center !important; justify-content: space-between !important; }
   #admin-mobile-topbar span { font-size: 17px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; text-align: right !important; }
 
-  /* Admin alert cards — show count larger */
+  /* Admin alert cards - show count larger */
   .admin-alert-grid a > div:first-child { width: 36px !important; height: 36px !important; font-size: 18px !important; }
 }
 
-/* ── Shop filter — hide desktop Apply button inside mobile clone ── */
+/* ── Shop filter - hide desktop Apply button inside mobile clone ── */
 #mobile-filter-form .desktop-apply-wrap { display: none !important; }
 
-/* ── Shop page — FOUC prevention ────────────────── */
+/* ── Shop page - FOUC prevention ────────────────── */
 /* These rules are in the <head> stylesheet so they apply before body paint */
 #desktop-sidebar { display: block; }
 #mobile-filter-bar { display: none; }
@@ -1095,7 +1095,7 @@ table { max-width: 100% !important; }
 /* ============================================================
    ADMIN · ANALYTICS REPORT
    These live here (not admin.css) because the admin header only
-   ever loads style.css — admin.css is not wired up to any page.
+   ever loads style.css - admin.css is not wired up to any page.
    ============================================================ */
 
 /* --- Traffic KPIs: 4 across on desktop, 2 on mobile --- */
@@ -1198,4 +1198,30 @@ table { max-width: 100% !important; }
 }
 @media (max-width: 420px) {
   .traffic-kpi { flex-direction: column; align-items: flex-start; gap: 8px; }
+}
+
+/* ── Admin: customer details page ───────────────────────── */
+/* Two columns on a desktop, one on anything narrower. The columns also need
+   min-width:0 or long values like an email address force the grid wider than
+   the phone screen and the whole page scrolls sideways. */
+.customer-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 22px;
+  align-items: start;
+}
+.customer-detail-grid > * { min-width: 0; }
+.customer-detail-grid .card { max-width: 100%; }
+
+/* Long unbroken strings (emails, tracking ids) wrap instead of overflowing */
+.customer-detail-grid .cd-wrap,
+.customer-detail-grid a[href^="mailto:"],
+.customer-detail-grid a[href^="tel:"] { overflow-wrap: anywhere; word-break: break-word; }
+
+@media (max-width: 1024px) {
+  .customer-detail-grid { grid-template-columns: 1fr; gap: 16px; }
+}
+@media (max-width: 520px) {
+  /* Stat tiles: two up is still readable, keep them from squashing text */
+  .customer-detail-grid .cd-stats { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
 }

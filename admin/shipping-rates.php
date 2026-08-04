@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $updated++;
     }
     if ($updated > 0) {
-        $success = 'Shipping rates updated successfully — ' . $updated . ' states saved.';
+        $success = 'Shipping rates updated successfully - ' . $updated . ' states saved.';
     } else {
         $error = 'No rates were updated.';
     }
@@ -95,7 +95,7 @@ foreach ($rows as $r) {
       <div style="width:4px;height:28px;background:var(--gold);border-radius:2px;flex-shrink:0;"></div>
       <div>
         <h3 style="font-family:'Cormorant',serif;font-size:20px;font-weight:700;color:var(--black);margin:0 0 2px;">All States &amp; FCT</h3>
-        <p style="font-size:12px;color:var(--stone-mid);margin:0;">36 states + Federal Capital Territory — <?php echo count($nigeriaSStates); ?> entries</p>
+        <p style="font-size:12px;color:var(--stone-mid);margin:0;">36 states + Federal Capital Territory - <?php echo count($nigeriaSStates); ?> entries</p>
       </div>
     </div>
 

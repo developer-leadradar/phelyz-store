@@ -378,7 +378,7 @@ try {
                 <h3>🎯 What's Next?</h3>
                 <ul>
                     <li>Run <strong>install.php</strong> to reinstall with fresh data</li>
-                    <li>Your code files are intact — only data was cleared</li>
+                    <li>Your code files are intact - only data was cleared</li>
                     <li>config.php and database.sql are still in place</li>
                 </ul>
             </div>

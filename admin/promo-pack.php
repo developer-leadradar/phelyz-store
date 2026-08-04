@@ -33,8 +33,8 @@ $waNumber = preg_replace('/\D/', '', defined('SITE_WHATSAPP') ? SITE_WHATSAPP : 
 <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
   <div>
     <div style="font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Image Studio</div>
-    <h2 style="font-family:'Cormorant',serif;font-size:28px;font-weight:700;color:var(--black);letter-spacing:-0.02em;margin:0 0 6px;">Promo Pack — WhatsApp Status</h2>
-    <p style="font-size:13px;color:var(--stone-mid);margin:0;max-width:680px;">Pick the products you want to promote. The studio builds a ready-to-post 1080×1920 status image for each (photo + name + price + your branding) and a matching caption with the product link. Download the pack to your phone, then post each status in seconds — no manual editing, captioning, or link-copying.</p>
+    <h2 style="font-family:'Cormorant',serif;font-size:28px;font-weight:700;color:var(--black);letter-spacing:-0.02em;margin:0 0 6px;">Promo Pack - WhatsApp Status</h2>
+    <p style="font-size:13px;color:var(--stone-mid);margin:0;max-width:680px;">Pick the products you want to promote. The studio builds a ready-to-post 1080×1920 status image for each (photo + name + price + your branding) and a matching caption with the product link. Download the pack to your phone, then post each status in seconds - no manual editing, captioning, or link-copying.</p>
   </div>
 </div>
 
@@ -114,7 +114,7 @@ $waNumber = preg_replace('/\D/', '', defined('SITE_WHATSAPP') ? SITE_WHATSAPP : 
   <button type="button" onclick="promoGenerate()" id="promo-generate-btn" class="btn btn-gold" disabled style="opacity:0.5;">
     Generate Promo Pack
   </button>
-  <span style="font-size:12px;color:var(--stone-mid);">Builds status images in your browser — nothing is uploaded.</span>
+  <span style="font-size:12px;color:var(--stone-mid);">Builds status images in your browser - nothing is uploaded.</span>
 </div>
 
 <!-- Output modal -->

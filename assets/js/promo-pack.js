@@ -1,5 +1,5 @@
 /**
- * Phelyz Promo Pack — builds 1080×1920 WhatsApp-status images in the browser.
+ * Phelyz Promo Pack - builds 1080×1920 WhatsApp-status images in the browser.
  * No server round-trip, no cost. Each selected product becomes:
  *   - a status-sized JPEG (product photo + gradient + name + price + CTA + brand)
  *   - a ready caption with the product link.
@@ -198,7 +198,7 @@
   function buildCaption(product, opts) {
     var s = window.PROMO_STORE;
     var lines = [];
-    lines.push((opts.headline || '') + ' — ' + product.name);
+    lines.push((opts.headline || '') + ' - ' + product.name);
     if (opts.showPrice) lines.push('Price: ' + product.price + (product.compare ? ' (was ' + product.compare + ')' : ''));
     lines.push('');
     lines.push(opts.cta || 'Order now:');

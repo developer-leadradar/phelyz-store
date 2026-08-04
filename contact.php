@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <span style="color:rgba(255,255,255,0.8);">Contact</span>
     </div>
     <h1 class="page-hero-title">Get in Touch</h1>
-    <p class="page-hero-sub">We'd love to hear from you — reach out any time</p>
+    <p class="page-hero-sub">We'd love to hear from you - reach out any time</p>
   </div>
 </div>
 
@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <svg viewBox="0 0 32 32" fill="white" width="24" height="24"><path d="M16 2C8.27 2 2 8.27 2 16c0 2.47.65 4.79 1.79 6.8L2 30l7.38-1.76A13.9 13.9 0 0016 30c7.73 0 14-6.27 14-14S23.73 2 16 2z"/><path d="M23.5 19.4c-.3-.15-1.77-.87-2.04-.97-.28-.1-.48-.15-.68.15s-.78.97-.96 1.17c-.17.2-.35.22-.65.07-1.77-.88-2.93-1.58-4.1-3.57-.31-.53.31-.5.89-1.65.1-.2.05-.37-.03-.52-.07-.15-.68-1.63-.93-2.24-.24-.58-.49-.5-.68-.51h-.58c-.2 0-.52.07-.79.37-.27.3-1.03 1.01-1.03 2.46s1.06 2.85 1.2 3.05c.15.2 2.07 3.16 5.02 4.43 1.87.81 2.6.88 3.54.74.57-.09 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.07-.12-.27-.2-.57-.35z" opacity="0.3"/></svg>
         <div>
           <div style="font-weight:700;font-size:14px;">Chat on WhatsApp</div>
-          <div style="font-size:12px;opacity:0.85;">Fastest response — usually within minutes</div>
+          <div style="font-size:12px;opacity:0.85;">Fastest response - usually within minutes</div>
         </div>
       </a>
     </div>

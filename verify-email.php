@@ -6,6 +6,9 @@ $db    = getDB();
 $token = isset($_GET['token']) ? trim($_GET['token']) : '';
 $state = 'invalid'; // invalid | expired | success | already_active
 
+// Housekeeping: clear out links that expired over a week ago.
+try { $db->query("DELETE FROM email_verifications WHERE expires_at < DATE_SUB(NOW(), INTERVAL 7 DAY)"); } catch (Exception $e) {}
+
 if ($token) {
     $record = $db->fetchOne(
         "SELECT * FROM email_verifications WHERE token = ?",
@@ -21,10 +24,17 @@ if ($token) {
         } elseif (strtotime($record['expires_at']) < time()) {
             $state = 'expired';
         } else {
-            // Activate account
+            // Activate account.
+            //
+            // The token row is deliberately NOT deleted here. Mail providers and
+            // security scanners routinely pre-open links in an email, which used
+            // to consume the token before the customer ever clicked it. The row
+            // is then gone, so the real click fell through to "Invalid Link"
+            // even though the account had just been activated. Keeping the row
+            // means a second visit lands on "Already Verified" instead. The row
+            // is harmless once used: it can only ever re-set is_active to 1, and
+            // it stops working after expires_at anyway.
             $db->update('users', ['is_active' => 1], 'id = ?', [$record['user_id']]);
-            // Delete used token
-            $db->delete('email_verifications', 'token = ?', [$token]);
             $state = 'success';
         }
     }

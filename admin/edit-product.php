@@ -44,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 } catch (Exception $e) { /* table may not exist */ }
             }
 
-            // Handle image upload(s) — single legacy `image` field + multi `images[]`
+            // Handle image upload(s) - single legacy `image` field + multi `images[]`
             $imagePath = $product['image'];
             $extraImages = [];
 
@@ -299,7 +299,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php
                 $statusOptions = [
                     'available'    => ['label'=>'Available','sub'=>'In stock, ships promptly','dot'=>'#22C55E'],
-                    'express'      => ['label'=>'Express','sub'=>'Pre-order, longer shipping','dot'=>'#F59E0B'],
+                    'express'      => ['label'=>'Express','sub'=>'Made to order, 3-4 weeks','dot'=>'#F59E0B'],
                     'out_of_stock' => ['label'=>'Out of Stock','sub'=>'Not available to buy','dot'=>'#EF4444'],
                 ];
                 $selectedStatus = $product['stock_status'] ?? 'available';
@@ -448,12 +448,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--black);">
                         <input type="checkbox" name="cod_enabled" value="1" <?php echo ($pmCod === null || (int)$pmCod === 1) ? 'checked' : ''; ?>
                                style="accent-color:var(--gold);width:18px;height:18px;">
-                        <span><strong>Cash on Delivery</strong> — pay shipping now, balance on arrival</span>
+                        <span><strong>Cash on Delivery</strong> - pay shipping now, balance on arrival</span>
                     </label>
                     <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--black);">
                         <input type="checkbox" name="bank_enabled" value="1" <?php echo ($pmBank === null || (int)$pmBank === 1) ? 'checked' : ''; ?>
                                style="accent-color:var(--gold);width:18px;height:18px;">
-                        <span><strong>Bank Transfer</strong> — pay full amount upfront</span>
+                        <span><strong>Bank Transfer</strong> - pay full amount upfront</span>
                     </label>
                 </div>
             </div>
@@ -473,7 +473,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         ?>
         <?php if (!empty($product['image']) || !empty($existingExtras)): ?>
         <div style="margin-bottom:24px;">
-            <p class="form-label" style="margin-bottom:10px;">Current Gallery <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--stone-mid);">— click ✕ on any to remove</span></p>
+            <p class="form-label" style="margin-bottom:10px;">Current Gallery <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--stone-mid);">- click ✕ on any to remove</span></p>
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;">
                 <?php if (!empty($product['image'])): ?>
                 <div style="position:relative;border:1px solid var(--cream-dark);border-radius:10px;overflow:hidden;background:white;">
@@ -509,7 +509,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         <!-- Upload new image(s) -->
         <div class="form-group" style="margin-bottom:0;">
-            <label class="form-label">Add Images <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--stone-mid);">(optional — select multiple)</span></label>
+            <label class="form-label">Add Images <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--stone-mid);">(optional - select multiple)</span></label>
 
             <div id="drop-zone"
                  onclick="document.getElementById('edit_product_image').click()"
@@ -522,7 +522,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
                 </svg>
                 <p style="font-size:14px;font-weight:600;color:var(--black);margin:0 0 4px;">Drag &amp; drop image(s) here</p>
-                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse &mdash; PNG, JPG, WebP &middot; Max 5MB each</p>
+                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse - PNG, JPG, WebP &middot; Max 5MB each</p>
             </div>
             <input type="file" id="edit_product_image" name="images[]" accept="image/*" multiple
                    style="display:none;" onchange="previewImages(this)">

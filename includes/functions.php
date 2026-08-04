@@ -390,9 +390,9 @@ function getOrCreateCart() {
  * flag with the live stock_quantity.
  *
  * Returns one of:
- *   'in_stock'  — available and quantity > 0 (buy now, decrements stock)
- *   'express'   — admin-marked pre-order
- *   'preorder'  — out of stock (manual flag OR quantity hit 0) → buyable as pre-order
+ *   'in_stock'  - available and quantity > 0 (buy now, decrements stock)
+ *   'express'   - admin-marked pre-order
+ *   'preorder'  - out of stock (manual flag OR quantity hit 0) → buyable as pre-order
  */
 function effectiveStockStatus($product) {
     $status = $product['stock_status'] ?? 'available';
@@ -583,7 +583,7 @@ function generateOrderNumber() {
             $seq = (int)($row['last_seq'] ?? 0);
         }
     } catch (Exception $e) {
-        $seq = 0; // counter table missing — fall through
+        $seq = 0; // counter table missing - fall through
     }
 
     if ($seq <= 0) {
@@ -628,7 +628,7 @@ function addOrderItems($orderId, $items) {
             'subtotal' => $item['price'] * $item['quantity']
         ]);
     }
-    // NOTE: stock is reduced separately via reduceStockForOrder() — only once
+    // NOTE: stock is reduced separately via reduceStockForOrder() - only once
     // the order is actually committed (COD/bank at placement, card on payment).
     return true;
 }
@@ -648,7 +648,7 @@ function reduceStockForOrder($orderId) {
         if (!$order) return false;
         if (!empty($order['stock_reduced'])) return true; // already done
     } catch (Exception $e) {
-        // stock_reduced column may not exist yet — fall through and still reduce once
+        // stock_reduced column may not exist yet - fall through and still reduce once
     }
 
     $items = $db->fetchAll(
@@ -673,7 +673,7 @@ function reduceStockForOrder($orderId) {
 
     try {
         $db->update('orders', ['stock_reduced' => 1], 'id = ?', [$orderId]);
-    } catch (Exception $e) { /* column missing — non-fatal */ }
+    } catch (Exception $e) { /* column missing - non-fatal */ }
 
     return true;
 }
@@ -811,6 +811,90 @@ function searchStems($query) {
     return array_unique($stems);
 }
 
+/**
+ * Every word worth matching a search against: product names, categories,
+ * materials, stones and brands. Cached for the life of the request.
+ */
+function searchVocabulary() {
+    static $vocab = null;
+    if ($vocab !== null) return $vocab;
+
+    $vocab = [];
+    try {
+        $rows = getDB()->fetchAll(
+            "SELECT p.name, p.material, p.stone_type, p.brand, p.style, p.occasion, c.name AS category
+             FROM products p LEFT JOIN categories c ON c.id = p.category_id
+             WHERE p.is_active = 1"
+        );
+        foreach ($rows as $r) {
+            foreach ($r as $value) {
+                if (!$value) continue;
+                foreach (preg_split('/[^a-zA-Z]+/', (string)$value) as $word) {
+                    $word = strtolower($word);
+                    if (strlen($word) >= 3) $vocab[$word] = true;
+                }
+            }
+        }
+    } catch (Exception $e) {
+        // A search should still work if this lookup fails.
+    }
+    $vocab = array_keys($vocab);
+    return $vocab;
+}
+
+/**
+ * Nudge a misspelled search onto the nearest real word from the catalogue,
+ * so "neclace" or "braclet" still find something.
+ *
+ * @return array [correctedQuery, bool didChange]
+ */
+function searchCorrectQuery($query) {
+    $vocab = searchVocabulary();
+    if (!$vocab) return [$query, false];
+
+    $tokens  = preg_split('/(\s+)/', trim($query), -1, PREG_SPLIT_DELIM_CAPTURE);
+    $changed = false;
+
+    foreach ($tokens as $i => $token) {
+        $word = strtolower($token);
+        if (strlen($word) < 3 || !ctype_alpha($word)) continue;
+
+        // Already part of a real word ("neck" inside "necklace")? Leave it alone.
+        // Only this direction counts: a typo like "earing" happens to contain
+        // "ring", and treating that as a hit would skip the correction.
+        foreach ($vocab as $v) {
+            if (strpos($v, $word) !== false) continue 2;
+        }
+
+        // How far off we tolerate: roughly a third of the word.
+        $limit = strlen($word) <= 5 ? 1 : (strlen($word) <= 8 ? 2 : 3);
+        $best = null; $bestScore = null;
+        $wordSound = metaphone($word);
+
+        foreach ($vocab as $v) {
+            if (abs(strlen($v) - strlen($word)) > $limit + 1) continue;
+            $d = levenshtein($word, $v);
+            // Words that sound the same get treated as a near-miss.
+            if ($d > $limit && $wordSound !== '' && metaphone($v) === $wordSound) $d = $limit;
+            if ($d > $limit) continue;
+
+            // Two candidates can sit the same distance away ("earing" is two
+            // edits from both "ring" and "earrings"). Break the tie on the
+            // longest shared opening, which is nearly always what was meant.
+            $prefix = 0;
+            $max = min(strlen($word), strlen($v));
+            while ($prefix < $max && $word[$prefix] === $v[$prefix]) $prefix++;
+
+            $score = [$d, -$prefix, abs(strlen($v) - strlen($word))];
+            if ($bestScore === null || $score < $bestScore) { $bestScore = $score; $best = $v; }
+        }
+
+        if ($best !== null) { $tokens[$i] = $best; $changed = true; }
+    }
+
+    return [implode('', $tokens), $changed];
+}
+
 function sanitize($data) {
     return htmlspecialchars(strip_tags(trim($data)), ENT_QUOTES, 'UTF-8');
 }
@@ -912,7 +996,7 @@ function uploadImage($file, $directory = 'products') {
 }
 
 /**
- * Minimal SMTP client — no Composer, no PHPMailer.
+ * Minimal SMTP client - no Composer, no PHPMailer.
  *
  * Shared cPanel hosting has no `composer install` step and vendor/ is not in
  * the repo, so the PHPMailer branch below never runs in production. This talks
@@ -1012,6 +1096,63 @@ function smtpSend($to, $subject, $htmlBody) {
 
     return $final['ok'] ? ['ok' => true, 'error' => '']
                         : ['ok' => false, 'error' => 'message rejected: ' . $final['res']];
+}
+
+/**
+ * Wrap email content in the Phelyz shell: logo header, white card, footer.
+ *
+ * Built with tables and inline styles because that is all the older mail
+ * clients reliably support. The logo is a PNG rather than the site's SVG:
+ * Gmail and Outlook refuse to render SVG in a message body.
+ *
+ * @param string $bodyHtml   The message body (already HTML).
+ * @param string $preheader  Short line shown in the inbox preview.
+ */
+function phelyzEmailTemplate($bodyHtml, $preheader = '') {
+    $logo = SITE_URL . '/assets/images/phelyz-logo-email.png';
+    $year = date('Y');
+    $site = htmlspecialchars(SITE_NAME);
+    $pre  = htmlspecialchars($preheader);
+
+    return '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+      . '<meta name="viewport" content="width=device-width,initial-scale=1">'
+      . '</head>'
+      . '<body style="margin:0;padding:0;background:#F5F5F4;">'
+      . ($pre !== '' ? '<div style="display:none;max-height:0;overflow:hidden;opacity:0;">' . $pre . '</div>' : '')
+      . '<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F5F5F4;padding:32px 16px;">'
+      . '<tr><td align="center">'
+      . '<table width="560" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;box-shadow:0 4px 18px rgba(0,0,0,0.07);font-family:Arial,Helvetica,sans-serif;">'
+
+      // Header with the logo
+      . '<tr><td align="center" style="padding:30px 32px 22px;background:#ffffff;">'
+      . '<img src="' . $logo . '" alt="' . $site . '" width="180" '
+      . 'style="display:block;width:180px;max-width:60%;height:auto;border:0;outline:none;text-decoration:none;">'
+      . '</td></tr>'
+      . '<tr><td style="height:3px;background:#CA8A04;font-size:0;line-height:0;">&nbsp;</td></tr>'
+
+      // Body
+      . '<tr><td style="padding:34px 32px 30px;color:#1C1917;font-size:15px;line-height:1.7;">'
+      . $bodyHtml
+      . '</td></tr>'
+
+      // Footer
+      . '<tr><td style="background:#FAFAF9;border-top:1px solid #E7E5E4;padding:20px 32px;text-align:center;">'
+      . '<p style="margin:0 0 6px;color:#78716C;font-size:12px;line-height:1.6;">'
+      . $site . ' &middot; ' . htmlspecialchars(SITE_ADDRESS) . '</p>'
+      . '<p style="margin:0;color:#A8A29E;font-size:11px;">&copy; ' . $year . ' ' . $site . '. All rights reserved.</p>'
+      . '</td></tr>'
+
+      . '</table></td></tr></table></body></html>';
+}
+
+/** A gold call-to-action button that survives Outlook. */
+function phelyzEmailButton($text, $url) {
+    return '<table cellpadding="0" cellspacing="0" border="0" align="center" style="margin:26px auto;">'
+      . '<tr><td align="center" bgcolor="#CA8A04" style="border-radius:8px;">'
+      . '<a href="' . htmlspecialchars($url) . '" target="_blank" '
+      . 'style="display:inline-block;padding:15px 38px;color:#ffffff;font-family:Arial,Helvetica,sans-serif;'
+      . 'font-size:15px;font-weight:bold;text-decoration:none;border-radius:8px;">'
+      . htmlspecialchars($text) . '</a></td></tr></table>';
 }
 
 function sendEmail($to, $subject, $message) {

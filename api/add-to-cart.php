@@ -53,7 +53,7 @@ if (!empty($availableColors)) {
     }
 }
 
-// Stock check — pre-order items (express or sold-out) bypass the quantity limit
+// Stock check - pre-order items (express or sold-out) bypass the quantity limit
 if (!isPreorderProduct($product) && $product['stock_quantity'] < $quantity) {
     echo json_encode([
         'success' => false,

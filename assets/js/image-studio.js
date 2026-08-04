@@ -1,5 +1,5 @@
 /**
- * Phelyz Image Studio — browser-side processing pipeline.
+ * Phelyz Image Studio - browser-side processing pipeline.
  *
  * Per image:
  *   1. Background removal (@imgly/background-removal, runs locally on CPU)
@@ -43,7 +43,7 @@
     }
     const accepted = files.slice(0, room);
     if (files.length > room) {
-      showToast(`Only added the first ${room} — limit is 10 at a time.`, 'info');
+      showToast(`Only added the first ${room} - limit is 10 at a time.`, 'info');
     }
     accepted.forEach(addItemFromFile);
     refreshQueueVisibility();
@@ -140,7 +140,7 @@
       processing: 'Processing',
       generating: 'Generating AI shot',
       done:       'Processed',
-      failed:     'Failed — try again',
+      failed:     'Failed - try again',
       assigned:   'Assigned',
     }[item.status] || item.status;
   }
@@ -168,7 +168,7 @@
     if (!template) { showToast('Template not found', 'error'); return; }
 
     if (typeof window.studioRemoveBackground !== 'function') {
-      showToast('Background remover is still loading — try again in a few seconds', 'info');
+      showToast('Background remover is still loading - try again in a few seconds', 'info');
       return;
     }
 
@@ -204,7 +204,7 @@
           item.jobId    = j.job_id    || item.jobId;
           item.processedPath = j.output_path;
         }
-      } catch(e) { /* offline-ish — still usable */ }
+      } catch(e) { /* offline-ish - still usable */ }
     } catch (err) {
       console.error(err);
       item.status = 'failed';
@@ -238,7 +238,7 @@
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, size, size);
 
-    // 3. Place cutout — contain-fit to 78% of canvas
+    // 3. Place cutout - contain-fit to 78% of canvas
     const targetBox = size * 0.78;
     const ratio = Math.min(targetBox / cutoutImg.width, targetBox / cutoutImg.height);
     const drawW = cutoutImg.width  * ratio;
@@ -335,7 +335,7 @@
     const outputId = kind === 'model' ? item.modelOutputId : item.outputId;
     const previewUrl = kind === 'model' ? (item.modelDataUrl || item.modelPath) : (item.processedDataUrl || item.processedPath);
     if (!outputId) {
-      showToast('This image hasn\'t been saved to the server yet — try processing again.', 'error');
+      showToast('This image hasn\'t been saved to the server yet - try processing again.', 'error');
       return;
     }
 

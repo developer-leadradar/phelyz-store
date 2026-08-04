@@ -23,7 +23,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $db->insert('password_resets', ['email'=>$email,'token'=>$token,'expires_at'=>$expiresAt]);
             $resetLink = SITE_URL . '/reset-password.php?token=' . $token;
             $subject   = 'Reset Your Phelyz Store Password';
-            $message   = '<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:40px 20px;"><tr><td align="center"><table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;"><tr><td style="background:#1C1917;padding:36px 40px;text-align:center;"><h1 style="color:#CA8A04;font-size:26px;font-weight:800;letter-spacing:3px;margin:0;">PHELYZ</h1><p style="color:rgba(255,255,255,0.6);font-size:13px;margin:6px 0 0;">Password Reset Request</p></td></tr><tr><td style="padding:40px;"><p style="color:#1C1917;font-size:16px;margin:0 0 12px;">Hello <strong>'.htmlspecialchars($user['first_name']).'</strong>,</p><p style="color:#44403C;font-size:15px;line-height:1.7;margin:0 0 28px;">We received a request to reset your password. This link expires in 1 hour.</p><div style="text-align:center;margin:32px 0;"><a href="'.$resetLink.'" style="display:inline-block;background:#CA8A04;color:#ffffff;text-decoration:none;padding:16px 40px;border-radius:8px;font-size:16px;font-weight:700;">Reset My Password</a></div><p style="color:#78716C;font-size:13px;margin:0 0 8px;">Or copy this link:</p><p style="background:#f8f9fb;border:1px solid #e4e8ef;border-radius:6px;padding:12px;font-size:12px;word-break:break-all;">'.$resetLink.'</p></td></tr></table></td></tr></table></body></html>';
+            $message   = phelyzEmailTemplate(
+                '<p style="margin:0 0 12px;font-size:16px;">Hello,</p>'
+              . '<p style="margin:0 0 4px;color:#44403C;">We received a request to reset the password on your Phelyz Store account. Click the button below to choose a new one.</p>'
+              . phelyzEmailButton('Reset My Password', $resetLink)
+              . '<p style="margin:0 0 8px;color:#78716C;font-size:13px;">Or paste this link into your browser:</p>'
+              . '<p style="background:#FAFAF9;border:1px solid #E7E5E4;border-radius:6px;padding:12px;font-size:12px;color:#44403C;word-break:break-all;margin:0 0 22px;">' . htmlspecialchars($resetLink) . '</p>'
+              . '<p style="margin:0;color:#78716C;font-size:13px;">This link expires in 1 hour. If you did not ask for a password reset, you can safely ignore this email and nothing will change.</p>',
+                'Reset the password on your Phelyz Store account.'
+            );
             sendEmail($email, $subject, $message);
         }
         $success = 'If that email is registered, you will receive a password reset link shortly.';

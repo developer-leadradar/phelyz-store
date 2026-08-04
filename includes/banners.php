@@ -12,12 +12,12 @@ if (!defined('PHELYZ_ACCESS')) { exit; }
 
 /**
  * The preset catalogue. Each entry is a complete look:
- *   grad  — CSS background for the banner
- *   text  — main text colour
- *   accent— CTA button background
- *   onAcc — CTA text colour
- *   emoji — default decorative emoji
- *   copy  — suggested headline / subtitle / CTA the admin can accept or edit
+ *   grad  - CSS background for the banner
+ *   text  - main text colour
+ *   accent- CTA button background
+ *   onAcc - CTA text colour
+ *   emoji - default decorative emoji
+ *   copy  - suggested headline / subtitle / CTA the admin can accept or edit
  */
 function bannerPresets() {
     return [
@@ -25,7 +25,7 @@ function bannerPresets() {
             'label' => 'Christmas',
             'grad'  => 'linear-gradient(115deg,#7F1D1D 0%,#B91C1C 45%,#14532D 100%)',
             'text'  => '#FFFFFF', 'accent' => '#FDE68A', 'onAcc' => '#7F1D1D', 'emoji' => '🎄',
-            'copy'  => ['Christmas Collection', 'Give something they will keep forever — free delivery over ₦50,000', 'Shop Christmas'],
+            'copy'  => ['Christmas Collection', 'Give something they will keep forever - free delivery over ₦50,000', 'Shop Christmas'],
         ],
         'newyear' => [
             'label' => 'New Year',
@@ -37,19 +37,19 @@ function bannerPresets() {
             'label' => "Valentine's Day",
             'grad'  => 'linear-gradient(115deg,#831843 0%,#BE185D 50%,#F472B6 100%)',
             'text'  => '#FFFFFF', 'accent' => '#FFFFFF', 'onAcc' => '#BE185D', 'emoji' => '💝',
-            'copy'  => ["Valentine's Edit", 'Say it properly this year — curated gifts she will actually wear', 'Shop Gifts for Her'],
+            'copy'  => ["Valentine's Edit", 'Say it properly this year - curated gifts she will actually wear', 'Shop Gifts for Her'],
         ],
         'eid' => [
             'label' => 'Eid',
             'grad'  => 'linear-gradient(115deg,#064E3B 0%,#047857 50%,#D4AF37 100%)',
             'text'  => '#FFFFFF', 'accent' => '#FDE68A', 'onAcc' => '#064E3B', 'emoji' => '🌙',
-            'copy'  => ['Eid Mubarak', 'Celebrate with timeless gold — free delivery on orders over ₦50,000', 'Shop the Edit'],
+            'copy'  => ['Eid Mubarak', 'Celebrate with timeless gold - free delivery on orders over ₦50,000', 'Shop the Edit'],
         ],
         'blackfriday' => [
             'label' => 'Black Friday',
             'grad'  => 'linear-gradient(115deg,#000000 0%,#1C1917 60%,#CA8A04 100%)',
             'text'  => '#FFFFFF', 'accent' => '#FACC15', 'onAcc' => '#000000', 'emoji' => '🔥',
-            'copy'  => ['Black Friday', 'Our biggest reductions of the year — while stock lasts', 'Shop the Sale'],
+            'copy'  => ['Black Friday', 'Our biggest reductions of the year - while stock lasts', 'Shop the Sale'],
         ],
         'mothersday' => [
             'label' => "Mother's Day",
@@ -61,7 +61,7 @@ function bannerPresets() {
             'label' => 'Independence Day',
             'grad'  => 'linear-gradient(115deg,#065F46 0%,#FFFFFF 50%,#065F46 100%)',
             'text'  => '#064E3B', 'accent' => '#065F46', 'onAcc' => '#FFFFFF', 'emoji' => '🇳🇬',
-            'copy'  => ['Independence Sale', 'Celebrating Nigeria — special pricing all week', 'Shop Now'],
+            'copy'  => ['Independence Sale', 'Celebrating Nigeria - special pricing all week', 'Shop Now'],
         ],
         'easter' => [
             'label' => 'Easter',
@@ -73,7 +73,7 @@ function bannerPresets() {
             'label' => 'General Sale',
             'grad'  => 'linear-gradient(115deg,#9A3412 0%,#EA580C 55%,#FB923C 100%)',
             'text'  => '#FFFFFF', 'accent' => '#FFFFFF', 'onAcc' => '#EA580C', 'emoji' => '🏷️',
-            'copy'  => ['Limited-Time Offer', 'Selected pieces reduced — ends soon', 'Shop the Sale'],
+            'copy'  => ['Limited-Time Offer', 'Selected pieces reduced - ends soon', 'Shop the Sale'],
         ],
         'gold' => [
             'label' => 'Phelyz Gold (house style)',

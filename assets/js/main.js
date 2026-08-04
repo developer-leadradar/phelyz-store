@@ -1,5 +1,5 @@
-// Phelyz Store — Main JS
-// All UI interactions — routes through showToast defined in header.php
+// Phelyz Store - Main JS
+// All UI interactions - routes through showToast defined in header.php
 
 /* ── Cart ─────────────────────────────────────────── */
 function getSelectedColorFromPage() {
@@ -42,7 +42,7 @@ async function addToCart(productId, quantity, color) {
       showToast(data.message || 'Could not add to cart', 'error');
     }
   } catch(e) {
-    showToast('Network error — please try again', 'error');
+    showToast('Network error - please try again', 'error');
   }
   if (btn) btn.classList.remove('btn-loading');
 }

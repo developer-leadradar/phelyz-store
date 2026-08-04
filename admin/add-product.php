@@ -22,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($existingSku) {
             $error = 'SKU already exists';
         } else {
-            // Handle image upload(s) — accept either single `image` or multiple `images[]`
+            // Handle image upload(s) - accept either single `image` or multiple `images[]`
             $imagePath = 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800'; // Default
             $extraImages = []; // additional gallery images beyond the primary
 
@@ -105,7 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             ]);
                         }
                     } catch (Exception $e) {
-                        // product_images table may not exist yet — non-fatal
+                        // product_images table may not exist yet - non-fatal
                         error_log('product_images insert failed: ' . $e->getMessage());
                     }
                 }
@@ -260,7 +260,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php
                 $statusOptions = [
                     'available'    => ['label'=>'Available','sub'=>'In stock, ships promptly','dot'=>'#22C55E'],
-                    'express'      => ['label'=>'Express','sub'=>'Pre-order, longer shipping','dot'=>'#F59E0B'],
+                    'express'      => ['label'=>'Express','sub'=>'Made to order, 3-4 weeks','dot'=>'#F59E0B'],
                     'out_of_stock' => ['label'=>'Out of Stock','sub'=>'Not available to buy','dot'=>'#EF4444'],
                 ];
                 $selectedStatus = $_POST['stock_status'] ?? 'available';
@@ -404,12 +404,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--black);">
                         <input type="checkbox" name="cod_enabled" value="1" checked
                                style="accent-color:var(--gold);width:18px;height:18px;">
-                        <span><strong>Cash on Delivery</strong> — pay shipping now, balance on arrival</span>
+                        <span><strong>Cash on Delivery</strong> - pay shipping now, balance on arrival</span>
                     </label>
                     <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;color:var(--black);">
                         <input type="checkbox" name="bank_enabled" value="1" checked
                                style="accent-color:var(--gold);width:18px;height:18px;">
-                        <span><strong>Bank Transfer</strong> — pay full amount upfront</span>
+                        <span><strong>Bank Transfer</strong> - pay full amount upfront</span>
                     </label>
                 </div>
             </div>
@@ -438,7 +438,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
                 </svg>
                 <p style="font-size:14px;font-weight:600;color:var(--black);margin:0 0 4px;">Drag &amp; drop image(s) here</p>
-                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse &mdash; PNG, JPG, WebP &middot; Max 5MB each &middot; 800&times;800px recommended &middot; Select multiple to add a gallery</p>
+                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse - PNG, JPG, WebP &middot; Max 5MB each &middot; 800&times;800px recommended &middot; Select multiple to add a gallery</p>
             </div>
             <input type="file" id="product_image" name="images[]" accept="image/*" multiple
                    style="display:none;" onchange="previewImages(this)">

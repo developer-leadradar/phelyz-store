@@ -124,7 +124,7 @@ $statusColors       = ['pending'=>'status-pending','processing'=>'status-process
         <?php foreach ($lowStock as $p): ?>
           <tr>
             <td style="font-weight:600;color:var(--black);"><?php echo htmlspecialchars($p['name']); ?></td>
-            <td style="color:var(--stone-mid);"><?php echo htmlspecialchars($p['sku']??'—'); ?></td>
+            <td style="color:var(--stone-mid);"><?php echo htmlspecialchars($p['sku']??'-'); ?></td>
             <td><span style="font-weight:700;color:#EF4444;"><?php echo (int)$p['stock_quantity']; ?> left</span></td>
             <td><?php echo formatPrice($p['price']); ?></td>
             <td><a href="edit-product.php?id=<?php echo $p['id']; ?>" class="btn btn-gold btn-sm">Restock</a></td>

@@ -24,22 +24,22 @@
         </div>
         <p class="footer-desc">Your trusted destination for premium diamonds and fine jewelry. Crafting timeless elegance since 2024.</p>
         <div class="footer-social">
-          <!-- Facebook -->
-          <a href="#" class="social-btn" aria-label="Facebook">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
-          </a>
-          <!-- Instagram -->
-          <a href="#" class="social-btn" aria-label="Instagram">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="20" x="2" y="2" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor"/></svg>
-          </a>
-          <!-- Twitter / X -->
-          <a href="#" class="social-btn" aria-label="Twitter">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-          </a>
-          <!-- Pinterest -->
-          <a href="#" class="social-btn" aria-label="Pinterest">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.64 7.88 6.39 9.34-.09-.78-.17-1.97.03-2.82l1.23-5.21s-.31-.63-.31-1.56c0-1.46.85-2.55 1.9-2.55.9 0 1.33.67 1.33 1.48 0 .9-.58 2.25-.87 3.5-.25 1.04.52 1.89 1.55 1.89 1.85 0 3.28-1.96 3.28-4.78 0-2.5-1.79-4.24-4.36-4.24-2.97 0-4.71 2.22-4.71 4.53 0 .9.34 1.86.77 2.38.08.1.09.19.07.3l-.29 1.17c-.04.18-.15.22-.34.13-1.25-.58-2.03-2.42-2.03-3.9 0-3.16 2.3-6.07 6.63-6.07 3.48 0 6.19 2.48 6.19 5.8 0 3.46-2.18 6.24-5.2 6.24-1.02 0-1.97-.53-2.3-1.15l-.62 2.33c-.22.86-.83 1.94-1.24 2.6.94.29 1.93.44 2.96.44 5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>
-          </a>
+          <?php
+          // Only accounts that actually exist get an icon.
+          $socialLinks = [
+            'Instagram' => [SOCIAL_INSTAGRAM, '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="20" x="2" y="2" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r=".5" fill="currentColor"/></svg>'],
+            'TikTok'    => [SOCIAL_TIKTOK,    '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82A4.28 4.28 0 0115.54 3h-3.09v12.4a2.59 2.59 0 01-2.59 2.5 2.59 2.59 0 01-2.59-2.59 2.59 2.59 0 013.3-2.49v-3.13a5.7 5.7 0 00-.71-.05A5.68 5.68 0 004.19 15.3 5.68 5.68 0 009.86 21a5.68 5.68 0 005.68-5.68V9.01a7.35 7.35 0 004.29 1.38V7.3a4.28 4.28 0 01-3.23-1.48z"/></svg>'],
+            'Facebook'  => [SOCIAL_FACEBOOK,  '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>'],
+            'Twitter'   => [SOCIAL_TWITTER,   '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>'],
+            'Pinterest' => [SOCIAL_PINTEREST, '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.24 2.64 7.88 6.39 9.34-.09-.78-.17-1.97.03-2.82l1.23-5.21s-.31-.63-.31-1.56c0-1.46.85-2.55 1.9-2.55.9 0 1.33.67 1.33 1.48 0 .9-.58 2.25-.87 3.5-.25 1.04.52 1.89 1.55 1.89 1.85 0 3.28-1.96 3.28-4.78 0-2.5-1.79-4.24-4.36-4.24-2.97 0-4.71 2.22-4.71 4.53 0 .9.34 1.86.77 2.38.08.1.09.19.07.3l-.29 1.17c-.04.18-.15.22-.34.13-1.25-.58-2.03-2.42-2.03-3.9 0-3.16 2.3-6.07 6.63-6.07 3.48 0 6.19 2.48 6.19 5.8 0 3.46-2.18 6.24-5.2 6.24-1.02 0-1.97-.53-2.3-1.15l-.62 2.33c-.22.86-.83 1.94-1.24 2.6.94.29 1.93.44 2.96.44 5.52 0 10-4.48 10-10S17.52 2 12 2z"/></svg>'],
+          ];
+          foreach ($socialLinks as $label => [$url, $icon]):
+            if (empty($url)) continue;
+          ?>
+            <a href="<?php echo htmlspecialchars($url); ?>" class="social-btn"
+               target="_blank" rel="noopener noreferrer"
+               aria-label="<?php echo $label; ?>"><?php echo $icon; ?></a>
+          <?php endforeach; ?>
         </div>
       </div>
 

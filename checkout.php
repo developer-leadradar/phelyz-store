@@ -53,12 +53,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     if ($init['ok']) {
                         try {
                             $db->update('orders', ['payment_reference' => $init['reference']], 'id = ?', [(int)$result['order_id']]);
-                        } catch (Exception $e) { /* column may not exist yet — non-fatal */ }
+                        } catch (Exception $e) { /* column may not exist yet - non-fatal */ }
                         redirect($init['authorization_url']);
                     }
-                    // Init failed — order exists as pending; tell the user
+                    // Init failed - order exists as pending; tell the user
                     $checkoutError = 'Could not start payment: ' . ($init['message'] ?? 'unknown error')
-                                   . ' Your order #' . $result['order_number'] . ' was saved — please contact us on WhatsApp to complete it.';
+                                   . ' Your order #' . $result['order_number'] . ' was saved - please contact us on WhatsApp to complete it.';
                 }
             }
         }
@@ -217,7 +217,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   <span style="font-size:10px;font-weight:700;color:#16A34A;background:rgba(34,197,94,0.12);padding:2px 8px;border-radius:99px;margin-left:6px;vertical-align:middle;">Instant</span>
                 </div>
                 <div style="font-size:13px;color:var(--stone-mid);line-height:1.6;">
-                  You'll be taken to Paystack to complete payment. Choose <strong style="color:var(--black);">card, bank transfer or USSD</strong> there — your order is confirmed the moment payment clears.
+                  You'll be taken to Paystack to complete payment. Choose <strong style="color:var(--black);">card, bank transfer or USSD</strong> there - your order is confirmed the moment payment clears.
                 </div>
                 <div style="display:flex;align-items:center;gap:14px;margin-top:14px;flex-wrap:wrap;">
                   <?php foreach ([['Card','M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z'],['Bank Transfer','M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.332A48.36 48.36 0 0012 9.75c-2.551 0-5.056.2-7.5.582V21M3 21h18'],['USSD','M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3']] as [$lbl,$ic]): ?>

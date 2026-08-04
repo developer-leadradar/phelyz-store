@@ -1,5 +1,5 @@
 /**
- * Phelyz Store — automatic NGN ⇄ USD display currency.
+ * Phelyz Store - automatic NGN ⇄ USD display currency.
  *
  * - Visitor country comes from Vercel's x-vercel-ip-country header,
  *   exposed by PHP as window.PHELYZ_COUNTRY. Nigeria → NGN, everyone else → USD.
@@ -98,7 +98,7 @@
 
   function restoreAll() {
     state.converted.forEach(function (entry) {
-      // Node may have been replaced by AJAX — only restore if still attached
+      // Node may have been replaced by AJAX - only restore if still attached
       if (entry.node && entry.node.parentNode) entry.node.nodeValue = entry.original;
     });
     state.converted = [];
@@ -160,7 +160,7 @@
     if (document.getElementById('currency-pill')) return;
     var pill = document.createElement('div');
     pill.id = 'currency-pill';
-    pill.title = 'Display currency — orders are charged in Naira (₦)';
+    pill.title = 'Display currency - orders are charged in Naira (₦)';
     pill.style.cssText =
       'position:fixed;bottom:24px;left:24px;z-index:98;display:flex;align-items:center;' +
       'background:rgba(28,25,23,0.92);border-radius:99px;padding:4px;gap:2px;' +
@@ -193,7 +193,7 @@
       getRate().then(function (rate) {
         state.rate = rate;
         applyCurrency('USD');
-      }).catch(function () { /* rate unavailable — stay NGN */ });
+      }).catch(function () { /* rate unavailable - stay NGN */ });
     } else {
       // Pre-warm the rate in the background so a manual toggle is instant
       getRate().then(function (rate) { state.rate = rate; }).catch(function () {});

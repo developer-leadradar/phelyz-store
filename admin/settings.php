@@ -66,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'tax_rate'                => (float)($_POST['tax_rate'] ?? 5),
         'enable_tax'              => isset($_POST['enable_tax']) ? 1 : 0,
         // Keep the existing key if the user submits empty (treats the input
-        // like a password field — paste once, never see it again).
+        // like a password field - paste once, never see it again).
         'gemini_api_key'          => !empty($_POST['gemini_api_key']) ? trim($_POST['gemini_api_key']) : ($s['gemini_api_key'] ?? ''),
         'image_studio_provider'   => sanitize($_POST['image_studio_provider'] ?? 'gemini'),
         'image_studio_model'      => sanitize($_POST['image_studio_model'] ?? 'gemini-3.1-flash-image'),
@@ -542,7 +542,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div style="width:4px;height:28px;background:var(--gold);border-radius:2px;flex-shrink:0;"></div>
             <div>
                 <h3 style="font-family:'Cormorant',serif;font-size:20px;font-weight:700;color:var(--black);margin:0 0 2px;">Image Studio (AI provider)</h3>
-                <p style="font-size:12px;color:var(--stone-mid);margin:0;">API key for generating AI "model wearing the jewellery" shots</p>
+                <p style="font-size:12px;color:var(--stone-mid);margin:0;">API key for generating AI "model wearing the jewelry" shots</p>
             </div>
         </div>
 
@@ -571,17 +571,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <label class="form-label" for="s_studio_aspect">Output Aspect Ratio</label>
                 <select id="s_studio_aspect" name="image_studio_aspect" class="form-input form-select">
                     <?php $curA = $s['image_studio_aspect'] ?? '1:1'; ?>
-                    <option value="1:1"  <?php echo $curA === '1:1'  ? 'selected' : ''; ?>>1:1 — square (recommended for product cards)</option>
-                    <option value="4:5"  <?php echo $curA === '4:5'  ? 'selected' : ''; ?>>4:5 — portrait (good for model shots)</option>
-                    <option value="3:4"  <?php echo $curA === '3:4'  ? 'selected' : ''; ?>>3:4 — portrait classic</option>
-                    <option value="16:9" <?php echo $curA === '16:9' ? 'selected' : ''; ?>>16:9 — landscape (hero banners)</option>
+                    <option value="1:1"  <?php echo $curA === '1:1'  ? 'selected' : ''; ?>>1:1 - square (recommended for product cards)</option>
+                    <option value="4:5"  <?php echo $curA === '4:5'  ? 'selected' : ''; ?>>4:5 - portrait (good for model shots)</option>
+                    <option value="3:4"  <?php echo $curA === '3:4'  ? 'selected' : ''; ?>>3:4 - portrait classic</option>
+                    <option value="16:9" <?php echo $curA === '16:9' ? 'selected' : ''; ?>>16:9 - landscape (hero banners)</option>
                 </select>
                 <p class="form-hint">Output dimensions for AI-generated model shots.</p>
             </div>
             <div class="form-group" style="margin:0;">
                 <label class="form-label" for="s_gemini_key">Gemini API Key</label>
                 <input type="password" id="s_gemini_key" name="gemini_api_key" autocomplete="off"
-                       placeholder="<?php echo !empty($s['gemini_api_key']) ? '••••••••• (saved — leave empty to keep)' : 'Paste your Gemini API key'; ?>"
+                       placeholder="<?php echo !empty($s['gemini_api_key']) ? '••••••••• (saved - leave empty to keep)' : 'Paste your Gemini API key'; ?>"
                        class="form-input">
                 <p class="form-hint">
                     Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600;">aistudio.google.com</a>.
@@ -591,7 +591,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
 
         <div style="margin-top:16px;padding:14px 16px;border-radius:8px;background:rgba(202,138,4,0.06);border:1px solid rgba(202,138,4,0.2);font-size:12.5px;color:var(--stone);line-height:1.55;">
-            <strong style="color:var(--black);">Free tier:</strong> Gemini's free tier allows roughly 10 image generations per minute and ~100 per day — plenty for a jewellery shop's daily uploads. You only need a paid plan if you're regenerating your entire catalogue at once.
+            <strong style="color:var(--black);">Free tier:</strong> Gemini's free tier allows roughly 10 image generations per minute and ~100 per day - plenty for a jewelry shop's daily uploads. You only need a paid plan if you're regenerating your entire catalogue at once.
         </div>
 
         <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--cream-dark);">
@@ -618,19 +618,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group" style="margin:0;">
                 <label class="form-label" for="s_ps_pub">Public Key</label>
                 <input type="text" id="s_ps_pub" name="paystack_public_key" autocomplete="off"
-                       placeholder="<?php echo !empty($s['paystack_public_key']) ? substr($s['paystack_public_key'], 0, 12) . '… (saved — leave empty to keep)' : 'pk_test_… or pk_live_…'; ?>"
+                       placeholder="<?php echo !empty($s['paystack_public_key']) ? substr($s['paystack_public_key'], 0, 12) . '… (saved - leave empty to keep)' : 'pk_test_… or pk_live_…'; ?>"
                        class="form-input">
             </div>
             <div class="form-group" style="margin:0;">
                 <label class="form-label" for="s_ps_sec">Secret Key</label>
                 <input type="password" id="s_ps_sec" name="paystack_secret_key" autocomplete="off"
-                       placeholder="<?php echo !empty($s['paystack_secret_key']) ? '••••••••• (saved — leave empty to keep)' : 'sk_test_… or sk_live_…'; ?>"
+                       placeholder="<?php echo !empty($s['paystack_secret_key']) ? '••••••••• (saved - leave empty to keep)' : 'sk_test_… or sk_live_…'; ?>"
                        class="form-input">
             </div>
         </div>
         <p class="form-hint" style="margin-top:10px;">
             Keys are at <a href="https://dashboard.paystack.com/#/settings/developers" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600;">dashboard.paystack.com → Settings → API Keys</a>.
-            Test keys (<code>sk_test_/pk_test_</code>) run in sandbox — use card <code>4084 0840 8408 4081</code>, any future expiry, CVV <code>408</code>.
+            Test keys (<code>sk_test_/pk_test_</code>) run in sandbox - use card <code>4084 0840 8408 4081</code>, any future expiry, CVV <code>408</code>.
             On Vercel, set <code>PAYSTACK_SECRET_KEY</code> and <code>PAYSTACK_PUBLIC_KEY</code> env vars instead (they override these fields).
             The "Pay with Card" option appears at checkout automatically once a secret key is present.
         </p>

@@ -37,15 +37,13 @@ if ($updated) {
     
     if ($user) {
         $subject = "Order Status Update - " . $order['order_number'];
-        $message = "
-        <html>
-        <body>
-            <h2>Order Status Updated</h2>
-            <p>Your order <strong>{$order['order_number']}</strong> status has been updated to: <strong>" . ucfirst($newStatus) . "</strong></p>
-            <p>Thank you for shopping with Phelyz Diamond Store!</p>
-        </body>
-        </html>
-        ";
+        $message = phelyzEmailTemplate(
+            '<p style="margin:0 0 12px;font-size:16px;">Your order has an update.</p>'
+          . '<p style="margin:0 0 18px;color:#44403C;">Order <strong>' . htmlspecialchars($order['order_number']) . '</strong> is now <strong>' . htmlspecialchars(ucfirst($newStatus)) . '</strong>.</p>'
+          . phelyzEmailButton('Track My Order', SITE_URL . '/track.php')
+          . '<p style="margin:0;color:#78716C;font-size:13px;">Thank you for shopping with Phelyz Store.</p>',
+            'Order ' . $order['order_number'] . ' is now ' . ucfirst($newStatus) . '.'
+        );
         
         sendEmail($user['email'], $subject, $message);
     }

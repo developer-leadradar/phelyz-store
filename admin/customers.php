@@ -43,7 +43,7 @@ $customers=$db->fetchAll($sql,$params);
                 </div>
               </td>
               <td style="font-size:13px;color:var(--stone-mid);"><?php echo htmlspecialchars($c['email']); ?></td>
-              <td style="font-size:13px;color:var(--stone-mid);"><?php echo htmlspecialchars($c['phone']??'—'); ?></td>
+              <td style="font-size:13px;color:var(--stone-mid);"><?php echo htmlspecialchars($c['phone']??'-'); ?></td>
               <td style="font-size:12px;color:var(--stone-mid);"><?php echo formatDate($c['created_at']); ?></td>
               <td><span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;<?php echo $c['is_active']?'background:#F0FDF4;color:#166534;':'background:#FEF2F2;color:#991B1B;'; ?>"><?php echo $c['is_active']?'Active':'Inactive'; ?></span></td>
               <td><a href="customer-details.php?id=<?php echo $c['id']; ?>" class="btn btn-outline btn-sm">View</a></td>

@@ -5,7 +5,7 @@ require_once 'includes/header.php';
 $faqs = [
   "Shipping & Delivery" => [
     "How much is shipping?" => "Shipping is FREE on all orders over ₦50,000. A flat-rate fee applies to orders below that threshold.",
-    "How long does delivery take?" => "Delivery within Akwa Ibom typically takes 1–2 business days. Nationwide delivery is 3–5 business days depending on your state.",
+    "How long does delivery take?" => "Delivery within Akwa Ibom typically takes 1-2 business days. Nationwide delivery is 3-5 business days depending on your state.",
     "Do you ship internationally?" => "Currently we ship within Nigeria. Contact us on WhatsApp to discuss international orders.",
     "Can I track my order?" => "Yes. Once your parcel is dispatched you'll get a tracking ID, and you can follow its progress live on our <a href='track.php' style='color:var(--gold);font-weight:600;'>Track Order</a> page.",
   ],
@@ -23,8 +23,8 @@ $faqs = [
   "Returns & Refunds" => [
     "Do you accept returns?" => "Returns are accepted only in limited circumstances and strictly subject to our Returns &amp; Refunds Policy. Please read the full conditions on our <a href='terms.php#returns' style='color:var(--gold);font-weight:600;'>Terms &amp; Conditions</a> page before requesting one.",
     "What if my item is damaged or incorrect?" => "Contact us on WhatsApp within 24 hours of delivery with clear photos and your order number. Verified damaged, defective or incorrect items are replaced at no cost to you.",
-    "How long do refunds take?" => "Where a refund is approved, it is processed within 5–7 business days after the returned item has been received and inspected.",
-    "Do you accept returns on custom or personalised pieces?" => "No. Custom, engraved, resized and personalised pieces, along with earrings and other pierced jewellery, are final sale for hygiene and craftsmanship reasons.",
+    "How long do refunds take?" => "Where a refund is approved, it is processed within 5-7 business days after the returned item has been received and inspected.",
+    "Do you accept returns on custom or personalised pieces?" => "No. Custom, engraved, resized and personalised pieces, along with earrings and other pierced jewelry, are final sale for hygiene and craftsmanship reasons.",
   ],
 ];
 ?>
@@ -49,7 +49,7 @@ $faqs = [
               <?php echo htmlspecialchars($q); ?>
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="var(--gold)" width="16" height="16" style="flex-shrink:0;margin-left:12px;"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5"/></svg>
             </summary>
-            <div style="padding:0 20px 16px;font-size:14px;color:var(--stone-mid);line-height:1.70;"><?php echo htmlspecialchars($a); ?></div>
+            <div style="padding:0 20px 16px;font-size:14px;color:var(--stone-mid);line-height:1.70;"><?php echo strip_tags($a, '<a><strong><em><b><i><br>'); ?></div>
           </details>
         <?php endforeach; ?>
       </div>
@@ -59,7 +59,7 @@ $faqs = [
   <!-- Still have questions? -->
   <div style="background:linear-gradient(135deg,var(--black),var(--stone));border-radius:20px;padding:40px;text-align:center;margin-top:48px;">
     <h3 style="font-family:'Cormorant',serif;font-size:26px;font-weight:700;color:white;margin-bottom:10px;">Still have questions?</h3>
-    <p style="font-size:14px;color:rgba(255,255,255,0.60);margin-bottom:24px;">Our team is ready to help — usually within a few minutes on WhatsApp.</p>
+    <p style="font-size:14px;color:rgba(255,255,255,0.60);margin-bottom:24px;">Our team is ready to help - usually within a few minutes on WhatsApp.</p>
     <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
       <a href="https://wa.me/<?php echo preg_replace('/\D/','',SITE_WHATSAPP); ?>?text=Hi%20Phelyz%20Store!" target="_blank" class="btn btn-gold">Chat on WhatsApp</a>
       <a href="contact.php" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.30);">Send a Message</a>

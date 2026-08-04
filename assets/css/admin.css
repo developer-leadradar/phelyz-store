@@ -1,5 +1,5 @@
 /* ============================================================
-   PHELYZ ADMIN PANEL — Luxury Dark Theme
+   PHELYZ ADMIN PANEL - Luxury Dark Theme
    Fonts: DM Serif Display + Plus Jakarta Sans
    Colors: Navy #0A1628 · Gold #D4AF37 · White #FFFFFF
    ============================================================ */
@@ -1937,7 +1937,7 @@ code {
 .demo-credentials p strong { color: var(--navy); }
 
 /* ============================================================
-   CUSTOMER DETAILS PAGE — Profile card inside dashboard-section
+   CUSTOMER DETAILS PAGE - Profile card inside dashboard-section
    ============================================================ */
 .dashboard-section .customer-profile-details,
 .dashboard-section .customer-info,
@@ -2024,7 +2024,7 @@ code {
 }
 
 /* ============================================================
-   TRAFFIC KPIs — compact, stays 4-across on normal screens
+   TRAFFIC KPIs - compact, stays 4-across on normal screens
    (the generic .stats-grid cards were too wide and wrapped to
    one-per-row inside the admin content column)
    ============================================================ */

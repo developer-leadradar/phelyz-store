@@ -3,7 +3,7 @@
  * Paystack webhook receiver.
  *
  * Paystack POSTs a signed event here (charge.success, etc). This is the
- * reliable source of truth for payment status — the browser callback can be
+ * reliable source of truth for payment status - the browser callback can be
  * abandoned mid-redirect, but the webhook always fires server-to-server.
  *
  * Signature: HMAC-SHA512 of the raw body using your SECRET key, sent in the

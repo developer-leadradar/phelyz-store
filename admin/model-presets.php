@@ -65,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $success = 'Preset added.';
             }
         } catch (Exception $e) {
-            $error = 'Database error — make sure the model_presets table exists. Run migrations/add_image_studio.sql.';
+            $error = 'Database error - make sure the model_presets table exists. Run migrations/add_image_studio.sql.';
         }
     }
 }
@@ -104,7 +104,7 @@ if (isset($_GET['edit'])) {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="form-row-2col">
       <div class="form-group" style="margin:0;">
         <label class="form-label">Preset name *</label>
-        <input type="text" name="name" required placeholder="e.g., Amaka — Editorial"
+        <input type="text" name="name" required placeholder="e.g., Amaka - Editorial"
                value="<?php echo htmlspecialchars($editing['name'] ?? ''); ?>" class="form-input">
       </div>
       <div class="form-group" style="margin:0;">
@@ -157,7 +157,7 @@ if (isset($_GET['edit'])) {
 
     <div class="form-group" style="margin-top:16px;">
       <label class="form-label">Extra prompt details (optional)</label>
-      <textarea name="extra_prompt" rows="2" placeholder="e.g., graceful hands and neckline, subtle smile, luxury jewellery model"
+      <textarea name="extra_prompt" rows="2" placeholder="e.g., graceful hands and neckline, subtle smile, luxury jewelry model"
                 class="form-input" style="resize:vertical;"><?php echo htmlspecialchars($editing['extra_prompt'] ?? ''); ?></textarea>
     </div>
 

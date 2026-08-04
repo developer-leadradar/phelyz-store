@@ -1,6 +1,6 @@
 <?php
 /**
- * Calls the configured AI provider to generate a "model wearing the jewellery"
+ * Calls the configured AI provider to generate a "model wearing the jewelry"
  * shot from a product image already saved to storage.
  *
  * Input JSON: { source_path, preset_id?, category?, job_id? }

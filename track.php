@@ -14,7 +14,7 @@ $pos      = $parcel ? parcelMapPosition($parcel) : null;
 $meta     = $parcel ? parcelStatusMeta($parcel['status']) : null;
 
 // How far along the happy-path tracker we are.
-// Several real statuses sit OUTSIDE the five-step flow — Packed, Arrived at
+// Several real statuses sit OUTSIDE the five-step flow - Packed, Arrived at
 // Hub, Delivery Issue, Returned. Looking the status up by index made those
 // return false and left every step unticked, so progress is measured by each
 // status's `progress` weight instead. A step is complete once the parcel has
@@ -124,7 +124,7 @@ $currentProgress = $meta ? (float)$meta['progress'] : -1;
       <?php else: ?>
         <div class="alert alert-error" style="margin:22px 0 0;">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>
-          <div><strong><?php echo htmlspecialchars($meta['label']); ?>.</strong> <?php echo htmlspecialchars($meta['desc']); ?> — please contact us on WhatsApp and we'll sort it out.</div>
+          <div><strong><?php echo htmlspecialchars($meta['label']); ?>.</strong> <?php echo htmlspecialchars($meta['desc']); ?> - please contact us on WhatsApp and we'll sort it out.</div>
         </div>
       <?php endif; ?>
     </div>
@@ -184,7 +184,7 @@ $currentProgress = $meta ? (float)$meta['progress'] : -1;
       </div>
     </div>
 
-    <!-- Leaflet map (OpenStreetMap — free, no API key) -->
+    <!-- Leaflet map (OpenStreetMap - free, no API key) -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
           integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"

@@ -26,7 +26,7 @@ function getAvailablePaymentMethods($state = null) {
                 $methods['cod']  = (int)$row['cod_enabled']  === 1;
                 $methods['bank'] = (int)$row['bank_enabled'] === 1;
             }
-        } catch (Exception $e) { /* table/column missing — keep defaults */ }
+        } catch (Exception $e) { /* table/column missing - keep defaults */ }
     }
 
     // Product-level intersection
@@ -42,7 +42,7 @@ function getAvailablePaymentMethods($state = null) {
             if ($it['cod_enabled']  !== null && (int)$it['cod_enabled']  !== 1) $methods['cod']  = false;
             if ($it['bank_enabled'] !== null && (int)$it['bank_enabled'] !== 1) $methods['bank'] = false;
         }
-    } catch (Exception $e) { /* table/column missing — keep state-level result */ }
+    } catch (Exception $e) { /* table/column missing - keep state-level result */ }
 
     return $methods;
 }
@@ -80,14 +80,14 @@ function validateCartStock() {
     $errors = [];
 
     foreach ($items as $item) {
-        // Pre-order items (express or sold-out) are always allowed through —
+        // Pre-order items (express or sold-out) are always allowed through -
         // out-of-stock is now a valid pre-order, not a blocker.
         if (isPreorderProduct($item)) {
             continue;
         }
         // In-stock items: don't let the ordered quantity exceed availability.
         if ($item['stock_quantity'] < $item['quantity']) {
-            $errors[] = $item['name'] . ' — only ' . $item['stock_quantity'] . ' in stock';
+            $errors[] = $item['name'] . ' - only ' . $item['stock_quantity'] . ' in stock';
         }
     }
 
@@ -199,7 +199,7 @@ function processCheckout($formData) {
     addOrderItems($orderResult['order_id'], $cartSummary['items']);
 
     // Reduce stock immediately for cash-on-delivery / bank transfer (order is
-    // committed). Card (Paystack) orders stay pending until payment is verified —
+    // committed). Card (Paystack) orders stay pending until payment is verified -
     // their stock is reduced in the callback/webhook after a successful charge.
     $method = $formData['payment_method'] ?? 'cod';
     if ($method !== 'paystack') {
@@ -237,16 +237,13 @@ function processCheckout($formData) {
 
 function sendOrderConfirmationEmail($email, $orderNumber) {
     $subject = "Order Confirmation - " . $orderNumber;
-    $message = "
-    <html>
-    <body style='font-family: Arial, sans-serif;'>
-        <h2>Thank you for your order!</h2>
-        <p>Your order <strong>$orderNumber</strong> has been received and is being processed.</p>
-        <p>We'll send you another email when your order has been shipped.</p>
-        <p>Best regards,<br>Phelyz Diamond Store</p>
-    </body>
-    </html>
-    ";
+    $message = phelyzEmailTemplate(
+        '<p style="margin:0 0 12px;font-size:16px;">Thank you for your order.</p>'
+      . '<p style="margin:0 0 18px;color:#44403C;">Your order <strong>' . htmlspecialchars($orderNumber) . '</strong> has been received and is being processed. We will email you again as soon as it ships.</p>'
+      . phelyzEmailButton('Track My Order', SITE_URL . '/track.php')
+      . '<p style="margin:0;color:#78716C;font-size:13px;">Questions about this order? Just reply to this email and our team will help.</p>',
+        'Order ' . $orderNumber . ' received and being processed.'
+    );
     
     sendEmail($email, $subject, $message);
 }

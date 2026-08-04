@@ -77,7 +77,7 @@ $currentPage=basename($_SERVER['PHP_SELF']);
           }
         ?>
         <div class="form-group" style="margin-bottom:20px;">
-          <label class="form-label">Birthday <span style="color:var(--stone-mid);font-weight:400;">(optional — we don't ask for the year)</span></label>
+          <label class="form-label">Birthday <span style="color:var(--stone-mid);font-weight:400;">(optional - we don't ask for the year)</span></label>
           <div style="display:grid;grid-template-columns:1fr 1.4fr;gap:12px;max-width:340px;">
             <select name="birth_day" class="form-input form-select">
               <option value="0">Day</option>

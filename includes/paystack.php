@@ -5,7 +5,7 @@ if (!defined('PHELYZ_ACCESS')) { exit; }
  * Paystack payment helpers.
  *
  * Keys are read from env vars first (Vercel), then data/settings.json (local
- * admin UI). Test keys (sk_test_… / pk_test_…) work identically — Paystack
+ * admin UI). Test keys (sk_test_… / pk_test_…) work identically - Paystack
  * routes them to its sandbox, use test card 4084 0840 8408 4081.
  */
 

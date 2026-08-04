@@ -53,7 +53,7 @@ $waDigits    = preg_replace('/\D/', '', SITE_WHATSAPP);
 
       <h2 id="agreement">1. Agreement</h2>
       <p>
-        <?php echo htmlspecialchars(SITE_NAME); ?> is a jewellery retailer operating from <?php echo htmlspecialchars(SITE_ADDRESS); ?>.
+        <?php echo htmlspecialchars(SITE_NAME); ?> is a jewelry retailer operating from <?php echo htmlspecialchars(SITE_ADDRESS); ?>.
         These Terms form a binding agreement between you ("the Customer") and us. We may update these Terms at any time; the version
         published on this page at the moment you place an order is the version that applies to that order.
       </p>
@@ -63,9 +63,9 @@ $waDigits    = preg_replace('/\D/', '', SITE_WHATSAPP);
         <li>All prices are listed in Nigerian Naira (₦) and are inclusive of applicable charges unless stated otherwise.</li>
         <li>Prices displayed in other currencies are indicative conversions provided for convenience only. <strong>All orders are charged in Naira.</strong></li>
         <li>Placing an order constitutes an offer to buy. A contract is formed only when we confirm the order and payment has been received in full.</li>
-        <li>We reserve the right to refuse or cancel any order — including after confirmation — where an item is out of stock, a price or description error has occurred, payment cannot be verified, or we suspect fraud.</li>
+        <li>We reserve the right to refuse or cancel any order - including after confirmation - where an item is out of stock, a price or description error has occurred, payment cannot be verified, or we suspect fraud.</li>
         <li>Product photographs are representative. Natural stones and handcrafted pieces vary slightly in tone, inclusion and finish; such variation is not a defect.</li>
-        <li>Pre-order and "Express" items are made or sourced to order. Estimated timelines are indicative, not guaranteed, and delays alone do not entitle you to cancel a confirmed pre-order.</li>
+        <li>"Express" items are made or sourced to order, with an estimated delivery window of 3 to 4 weeks. Estimated timelines are indicative, not guaranteed, and delays alone do not entitle you to cancel a confirmed Express order.</li>
       </ul>
 
       <h2 id="payment">3. Payment</h2>
@@ -73,7 +73,7 @@ $waDigits    = preg_replace('/\D/', '', SITE_WHATSAPP);
         <li>All payments are processed securely online by Paystack. Within Paystack's checkout you may pay by debit or credit card, bank transfer, or USSD.</li>
         <li>We do not see or store your card or banking details at any point.</li>
         <li><strong>Orders are dispatched only after payment has cleared in full.</strong> An order that is created but not paid is held as pending and may be cancelled automatically.</li>
-        <li>We do not offer cash on delivery or off-platform payment. Anyone requesting payment outside our Paystack checkout is not acting for us — please report it to us immediately.</li>
+        <li>We do not offer cash on delivery or off-platform payment. Anyone requesting payment outside our Paystack checkout is not acting for us - please report it to us immediately.</li>
       </ul>
 
       <h2 id="delivery">4. Delivery</h2>
@@ -89,7 +89,7 @@ $waDigits    = preg_replace('/\D/', '', SITE_WHATSAPP);
 
       <div style="background:rgba(202,138,4,0.07);border:1px solid rgba(202,138,4,0.25);border-radius:10px;padding:18px 20px;margin:18px 0 22px;">
         <strong style="color:var(--black);display:block;margin-bottom:6px;">Please read this section carefully.</strong>
-        Jewellery is a high-value, easily-substituted category. Our returns policy is deliberately narrow and is applied strictly.
+        Jewelry is a high-value, easily-substituted category. Our returns policy is deliberately narrow and is applied strictly.
         Requests that do not meet <em>every</em> condition below will be declined.
       </div>
 
@@ -114,9 +114,9 @@ $waDigits    = preg_replace('/\D/', '', SITE_WHATSAPP);
       <h3>5.3 Items that cannot be returned</h3>
       <p>The following are <strong>final sale</strong> and are never eligible for return or refund, except where the item is genuinely faulty or was sent in error:</p>
       <ul>
-        <li>Earrings and any other pierced jewellery, for hygiene reasons.</li>
+        <li>Earrings and any other pierced jewelry, for hygiene reasons.</li>
         <li>Custom, bespoke, made-to-order, engraved, resized or otherwise personalised pieces.</li>
-        <li>Pre-order and "Express" items.</li>
+        <li>"Express" items.</li>
         <li>Items purchased on sale, clearance, promotional discount, bundle or with a discount code.</li>
         <li>Gift cards and any item supplied free of charge or as part of a promotion.</li>
         <li>Items where the authenticity certificate, security tag or original packaging is missing, damaged or has been removed.</li>
@@ -126,15 +126,15 @@ $waDigits    = preg_replace('/\D/', '', SITE_WHATSAPP);
       <p>
         Every returned item is inspected and, where applicable, independently verified before any refund is considered. Inspection typically
         takes up to five (5) business days from receipt. <strong>We reserve the sole and final discretion to decline a return</strong> that fails
-        inspection, and to return the item to you at your cost. Where we have reasonable grounds to believe a return is fraudulent — including
-        item substitution, wear concealment or repeated abuse of this policy — we will decline it, may withhold future service, and may refer the matter to the appropriate authorities.
+        inspection, and to return the item to you at your cost. Where we have reasonable grounds to believe a return is fraudulent - including
+        item substitution, wear concealment or repeated abuse of this policy - we will decline it, may withhold future service, and may refer the matter to the appropriate authorities.
       </p>
 
       <h3>5.5 Costs and refunds</h3>
       <ul>
         <li><strong>Return shipping is paid by you</strong> unless the item is confirmed faulty or was sent in error. We recommend an insured, tracked service; you bear the risk of loss or damage in transit until we receive the item.</li>
         <li>Original delivery fees are <strong>non-refundable</strong>.</li>
-        <li>Approved refunds are issued to the original payment method only, within 5–7 business days of approval. Bank processing times are outside our control.</li>
+        <li>Approved refunds are issued to the original payment method only, within 5-7 business days of approval. Bank processing times are outside our control.</li>
         <li>Where an approved return brings an order below the free-delivery threshold, the delivery fee that was waived will be deducted from the refund.</li>
       </ul>
 
@@ -151,7 +151,7 @@ $waDigits    = preg_replace('/\D/', '', SITE_WHATSAPP);
       <ul>
         <li>Every piece is supplied as described, with a certificate of authenticity where applicable.</li>
         <li>Any alteration, resizing, repair or cleaning carried out by a third party immediately voids all authenticity assurances and any remedy under clause 5.6.</li>
-        <li>Fine jewellery requires care. Remove pieces before swimming, bathing, exercising, sleeping or handling chemicals, perfume or cleaning agents. Store separately in the pouch provided. Damage from failure to observe reasonable care is not a defect.</li>
+        <li>Fine jewelry requires care. Remove pieces before swimming, bathing, exercising, sleeping or handling chemicals, perfume or cleaning agents. Store separately in the pouch provided. Damage from failure to observe reasonable care is not a defect.</li>
         <li>Natural wear, tarnish and patina over time are expected characteristics and are not covered.</li>
       </ul>
 
@@ -159,7 +159,7 @@ $waDigits    = preg_replace('/\D/', '', SITE_WHATSAPP);
       <ul>
         <li>You agree to provide accurate information and not to impersonate any person or misrepresent your identity or payment authority.</li>
         <li>You may not use this site for any unlawful purpose, attempt to gain unauthorised access to any part of it, or interfere with its operation or security.</li>
-        <li>All content on this site — including images, text, layout and branding — is our property or licensed to us and may not be copied, reproduced or used commercially without our written permission.</li>
+        <li>All content on this site - including images, text, layout and branding - is our property or licensed to us and may not be copied, reproduced or used commercially without our written permission.</li>
         <li>We may suspend or close any account, and refuse service, where these Terms are breached.</li>
       </ul>
 
@@ -174,7 +174,7 @@ $waDigits    = preg_replace('/\D/', '', SITE_WHATSAPP);
 
       <h2 id="privacy">9. Privacy</h2>
       <p>
-        We collect only the information needed to process your order and support you — your name, contact details, delivery address and order
+        We collect only the information needed to process your order and support you - your name, contact details, delivery address and order
         history. We do not sell your data. Payment details are handled entirely by our payment processor and never reach our servers. You may
         request access to, correction of, or deletion of your personal data by contacting us, subject to any records we are required to retain by law.
       </p>

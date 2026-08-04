@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($title === '') {
         $error = 'A headline is required.';
     } elseif ($preset === 'custom' && empty($bgImage)) {
-        $error = 'Please upload your banner image — "My own design" shows the artwork on its own.';
+        $error = 'Please upload your banner image - "My own design" shows the artwork on its own.';
     } else {
 
         $data = [
@@ -68,7 +68,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($id > 0) { $db->update('promo_banners', $data, 'id = ?', [$id]); $success = 'Banner updated.'; }
             else         { $db->insert('promo_banners', $data);                  $success = 'Banner created.'; }
         } catch (Exception $e) {
-            $error = 'Database error — run migrations/add_analytics_banners_tracking.sql first.';
+            $error = 'Database error - run migrations/add_analytics_banners_tracking.sql first.';
         }
     }
 }
@@ -104,7 +104,7 @@ $fActive   = $editing ? (int)$editing['is_active'] : 1;
     <div style="font-size:11px;font-weight:700;letter-spacing:0.10em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Marketing</div>
     <h2 style="font-family:'Cormorant',serif;font-size:28px;font-weight:700;color:var(--black);letter-spacing:-0.02em;margin:0 0 6px;">Promo Banners</h2>
     <p style="font-size:13px;color:var(--stone-mid);margin:0;max-width:660px;">
-      Pick a festive look, type your message, choose the dates it should run — the banner switches itself on and off automatically.
+      Pick a festive look, type your message, choose the dates it should run - the banner switches itself on and off automatically.
       No design work needed. Multiple live banners rotate as a slider on the homepage.
     </p>
   </div>
@@ -119,7 +119,7 @@ $fActive   = $editing ? (int)$editing['is_active'] : 1;
     <h3 style="font-family:'Cormorant',serif;font-size:19px;font-weight:700;color:var(--black);margin:0 0 4px;">
       <?php echo $editing ? 'Edit banner' : 'Create a banner'; ?>
     </h3>
-    <p style="font-size:12.5px;color:var(--stone-mid);margin:0 0 20px;">Step 1 — choose the occasion. The colours and wording fill in for you.</p>
+    <p style="font-size:12.5px;color:var(--stone-mid);margin:0 0 20px;">Step 1 - choose the occasion. The colours and wording fill in for you.</p>
 
     <!-- Preset picker -->
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:10px;margin-bottom:24px;">
@@ -155,12 +155,12 @@ $fActive   = $editing ? (int)$editing['is_active'] : 1;
     <!-- Shown only in "my own design" mode -->
     <div id="custom-art-note" style="display:<?php echo $fPreset === 'custom' ? 'block' : 'none'; ?>;background:rgba(202,138,4,0.07);border:1px solid rgba(202,138,4,0.25);border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;color:var(--stone);line-height:1.6;">
       <strong style="color:var(--black);">Upload a finished banner.</strong>
-      Design it anywhere you like — Canva, a designer, your phone — then upload it below.
+      Design it anywhere you like - Canva, a designer, your phone - then upload it below.
       It's shown exactly as-is with no text or button placed over it.
       <br><span style="color:var(--stone-mid);font-size:12px;">Best results at <strong>1600 × 500 px</strong> (roughly 3:1). Headline is still used as the image's alt text, and the button link still controls where a click goes.</span>
     </div>
 
-    <p id="step2-label" style="font-size:12.5px;color:var(--stone-mid);margin:0 0 14px;padding-top:6px;border-top:1px solid var(--cream-dark);">Step 2 — your message.</p>
+    <p id="step2-label" style="font-size:12.5px;color:var(--stone-mid);margin:0 0 14px;padding-top:6px;border-top:1px solid var(--cream-dark);">Step 2 - your message.</p>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;" class="form-row-2col">
       <div class="form-group" style="margin:0;">
@@ -195,7 +195,7 @@ $fActive   = $editing ? (int)$editing['is_active'] : 1;
     </div>
 
     <div class="form-group" style="margin-top:16px;">
-      <label class="form-label">Background photo <span style="color:var(--stone-mid);font-weight:400;">(optional — the preset colours are used if you skip this)</span></label>
+      <label class="form-label">Background photo <span style="color:var(--stone-mid);font-weight:400;">(optional - the preset colours are used if you skip this)</span></label>
       <input type="file" name="bg_image" accept="image/*" class="form-input">
       <?php if (!empty($editing['bg_image'])): ?>
         <label style="display:inline-flex;align-items:center;gap:7px;margin-top:8px;font-size:12.5px;cursor:pointer;">
@@ -204,7 +204,7 @@ $fActive   = $editing ? (int)$editing['is_active'] : 1;
       <?php endif; ?>
     </div>
 
-    <p style="font-size:12.5px;color:var(--stone-mid);margin:22px 0 14px;padding-top:14px;border-top:1px solid var(--cream-dark);">Step 3 — when should it run?</p>
+    <p style="font-size:12.5px;color:var(--stone-mid);margin:22px 0 14px;padding-top:14px;border-top:1px solid var(--cream-dark);">Step 3 - when should it run?</p>
 
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:18px;align-items:end;">
       <div class="form-group" style="margin:0;">
@@ -231,7 +231,7 @@ $fActive   = $editing ? (int)$editing['is_active'] : 1;
   </div>
 
   <!-- Live preview -->
-  <div style="margin-bottom:10px;font-size:11px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);">Live preview — exactly what customers will see</div>
+  <div style="margin-bottom:10px;font-size:11px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);">Live preview - exactly what customers will see</div>
   <div id="banner-preview" style="border-radius:14px;overflow:hidden;margin-bottom:24px;"></div>
 
   <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:34px;">
@@ -246,7 +246,7 @@ $fActive   = $editing ? (int)$editing['is_active'] : 1;
     Your banners (<?php echo count($banners); ?>)
   </h3>
   <?php if (empty($banners)): ?>
-    <p style="font-size:13.5px;color:var(--stone-mid);margin:0;">No banners yet. Create one above — it appears on the homepage as soon as it's switched on and within its date range.</p>
+    <p style="font-size:13.5px;color:var(--stone-mid);margin:0;">No banners yet. Create one above - it appears on the homepage as soon as it's switched on and within its date range.</p>
   <?php else: ?>
     <div style="display:flex;flex-direction:column;gap:12px;">
       <?php foreach ($banners as $b):
@@ -300,8 +300,8 @@ function applyCustomMode(key) {
   const step2  = document.getElementById('step2-label');
   if (note)  note.style.display  = custom ? 'block' : 'none';
   if (step2) step2.textContent   = custom
-    ? 'Step 2 — give it a name (used for accessibility) and choose where a click goes.'
-    : 'Step 2 — your message.';
+    ? 'Step 2 - give it a name (used for accessibility) and choose where a click goes.'
+    : 'Step 2 - your message.';
   // Hide the copy fields that have no meaning when the artwork carries the message
   ['f-subtitle-wrap','f-cta-wrap','f-emoji-wrap'].forEach(id => {
     const el = document.getElementById(id);
@@ -359,7 +359,7 @@ function renderPreview() {
   const emoji = document.getElementById('f-emoji').value;
   const art   = PICKED_BG || EXISTING_BG;
 
-  // "My own design" — show the artwork alone, exactly as customers will see it
+  // "My own design" - show the artwork alone, exactly as customers will see it
   if (isCustom(currentPreset)) {
     document.getElementById('banner-preview').innerHTML = art
       ? `<img src="${art}" alt="" style="width:100%;height:auto;display:block;">`

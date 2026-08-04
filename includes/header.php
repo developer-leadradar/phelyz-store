@@ -29,8 +29,8 @@ trackPageView(
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) . ' — ' : ''; ?><?php echo SITE_NAME; ?></title>
-<meta name="description" content="<?php echo isset($pageDescription) ? htmlspecialchars($pageDescription) : 'Premium jewelry — exquisite rings, necklaces, bracelets and more. Certified authentic, free shipping over ₦50,000.'; ?>">
+<title><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) . ' | ' : ''; ?><?php echo SITE_NAME; ?></title>
+<meta name="description" content="<?php echo isset($pageDescription) ? htmlspecialchars($pageDescription) : 'Premium jewelry - exquisite rings, necklaces, bracelets and more. Certified authentic, free shipping over ₦50,000.'; ?>">
 <meta name="theme-color" content="#1C1917">
 
 <!-- Fonts -->
@@ -82,7 +82,6 @@ tailwind.config = {
       </button>
     </form>
     <div id="autocomplete-results"></div>
-    <p style="margin-top:12px;font-size:12px;color:rgba(255,255,255,0.45);text-align:center">Press ESC to close</p>
   </div>
 </div>
 
@@ -148,7 +147,7 @@ tailwind.config = {
   <div class="nav-inner">
 
     <!-- Logo -->
-    <a href="<?php echo SITE_URL; ?>" class="nav-logo" aria-label="<?php echo htmlspecialchars(SITE_NAME); ?> — home">
+    <a href="<?php echo SITE_URL; ?>" class="nav-logo" aria-label="<?php echo htmlspecialchars(SITE_NAME); ?> - home">
       <img src="<?php echo SITE_URL; ?>/assets/images/phelyz-logo.svg"
            alt="<?php echo htmlspecialchars(SITE_NAME); ?>" class="nav-logo-img" width="1197" height="464">
     </a>

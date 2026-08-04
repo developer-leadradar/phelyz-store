@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
                 ]);
                 $success = 'Template added.';
             } catch (Exception $e) {
-                $error = 'Database error — make sure the image_templates table exists. Run migrations/add_image_studio.sql.';
+                $error = 'Database error - make sure the image_templates table exists. Run migrations/add_image_studio.sql.';
             }
         }
     }
@@ -94,7 +94,7 @@ $templates = getImageTemplates();
       <div class="form-group" style="margin:0;">
         <label class="form-label">Pin to category</label>
         <select name="category_id" class="form-input form-select">
-          <option value="">— Any category —</option>
+          <option value="">Any category</option>
           <?php foreach ($categories as $cat): ?>
           <option value="<?php echo (int)$cat['id']; ?>"><?php echo htmlspecialchars($cat['name']); ?></option>
           <?php endforeach; ?>

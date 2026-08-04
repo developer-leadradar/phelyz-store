@@ -96,18 +96,50 @@ function analyticsDevice() {
     return 'desktop';
 }
 
-/** Crude bot filter so crawler hits don't pollute the numbers. */
+/**
+ * Is this request a robot rather than a shopper?
+ *
+ * A new domain gets scanned heavily the moment its TLS certificate shows up in
+ * the public certificate-transparency logs, and a lot of that traffic sends a
+ * perfectly ordinary-looking user agent. A keyword blocklist alone therefore
+ * lets plenty through and quietly inflates the visitor count, so this also
+ * insists the request looks like it came from a real browser.
+ */
 function analyticsIsBot() {
     $ua = strtolower($_SERVER['HTTP_USER_AGENT'] ?? '');
+
+    // No user agent at all is never a person.
     if ($ua === '') return true;
-    return (bool)preg_match(
-        '/bot|crawl|spider|slurp|bingpreview|facebookexternalhit|whatsapp|telegram|preview|monitor|curl|wget|headless|lighthouse|pingdom|semrush|ahrefs/',
+
+    // Obvious self-identifying robots, scanners and HTTP libraries.
+    if (preg_match(
+        '/bot|crawl|spider|slurp|search|scrape|scrapy|archiver|feedfetcher|'
+      . 'bingpreview|facebookexternalhit|whatsapp|telegram|discord|slack|twitterbot|linkedinbot|'
+      . 'preview|monitor|uptime|pingdom|statuscake|newrelic|datadog|site24x7|'
+      . 'curl|wget|libwww|httpclient|http_request|python|go-http|java\/|okhttp|axios|node-fetch|guzzle|postman|insomnia|'
+      . 'headless|phantomjs|puppeteer|playwright|selenium|lighthouse|pagespeed|gtmetrix|'
+      . 'semrush|ahrefs|mj12|dotbot|blexbot|petalbot|seznam|yandex|baidu|sogou|'
+      . 'censys|shodan|zgrab|masscan|nmap|expanse|internet-measurement|paloalto|netcraft|'
+      . 'checkhost|validator|w3c|nuclei|wpscan|acunetix|nikto/',
         $ua
-    );
+    )) return true;
+
+    // Anything claiming to be a browser must actually look like one.
+    if (strpos($ua, 'mozilla/') !== 0 && strpos($ua, 'opera/') !== 0) return true;
+
+    // Real browsers always advertise a language preference. Almost nothing
+    // that fakes a browser user agent bothers to send this header.
+    if (empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) return true;
+
+    // Real browsers ask for HTML on a page request.
+    $accept = strtolower($_SERVER['HTTP_ACCEPT'] ?? '');
+    if ($accept !== '' && strpos($accept, 'text/html') === false && strpos($accept, '*/*') === false) return true;
+
+    return false;
 }
 
 /**
- * Record one page view. Safe to call on every request — it never throws and
+ * Record one page view. Safe to call on every request - it never throws and
  * never blocks page rendering.
  *
  * @param string   $pageType  home|product|shop|cart|checkout|order|content|other
@@ -117,6 +149,17 @@ function trackPageView($pageType = 'other', $productId = null) {
     // Never track admin, API endpoints, or bots
     if (analyticsIsBot()) return;
     if (php_sapi_name() === 'cli') return;
+
+    // Only real page loads count: not form posts, not HEAD probes.
+    $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
+    if ($method !== 'GET') return;
+
+    // Browsers and link previews quietly pre-fetch pages the user never opened.
+    if (!empty($_SERVER['HTTP_PURPOSE']) || !empty($_SERVER['HTTP_X_PURPOSE'])
+        || !empty($_SERVER['HTTP_X_MOZ']) || !empty($_SERVER['HTTP_SEC_PURPOSE'])) return;
+
+    // The shop owner browsing their own storefront is not a customer visit.
+    if (isAdmin()) return;
 
     $path = strtok($_SERVER['REQUEST_URI'] ?? '/', '?');
     if (stripos($path, '/admin') !== false || stripos($path, '/api/') !== false) return;
