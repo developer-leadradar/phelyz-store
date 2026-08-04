@@ -278,6 +278,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               <span style="color:var(--stone-mid);">Shipping<?php if ($coSavedState): ?> <span style="font-size:11px;">(<?php echo htmlspecialchars($coSavedState); ?>)</span><?php endif; ?></span>
               <span id="co-shipping-display" style="font-weight:600;color:<?php echo $cartSummary['shipping']==0?'#22C55E':'var(--black)'; ?>;"><?php echo $cartSummary['shipping']==0?'FREE':formatPrice($cartSummary['shipping']); ?></span>
             </div>
+            <div id="co-discount-row" style="display:<?php echo !empty($cartSummary['discount']) ? 'flex' : 'none'; ?>;justify-content:space-between;font-size:13px;">
+              <span style="color:#15803D;">Discount <span id="co-discount-code" style="font-size:11px;font-weight:700;"><?php echo htmlspecialchars($cartSummary['coupon_code'] ?? ''); ?></span></span>
+              <span id="co-discount-display" style="font-weight:600;color:#15803D;">-<?php echo formatPrice($cartSummary['discount'] ?? 0); ?></span>
+            </div>
             <?php if (!empty($cartSummary['tax']) && $cartSummary['tax'] > 0): ?>
             <div style="display:flex;justify-content:space-between;font-size:13px;">
               <span style="color:var(--stone-mid);">Tax</span>
@@ -286,10 +290,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
           </div>
 
+          <!-- Coupon -->
+          <div style="margin-bottom:16px;padding:14px;background:var(--cream);border:1px solid var(--cream-dark);border-radius:10px;">
+            <?php if (!empty($cartSummary['coupon_notice'])): ?>
+              <p style="font-size:12px;color:#B91C1C;margin:0 0 10px;"><?php echo htmlspecialchars($cartSummary['coupon_notice']); ?></p>
+            <?php endif; ?>
+
+            <div id="coupon-applied" style="display:<?php echo !empty($cartSummary['coupon_code']) ? 'flex' : 'none'; ?>;align-items:center;justify-content:space-between;gap:10px;">
+              <span style="font-size:13px;color:var(--black);font-weight:600;">
+                <span style="display:inline-block;background:#DCFCE7;color:#15803D;padding:3px 9px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:0.04em;" id="coupon-applied-code"><?php echo htmlspecialchars($cartSummary['coupon_code'] ?? ''); ?></span>
+                applied
+              </span>
+              <button type="button" onclick="removeCoupon()" style="background:none;border:none;color:#B91C1C;font-size:12px;font-weight:600;cursor:pointer;padding:4px;">Remove</button>
+            </div>
+
+            <div id="coupon-entry" style="display:<?php echo !empty($cartSummary['coupon_code']) ? 'none' : 'block'; ?>;">
+              <label style="display:block;font-size:12px;font-weight:700;color:var(--stone);margin-bottom:7px;">Have a discount code?</label>
+              <div style="display:flex;gap:8px;">
+                <input type="text" id="coupon-code-input" class="form-input" placeholder="Enter code"
+                       autocomplete="off" autocapitalize="characters"
+                       style="flex:1;min-width:0;text-transform:uppercase;font-size:14px;padding:11px 12px;">
+                <button type="button" onclick="applyCoupon()" id="coupon-apply-btn" class="btn btn-dark"
+                        style="flex-shrink:0;padding:11px 18px;font-size:13px;">Apply</button>
+              </div>
+              <p id="coupon-msg" style="font-size:12px;margin:8px 0 0;display:none;"></p>
+            </div>
+          </div>
+
           <!-- Total -->
           <div style="display:flex;justify-content:space-between;padding-top:16px;border-top:2px solid var(--black);margin-bottom:20px;">
             <span style="font-weight:700;font-size:15px;color:var(--black);">Total</span>
-            <span style="font-family:'Cormorant',serif;font-size:24px;font-weight:700;color:var(--black);"><?php echo formatPrice($cartSummary['total']); ?></span>
+            <span id="co-total-display" style="font-family:'Cormorant',serif;font-size:24px;font-weight:700;color:var(--black);"><?php echo formatPrice($cartSummary['total']); ?></span>
           </div>
 
           <button type="submit" class="btn btn-gold btn-full" style="font-size:15px;padding:15px 28px;">
@@ -349,6 +380,108 @@ function updateCheckoutShipping(state) {
 (function() {
   var sel = document.getElementById('co-state-select');
   if (sel && sel.value) updateCheckoutShipping(sel.value);
+})();
+
+/* ── Discount codes ─────────────────────────────────────── */
+function couponCurrentState() {
+  var sel = document.getElementById('co-state-select');
+  return sel && sel.value ? sel.value : '';
+}
+
+function couponShowMessage(text, isError) {
+  var p = document.getElementById('coupon-msg');
+  if (!p) return;
+  p.textContent = text;
+  p.style.color = isError ? '#B91C1C' : '#15803D';
+  p.style.display = text ? 'block' : 'none';
+}
+
+function couponPaintTotals(t) {
+  var disRow = document.getElementById('co-discount-row');
+  var disVal = document.getElementById('co-discount-display');
+  var disCode = document.getElementById('co-discount-code');
+  var ship   = document.getElementById('co-shipping-display');
+  var total  = document.getElementById('co-total-display');
+
+  if (disRow) disRow.style.display = t.discount_raw > 0 ? 'flex' : 'none';
+  if (disVal) disVal.textContent = '-' + t.discount;
+  if (disCode) disCode.textContent = t.coupon_code || '';
+  if (ship) {
+    ship.textContent = t.shipping;
+    ship.style.color = t.shipping_is_free ? '#22C55E' : 'var(--black)';
+  }
+  if (total) total.textContent = t.total;
+}
+
+function applyCoupon() {
+  var input = document.getElementById('coupon-code-input');
+  var btn   = document.getElementById('coupon-apply-btn');
+  var code  = (input.value || '').trim().toUpperCase();
+  if (!code) { couponShowMessage('Enter a code first.', true); return; }
+
+  btn.disabled = true;
+  btn.textContent = '...';
+  couponShowMessage('', false);
+
+  var body = new URLSearchParams();
+  body.set('action', 'apply');
+  body.set('code', code);
+  body.set('state', couponCurrentState());
+
+  fetch('api/apply-coupon.php', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+    body: body.toString()
+  })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      btn.disabled = false;
+      btn.textContent = 'Apply';
+      if (!d.success) { couponShowMessage(d.message || 'That code did not work.', true); return; }
+
+      couponPaintTotals(d.totals);
+      document.getElementById('coupon-applied-code').textContent = d.code;
+      document.getElementById('coupon-applied').style.display = 'flex';
+      document.getElementById('coupon-entry').style.display = 'none';
+      input.value = '';
+    })
+    .catch(function(){
+      btn.disabled = false;
+      btn.textContent = 'Apply';
+      couponShowMessage('Could not check that code. Try again.', true);
+    });
+}
+
+function removeCoupon() {
+  var body = new URLSearchParams();
+  body.set('action', 'remove');
+  body.set('state', couponCurrentState());
+
+  fetch('api/apply-coupon.php', {
+    method: 'POST',
+    credentials: 'same-origin',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'},
+    body: body.toString()
+  })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      if (!d.success) return;
+      couponPaintTotals(d.totals);
+      document.getElementById('coupon-applied').style.display = 'none';
+      document.getElementById('coupon-entry').style.display = 'block';
+      couponShowMessage('', false);
+    });
+}
+
+/* Enter key applies the code instead of submitting the order */
+(function(){
+  var input = document.getElementById('coupon-code-input');
+  if (input) {
+    input.addEventListener('keydown', function(e){
+      if (e.key === 'Enter') { e.preventDefault(); applyCoupon(); }
+    });
+  }
 })();
 </script>
 

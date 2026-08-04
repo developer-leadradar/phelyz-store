@@ -116,7 +116,27 @@ function getCartSummary($selectedState = null) {
     $shipping     = $subtotal >= $threshold ? 0 : $shippingRate;
 
     $tax   = 0;
-    $total = $subtotal + $shipping;
+
+    // A coupon held in the session is re-checked on every request rather than
+    // trusted, so one that expires or stops qualifying mid-visit drops off by
+    // itself instead of quietly discounting the order at checkout.
+    $discount     = 0.0;
+    $couponCode   = '';
+    $couponNotice = '';
+    if (function_exists('couponSessionCode') && couponSessionCode() !== '') {
+        $coupon = couponFind(couponSessionCode());
+        $check  = couponValidate($coupon, $items, $subtotal, $shipping);
+        if ($check['ok']) {
+            $couponCode = strtoupper($coupon['code']);
+            $discount   = (float)$check['discount'];
+            if (!empty($check['free_shipping'])) $shipping = 0;
+        } else {
+            couponSessionClear();
+            $couponNotice = $check['message'];
+        }
+    }
+
+    $total = max(0, $subtotal - $discount) + $shipping;
 
     return [
         'items'          => $items,
@@ -127,11 +147,15 @@ function getCartSummary($selectedState = null) {
         'shipping_rate'  => $shippingRate,
         'shipping_state' => $selectedState,
         'threshold'      => $threshold,
+        'discount'       => $discount,
+        'coupon_code'    => $couponCode,
+        'coupon_notice'  => $couponNotice,
         'total'          => $total,
     ];
 }
 
 require_once __DIR__ . '/tracking.php';
+require_once __DIR__ . '/coupons.php';
 
 function processCheckout($formData) {
     $db = getDB();
@@ -154,6 +178,8 @@ function processCheckout($formData) {
         'subtotal' => $cartSummary['subtotal'],
         'tax' => $cartSummary['tax'],
         'shipping' => $cartSummary['shipping'],
+        'discount' => $cartSummary['discount'] ?? 0,
+        'coupon_code' => ($cartSummary['coupon_code'] ?? '') ?: null,
         'total' => $cartSummary['total'],
         'payment_method' => $formData['payment_method'] ?? 'cod',
         'shipping_first_name' => $formData['shipping_first_name'],
@@ -197,6 +223,17 @@ function processCheckout($formData) {
     
     // Add order items
     addOrderItems($orderResult['order_id'], $cartSummary['items']);
+
+    // Bank the coupon now that the order exists, so per-customer limits and
+    // per-code reporting stay accurate. Then release it from the session.
+    if (!empty($cartSummary['coupon_code'])) {
+        couponRecordRedemption(
+            $cartSummary['coupon_code'],
+            $orderResult['order_id'],
+            (float)($cartSummary['discount'] ?? 0)
+        );
+        couponSessionClear();
+    }
 
     // Reduce stock immediately for cash-on-delivery / bank transfer (order is
     // committed). Card (Paystack) orders stay pending until payment is verified -
