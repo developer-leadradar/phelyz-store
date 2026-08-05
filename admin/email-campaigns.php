@@ -13,6 +13,24 @@ $audiences = campaignAllAudiences();
 // Arriving from the coupon page with a group already chosen.
 $presetAudience = isset($_GET['audience']) && isset($audiences[$_GET['audience']]) ? $_GET['audience'] : '';
 
+// Arriving from the festive calendar: pre-fill the send date with that
+// occasion, a little ahead of the day itself so it lands in good time.
+$presetSeason = '';
+$presetWhen   = '';
+if (!empty($_GET['season'])) {
+    require_once __DIR__ . '/../includes/automations.php';
+    $seasons = campaignSeasons();
+    $key     = $_GET['season'];
+    if (isset($seasons[$key])) {
+        $presetSeason = $key;
+        if (!empty($seasons[$key]['when'])) {
+            $ts = strtotime(date('Y') . '-' . $seasons[$key]['when']);
+            if ($ts < time()) $ts = strtotime((date('Y') + 1) . '-' . $seasons[$key]['when']);
+            $presetWhen = date('Y-m-d\T09:00', strtotime('-3 days', $ts));
+        }
+    }
+}
+
 // ── Send one batch (called by the progress loop on this page) ───────────────
 if (isset($_GET['batch'])) {
     header('Content-Type: application/json');
@@ -58,6 +76,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $success = 'Test email sent to ' . htmlspecialchars($testTo) . '. Check it looks right before sending to everyone.';
             } else {
                 $error = 'Could not send the test email. Check the mail settings.';
+            }
+        }
+    } elseif ($action === 'schedule') {
+        // Saved as a draft with a date on it. The cron job picks it up when the
+        // time comes, so a Christmas email does not need somebody at a laptop
+        // on Christmas morning.
+        $when = trim($_POST['scheduled_at'] ?? '');
+        if ($when === '') {
+            $error = 'Pick the date and time it should go out.';
+        } elseif (strtotime($when) === false || strtotime($when) < time()) {
+            $error = 'That send time is in the past.';
+        } else {
+            try {
+                $db->insert('email_campaigns', [
+                    'subject'      => $subject,
+                    'heading'      => $heading,
+                    'body'         => $body,
+                    'cta_text'     => $ctaText,
+                    'cta_url'      => $ctaUrl,
+                    'audience'     => $audience,
+                    'status'       => 'draft',
+                    'scheduled_at' => date('Y-m-d H:i:s', strtotime($when)),
+                    'season_key'   => trim($_POST['season_key'] ?? '') ?: null,
+                ]);
+                $success = 'Scheduled for ' . date('j M Y, g:ia', strtotime($when))
+                         . '. Leave it with us, the cron job sends it.';
+            } catch (Exception $e) {
+                $error = 'Could not schedule that. Run migrations/add_automation_and_expenses.sql first.';
             }
         }
     } elseif ($action === 'send') {
@@ -227,9 +273,21 @@ try {
       </p>
     <?php endif; ?>
 
+    <h2 style="font-size:15px;font-weight:700;margin:22px 0 10px;">4. When</h2>
+    <div class="form-group">
+      <label class="form-label">Send later <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--stone-mid);">(leave blank to send now)</span></label>
+      <input type="datetime-local" name="scheduled_at" id="f-when" class="form-input"
+             value="<?php echo htmlspecialchars($_POST['scheduled_at'] ?? $presetWhen); ?>">
+      <input type="hidden" name="season_key" value="<?php echo htmlspecialchars($presetSeason); ?>">
+      <p style="font-size:12px;color:var(--stone-mid);margin:6px 0 0;">
+        Useful for festive campaigns. Needs the cron job switched on, see Automations.
+      </p>
+    </div>
+
     <div class="campaign-actions">
       <button type="button" class="btn btn-outline" onclick="submitCampaign('test')">Send test to myself</button>
-      <button type="button" class="btn btn-gold" onclick="confirmSend()">Send campaign</button>
+      <button type="button" class="btn btn-outline" onclick="submitCampaign('schedule')">Schedule</button>
+      <button type="button" class="btn btn-gold" onclick="confirmSend()">Send now</button>
     </div>
   </form>
 

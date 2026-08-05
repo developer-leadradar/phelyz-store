@@ -124,5 +124,15 @@ window.PHELYZ_COUNTRY = <?php echo json_encode($_SERVER['HTTP_X_VERCEL_IP_COUNTR
 </script>
 <script src="<?php echo SITE_URL; ?>/assets/js/main.js"></script>
 <script src="<?php echo SITE_URL; ?>/assets/js/currency.js?v=1"></script>
+
+<?php
+// First-visit welcome offer. Kept off checkout and the account pages, where an
+// interruption costs a sale rather than earning an email address.
+$noPopup = ['checkout.php', 'cart.php', 'login.php', 'register.php', 'reset-password.php',
+            'forgot-password.php', 'verify-email.php', 'unsubscribe.php', 'order-details.php'];
+if (!in_array(basename($_SERVER['PHP_SELF']), $noPopup, true)) {
+    require_once __DIR__ . '/welcome-popup.php';
+}
+?>
 </body>
 </html>
