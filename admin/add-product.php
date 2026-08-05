@@ -6,13 +6,28 @@ $db = getDB();
 $categories = getAllCategories(false);
 $error = '';
 
+// Asked by the form when a category is picked, so the SKU box can fill itself.
+if (isset($_GET['next_sku'])) {
+    header('Content-Type: application/json');
+    $catRow = $db->fetchOne("SELECT name FROM categories WHERE id = ?", [(int)$_GET['next_sku']]);
+    echo json_encode(['sku' => $catRow ? generateSku($catRow['name'], '') : '']);
+    exit;
+}
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate inputs
-    $name = sanitize($_POST['name']);
-    $sku = sanitize($_POST['sku']);
+    $name = cleanText($_POST['name']);
+    $sku = cleanText($_POST['sku']);
     $price = (float)$_POST['price'];
     $stock = (int)$_POST['stock_quantity'];
     $categoryId = (int)$_POST['category_id'];
+
+    // No SKU typed? Build one from the category so every product still has a
+    // unique code without the admin having to invent one each time.
+    if ($sku === '' && $categoryId) {
+        $catRow = $db->fetchOne("SELECT name FROM categories WHERE id = ?", [$categoryId]);
+        $sku    = generateSku($catRow['name'] ?? '', $name);
+    }
 
     if (empty($name) || empty($sku) || $price <= 0 || !$categoryId) {
         $error = 'Please fill in all required fields';
@@ -62,23 +77,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $productData = [
                 'name' => $name,
                 'slug' => generateSlug($name),
-                'description' => sanitize($_POST['description']),
+                'description' => cleanText($_POST['description']),
                 'category_id' => $categoryId,
-                'material' => sanitize($_POST['material']) ?: null,
-                'metal_purity' => sanitize($_POST['metal_purity']) ?: null,
-                'stone_type' => sanitize($_POST['stone_type']) ?: 'None',
+                'material' => cleanText($_POST['material']) ?: null,
+                'metal_purity' => cleanText($_POST['metal_purity']) ?: null,
+                'stone_type' => cleanText($_POST['stone_type']) ?: 'None',
                 'stone_weight' => (float)($_POST['stone_weight'] ?: 0),
-                'brand' => sanitize($_POST['brand']) ?: null,
+                'brand' => cleanText($_POST['brand']) ?: null,
                 'price' => $price,
                 'compare_price' => (float)($_POST['compare_price'] ?: 0),
                 'stock_quantity' => $stock,
                 'sku' => $sku,
                 'image' => $imagePath,
                 'weight' => (float)($_POST['weight'] ?: 0),
-                'dimensions' => sanitize($_POST['dimensions']) ?: null,
-                'gender' => sanitize($_POST['gender']) ?: 'Unisex',
-                'style' => sanitize($_POST['style']) ?: null,
-                'occasion' => sanitize($_POST['occasion']) ?: null,
+                'dimensions' => cleanText($_POST['dimensions']) ?: null,
+                'gender' => cleanText($_POST['gender']) ?: 'Unisex',
+                'style' => cleanText($_POST['style']) ?: null,
+                'occasion' => cleanText($_POST['occasion']) ?: null,
                 'stock_status' => in_array($_POST['stock_status'] ?? '', ['available','express','out_of_stock']) ? $_POST['stock_status'] : 'available',
                 'colors' => trim($_POST['colors'] ?? '') ?: null,
                 'cod_enabled'  => isset($_POST['pm_cod_override'])  ? (isset($_POST['cod_enabled'])  ? 1 : 0) : null,
@@ -160,9 +175,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="add_sku">SKU <span style="color:#EF4444;">*</span></label>
-                <input type="text" id="add_sku" name="sku" required placeholder="e.g., RING-001"
+                <input type="text" id="add_sku" name="sku" placeholder="Leave blank to generate automatically"
                        class="form-input"
                        value="<?php echo isset($_POST['sku']) ? htmlspecialchars($_POST['sku']) : ''; ?>">
+                <p style="font-size:12px;color:var(--stone-mid);margin:6px 0 0;">
+                    Filled in from the category as you choose one. Type over it if you prefer your own code.
+                </p>
             </div>
         </div>
 
@@ -294,22 +312,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="form-row-2col">
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="add_material">Material</label>
-                <select id="add_material" name="material" class="form-input form-select">
-                    <option value="">Select Material</option>
-                    <?php foreach (['Gold','Platinum','Silver','Rose Gold','White Gold','Titanium','Stainless Steel'] as $m): ?>
-                        <option value="<?php echo $m; ?>" <?php echo (isset($_POST['material']) && $_POST['material'] === $m) ? 'selected' : ''; ?>><?php echo $m; ?></option>
+                <input type="text" id="add_material" name="material" class="form-input" list="material-list"
+                       placeholder="Pick one or type your own"
+                       value="<?php echo isset($_POST['material']) ? htmlspecialchars($_POST['material']) : ''; ?>">
+                <datalist id="material-list">
+                    <?php foreach (productFieldSuggestions('material', ['Gold','Platinum','Silver','Rose Gold','White Gold','Titanium','Stainless Steel']) as $m): ?>
+                        <option value="<?php echo htmlspecialchars($m); ?>"></option>
                     <?php endforeach; ?>
-                </select>
+                </datalist>
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="add_purity">Metal Purity</label>
-                <select id="add_purity" name="metal_purity" class="form-input form-select">
-                    <option value="">Select Purity</option>
-                    <?php foreach (['10K','14K','18K','22K','24K','950','925','N/A'] as $p):
-                        $label = $p === '950' ? '950 Platinum' : ($p === '925' ? '925 Silver' : $p); ?>
-                        <option value="<?php echo $p; ?>" <?php echo (isset($_POST['metal_purity']) && $_POST['metal_purity'] === $p) ? 'selected' : ''; ?>><?php echo $label; ?></option>
+                <input type="text" id="add_purity" name="metal_purity" class="form-input" list="purity-list"
+                       placeholder="Pick one or type your own"
+                       value="<?php echo isset($_POST['metal_purity']) ? htmlspecialchars($_POST['metal_purity']) : ''; ?>">
+                <datalist id="purity-list">
+                    <?php foreach (productFieldSuggestions('metal_purity', ['10K','14K','18K','22K','24K','950','925','N/A']) as $p): ?>
+                        <option value="<?php echo htmlspecialchars($p); ?>"></option>
                     <?php endforeach; ?>
-                </select>
+                </datalist>
             </div>
         </div>
 
@@ -317,11 +338,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;" class="form-row-2col">
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="add_stone">Stone Type</label>
-                <select id="add_stone" name="stone_type" class="form-input form-select">
-                    <?php foreach (['None','Diamond','Ruby','Emerald','Sapphire','Pearl','Topaz','Amethyst'] as $s): ?>
-                        <option value="<?php echo $s; ?>" <?php echo (isset($_POST['stone_type']) && $_POST['stone_type'] === $s) ? 'selected' : ''; ?>><?php echo $s; ?></option>
+                <input type="text" id="add_stone" name="stone_type" class="form-input" list="stone-list"
+                       placeholder="Pick one or type your own"
+                       value="<?php echo isset($_POST['stone_type']) ? htmlspecialchars($_POST['stone_type']) : 'None'; ?>">
+                <datalist id="stone-list">
+                    <?php foreach (productFieldSuggestions('stone_type', ['None','Diamond','Ruby','Emerald','Sapphire','Pearl','Topaz','Amethyst','Zirconia','Moissanite','Opal','Garnet']) as $s): ?>
+                        <option value="<?php echo htmlspecialchars($s); ?>"></option>
                     <?php endforeach; ?>
-                </select>
+                </datalist>
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="add_stone_w">Stone Weight (Carats)</label>
@@ -624,6 +648,26 @@ function escapeHtml(s) {
 document.getElementById('color-name-input').addEventListener('keydown', function(e) {
     if (e.key === 'Enter') { e.preventDefault(); addColorChip(); }
 });
+
+/* ── SKU suggestion ─────────────────────────────────────────
+   Fills the code in from the chosen category, but never overwrites something
+   the admin typed themselves. */
+(function () {
+    var cat = document.getElementById('add_cat');
+    var sku = document.getElementById('add_sku');
+    if (!cat || !sku) return;
+
+    var touched = sku.value.trim() !== '';
+    sku.addEventListener('input', function () { touched = sku.value.trim() !== ''; });
+
+    cat.addEventListener('change', function () {
+        if (touched || !cat.value) return;
+        fetch('add-product.php?next_sku=' + encodeURIComponent(cat.value), { credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .then(function (d) { if (d.sku && !touched) sku.value = d.sku; })
+            .catch(function () { /* leave it blank; the server fills it in on save */ });
+    });
+})();
 </script>
 
 <?php require_once 'includes/footer.php'; ?>

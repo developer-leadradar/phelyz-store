@@ -899,6 +899,95 @@ function sanitize($data) {
     return htmlspecialchars(strip_tags(trim($data)), ENT_QUOTES, 'UTF-8');
 }
 
+/**
+ * Clean text that is going into the database and will be HTML-escaped again
+ * when it is displayed.
+ *
+ * sanitize() HTML-encodes, which is right for values echoed straight out but
+ * wrong for stored content: "Men's watch" was saved as "Men&#039;s watch" and
+ * then escaped a second time on the way out, so the customer saw the raw
+ * entity. Strip tags, leave the characters alone, and escape at output.
+ */
+function cleanText($data) {
+    return trim(strip_tags((string)$data));
+}
+
+/**
+ * Build the next free SKU for a category, e.g. RING-004.
+ *
+ * Takes the highest number already issued for that prefix and adds one, so
+ * deleting a product does not cause the next one to reuse its code.
+ */
+function generateSku($categoryName, $productName = '') {
+    $source = trim((string)$categoryName) !== '' ? $categoryName : $productName;
+    $base   = strtoupper(preg_replace('/[^A-Za-z]/', '', $source));
+    $base   = $base !== '' ? substr($base, 0, 4) : 'PHZ';
+
+    $next = 1;
+    try {
+        $db  = getDB();
+        $row = $db->fetchOne(
+            "SELECT sku FROM products
+             WHERE sku REGEXP ?
+             ORDER BY CAST(SUBSTRING(sku, ?) AS UNSIGNED) DESC
+             LIMIT 1",
+            ['^' . $base . '-[0-9]+$', strlen($base) + 2]
+        );
+        if ($row && preg_match('/-(\d+)$/', $row['sku'], $m)) {
+            $next = (int)$m[1] + 1;
+        }
+
+        // Belt and braces: skip anything already taken.
+        for ($i = 0; $i < 500; $i++) {
+            $candidate = $base . '-' . str_pad((string)$next, 3, '0', STR_PAD_LEFT);
+            if (!$db->fetchOne("SELECT id FROM products WHERE sku = ?", [$candidate])) {
+                return $candidate;
+            }
+            $next++;
+        }
+    } catch (Exception $e) {
+        // Fall through to a timestamped code rather than blocking the save.
+    }
+    return $base . '-' . date('ymdHis');
+}
+
+/**
+ * Suggestions for a free-text product field: the standard options plus
+ * anything the admin has typed before, so custom entries become reusable.
+ */
+function productFieldSuggestions($column, array $defaults = []) {
+    $allowed = ['material', 'metal_purity', 'stone_type', 'brand', 'style', 'occasion'];
+    if (!in_array($column, $allowed, true)) return $defaults;
+
+    $values = $defaults;
+    try {
+        $rows = getDB()->fetchAll(
+            "SELECT DISTINCT $column AS v FROM products
+             WHERE $column IS NOT NULL AND $column <> '' ORDER BY $column ASC"
+        );
+        foreach ($rows as $r) {
+            if (!in_array($r['v'], $values, true)) $values[] = $r['v'];
+        }
+    } catch (Exception $e) {
+        // Defaults alone are fine.
+    }
+    return $values;
+}
+
+/**
+ * Absolute URL for a stored product image.
+ *
+ * Image paths are saved relative ("uploads/products/x.jpg"). That resolves
+ * correctly from the storefront but not from /admin/, where the browser looks
+ * for /admin/uploads/... and gets nothing. Always hand out a full URL.
+ */
+function productImageUrl($path) {
+    $path = trim((string)$path);
+    if ($path === '') return '';
+    if (preg_match('#^(https?:)?//#i', $path) || stripos($path, 'data:') === 0) return $path;
+    return SITE_URL . '/' . ltrim($path, '/');
+}
+
 function formatPrice($price) {
     return '₦' . number_format($price, 2);
 }
@@ -990,9 +1079,70 @@ function uploadImage($file, $directory = 'products') {
     $uploadDir = UPLOAD_PATH . $directory . '/';
     if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
     if (move_uploaded_file($file['tmp_name'], $uploadDir . basename($newFilename))) {
+        // Phone cameras produce 3-5MB files. Served untouched they crawl in over
+        // mobile data and paint down the screen in bands, so shrink to something
+        // sensible for the largest slot the design ever uses.
+        optimiseImageFile($uploadDir . basename($newFilename));
         return 'uploads/' . $newFilename;
     }
     return false;
+}
+
+/**
+ * Resize an oversized upload in place and re-encode it.
+ *
+ * Quietly does nothing when GD is unavailable or the file is already small,
+ * so an upload never fails just because the image could not be optimised.
+ *
+ * @return bool true when the file was rewritten
+ */
+function optimiseImageFile($path, $maxWidth = 1400, $quality = 82) {
+    if (!function_exists('imagecreatetruecolor')) return false;
+    if (!is_file($path)) return false;
+
+    $info = @getimagesize($path);
+    if (!$info) return false;
+
+    [$width, $height] = $info;
+    $mime = $info['mime'] ?? '';
+
+    // Animated GIFs would lose their frames, so leave them alone.
+    if ($mime === 'image/gif') return false;
+    if ($width <= $maxWidth && filesize($path) < 350 * 1024) return false;
+
+    switch ($mime) {
+        case 'image/jpeg': $src = @imagecreatefromjpeg($path); break;
+        case 'image/png':  $src = @imagecreatefrompng($path);  break;
+        case 'image/webp': $src = function_exists('imagecreatefromwebp') ? @imagecreatefromwebp($path) : null; break;
+        default: return false;
+    }
+    if (!$src) return false;
+
+    $newWidth  = min($width, $maxWidth);
+    $newHeight = (int)round($height * ($newWidth / $width));
+
+    $dst = imagecreatetruecolor($newWidth, $newHeight);
+    if ($mime === 'image/png' || $mime === 'image/webp') {
+        imagealphablending($dst, false);
+        imagesavealpha($dst, true);
+    } else {
+        // Flatten onto white so a transparent source does not go black.
+        imagefill($dst, 0, 0, imagecolorallocate($dst, 255, 255, 255));
+    }
+    imagecopyresampled($dst, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+
+    $ok = false;
+    switch ($mime) {
+        // Baseline rather than progressive: progressive JPEGs are what make a
+        // slow image appear to load in bands.
+        case 'image/jpeg': imageinterlace($dst, false); $ok = imagejpeg($dst, $path, $quality); break;
+        case 'image/png':  $ok = imagepng($dst, $path, 6); break;
+        case 'image/webp': $ok = function_exists('imagewebp') ? imagewebp($dst, $path, $quality) : false; break;
+    }
+
+    imagedestroy($src);
+    imagedestroy($dst);
+    return (bool)$ok;
 }
 
 /**

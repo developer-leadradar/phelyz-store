@@ -83,6 +83,28 @@ if ($tablesReady && $_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// ── Who used a given coupon ─────────────────────────────────────────────────
+$viewing    = null;
+$redeemers  = [];
+if ($tablesReady && isset($_GET['used'])) {
+    $viewing = $db->fetchOne("SELECT * FROM coupons WHERE id = ?", [(int)$_GET['used']]);
+    if ($viewing) {
+        try {
+            $redeemers = $db->fetchAll(
+                "SELECT r.created_at, r.discount, r.email, r.order_id,
+                        u.first_name, u.last_name,
+                        o.order_number, o.total, o.status
+                 FROM coupon_redemptions r
+                 LEFT JOIN users  u ON u.id = r.user_id
+                 LEFT JOIN orders o ON o.id = r.order_id
+                 WHERE r.coupon_id = ?
+                 ORDER BY r.created_at DESC",
+                [(int)$viewing['id']]
+            );
+        } catch (Exception $e) { $redeemers = []; }
+    }
+}
+
 // ── Data ────────────────────────────────────────────────────────────────────
 $coupons    = [];
 $categories = [];
@@ -128,6 +150,75 @@ $dtLocal = function ($v) { return $v ? date('Y-m-d\TH:i', strtotime($v)) : ''; }
 
 <?php if ($success): ?><div class="alert alert-success" style="margin-bottom:18px;"><?php echo $success; ?></div><?php endif; ?>
 <?php if ($error): ?><div class="alert alert-error" style="margin-bottom:18px;"><?php echo htmlspecialchars($error); ?></div><?php endif; ?>
+
+<?php if ($viewing): ?>
+<!-- ── Redemption list for one coupon ───────────────────── -->
+<div class="card" style="padding:22px;margin-bottom:20px;">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px;">
+    <div style="min-width:0;">
+      <h2 style="font-size:16px;font-weight:700;margin:0 0 4px;">
+        Who used <code style="background:var(--black);color:#fff;padding:2px 9px;border-radius:6px;font-size:13px;letter-spacing:0.06em;"><?php echo htmlspecialchars($viewing['code']); ?></code>
+      </h2>
+      <p style="font-size:12.5px;color:var(--stone-mid);margin:0;">
+        <?php
+        $people = [];
+        foreach ($redeemers as $r) { if (!empty($r['email'])) $people[strtolower($r['email'])] = true; }
+        $peopleCount = count($people);
+        echo count($redeemers) . ' ' . (count($redeemers) === 1 ? 'use' : 'uses') . ' by ' . $peopleCount . ' ' . ($peopleCount === 1 ? 'person' : 'people');
+        ?>
+      </p>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <?php if ($peopleCount > 0): ?>
+        <a href="email-campaigns.php?audience=coupon_<?php echo (int)$viewing['id']; ?>" class="btn btn-gold" style="font-size:13px;">
+          Email these <?php echo $peopleCount; ?> <?php echo $peopleCount === 1 ? 'buyer' : 'buyers'; ?>
+        </a>
+      <?php endif; ?>
+      <a href="coupons.php" class="btn btn-outline" style="font-size:13px;">Close</a>
+    </div>
+  </div>
+
+  <?php if (!$redeemers): ?>
+    <p style="font-size:13px;color:var(--stone-mid);margin:12px 0 0;">Nobody has used this code yet.</p>
+  <?php else: ?>
+    <div style="overflow-x:auto;margin-top:14px;">
+      <table class="data-table" style="min-width:560px;">
+        <thead>
+          <tr>
+            <th>Customer</th><th>Email</th><th>Used</th><th>Order</th><th style="text-align:right;">Saved</th>
+          </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($redeemers as $r): ?>
+          <tr>
+            <td style="font-weight:600;color:var(--black);">
+              <?php
+              $nm = trim(($r['first_name'] ?? '') . ' ' . ($r['last_name'] ?? ''));
+              echo $nm !== '' ? htmlspecialchars($nm) : '<span style="color:var(--stone-mid);font-weight:400;">Guest</span>';
+              ?>
+            </td>
+            <td style="font-size:13px;overflow-wrap:anywhere;"><?php echo htmlspecialchars($r['email'] ?? '-'); ?></td>
+            <td style="font-size:13px;color:var(--stone-mid);white-space:nowrap;"><?php echo date('j M Y', strtotime($r['created_at'])); ?></td>
+            <td style="font-size:13px;">
+              <?php if (!empty($r['order_number'])): ?>
+                <a href="order-details.php?id=<?php echo (int)$r['order_id']; ?>" style="color:var(--gold);font-weight:600;"><?php echo htmlspecialchars($r['order_number']); ?></a>
+                <span style="color:var(--stone-mid);">(<?php echo formatPrice($r['total']); ?>)</span>
+              <?php else: ?>
+                <span style="color:var(--stone-mid);">-</span>
+              <?php endif; ?>
+            </td>
+            <td style="text-align:right;font-weight:600;color:#15803D;white-space:nowrap;"><?php echo formatPrice($r['discount']); ?></td>
+          </tr>
+        <?php endforeach; ?>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:12px;color:var(--stone-mid);margin:12px 0 0;">
+      These are proven buyers. Sending this group a stronger offer a couple of weeks later is the quickest way to turn a first order into a second.
+    </p>
+  <?php endif; ?>
+</div>
+<?php endif; ?>
 
 <div class="coupon-grid">
 
@@ -334,6 +425,9 @@ $dtLocal = function ($v) { return $v ? date('Y-m-d\TH:i', strtotime($v)) : ''; }
 
             <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:9px;font-size:12px;">
               <a href="?edit=<?php echo (int)$c['id']; ?>" style="color:var(--gold);font-weight:600;">Edit</a>
+              <?php if ((int)$c['redemptions'] > 0): ?>
+                <a href="?used=<?php echo (int)$c['id']; ?>" style="color:var(--black);font-weight:600;">See who used it</a>
+              <?php endif; ?>
               <a href="?toggle=<?php echo (int)$c['id']; ?>" style="color:var(--stone-mid);font-weight:600;"><?php echo $c['is_active'] ? 'Turn off' : 'Turn on'; ?></a>
               <a href="?delete=<?php echo (int)$c['id']; ?>" onclick="return confirm('Delete <?php echo htmlspecialchars($c['code']); ?>? Past orders keep their discount.')" style="color:#EF4444;">Delete</a>
             </div>

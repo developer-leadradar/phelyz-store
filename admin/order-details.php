@@ -327,7 +327,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
                 <tr>
                   <td style="padding-left:20px;">
                     <div style="display:flex;align-items:center;gap:12px;">
-                      <img src="../<?php echo htmlspecialchars($item['image']); ?>"
+                      <img src="<?php echo htmlspecialchars(productImageUrl($item['image'])); ?>"
                            alt="<?php echo htmlspecialchars($item['product_name']); ?>"
                            onerror="this.src='https://placehold.co/48x48/F5F5F4/78716C?text=+'"
                            style="width:48px;height:48px;object-fit:cover;

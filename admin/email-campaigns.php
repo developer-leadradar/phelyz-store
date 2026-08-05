@@ -8,7 +8,10 @@ $success = '';
 $error   = '';
 
 $templates = campaignTemplates();
-$audiences = campaignAudiences();
+$audiences = campaignAllAudiences();
+
+// Arriving from the coupon page with a group already chosen.
+$presetAudience = isset($_GET['audience']) && isset($audiences[$_GET['audience']]) ? $_GET['audience'] : '';
 
 // ── Send one batch (called by the progress loop on this page) ───────────────
 if (isset($_GET['batch'])) {
@@ -205,7 +208,7 @@ try {
     <h2 style="font-size:15px;font-weight:700;margin:22px 0 12px;">3. Who gets it</h2>
 
     <div class="audience-list">
-      <?php $selAud = $_POST['audience'] ?? 'all'; ?>
+      <?php $selAud = $_POST['audience'] ?? ($presetAudience ?: 'all'); ?>
       <?php foreach ($audiences as $key => $a): ?>
         <label class="audience-option<?php echo $selAud === $key ? ' selected' : ''; ?>">
           <input type="radio" name="audience" value="<?php echo $key; ?>" <?php echo $selAud === $key ? 'checked' : ''; ?>>

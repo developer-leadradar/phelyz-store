@@ -20,8 +20,8 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = sanitize($_POST['name']);
-    $sku = sanitize($_POST['sku']);
+    $name = cleanText($_POST['name']);
+    $sku = cleanText($_POST['sku']);
     $price = (float)$_POST['price'];
     $stock = (int)$_POST['stock_quantity'];
     $categoryId = (int)$_POST['category_id'];
@@ -83,23 +83,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $updateData = [
                 'name' => $name,
                 'slug' => generateSlug($name),
-                'description' => sanitize($_POST['description']),
+                'description' => cleanText($_POST['description']),
                 'category_id' => $categoryId,
-                'material' => sanitize($_POST['material']) ?: null,
-                'metal_purity' => sanitize($_POST['metal_purity']) ?: null,
-                'stone_type' => sanitize($_POST['stone_type']) ?: 'None',
+                'material' => cleanText($_POST['material']) ?: null,
+                'metal_purity' => cleanText($_POST['metal_purity']) ?: null,
+                'stone_type' => cleanText($_POST['stone_type']) ?: 'None',
                 'stone_weight' => (float)($_POST['stone_weight'] ?: 0),
-                'brand' => sanitize($_POST['brand']) ?: null,
+                'brand' => cleanText($_POST['brand']) ?: null,
                 'price' => $price,
                 'compare_price' => (float)($_POST['compare_price'] ?: 0),
                 'stock_quantity' => $stock,
                 'sku' => $sku,
                 'image' => $imagePath,
                 'weight' => (float)($_POST['weight'] ?: 0),
-                'dimensions' => sanitize($_POST['dimensions']) ?: null,
-                'gender' => sanitize($_POST['gender']) ?: 'Unisex',
-                'style' => sanitize($_POST['style']) ?: null,
-                'occasion' => sanitize($_POST['occasion']) ?: null,
+                'dimensions' => cleanText($_POST['dimensions']) ?: null,
+                'gender' => cleanText($_POST['gender']) ?: 'Unisex',
+                'style' => cleanText($_POST['style']) ?: null,
+                'occasion' => cleanText($_POST['occasion']) ?: null,
                 'stock_status' => in_array($_POST['stock_status'] ?? '', ['available','express','out_of_stock']) ? $_POST['stock_status'] : 'available',
                 'colors' => trim($_POST['colors'] ?? '') ?: null,
                 'cod_enabled'  => isset($_POST['pm_cod_override'])  ? (isset($_POST['cod_enabled'])  ? 1 : 0) : null,
@@ -333,23 +333,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;" class="form-row-2col">
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="edit_material">Material</label>
-                <select id="edit_material" name="material" class="form-input form-select">
-                    <option value="">Select Material</option>
-                    <?php foreach (['Gold','Platinum','Silver','Rose Gold','White Gold','Titanium','Stainless Steel'] as $m): ?>
-                        <option value="<?php echo $m; ?>" <?php echo $product['material'] == $m ? 'selected' : ''; ?>><?php echo $m; ?></option>
+                <input type="text" id="edit_material" name="material" class="form-input" list="material-list"
+                       placeholder="Pick one or type your own"
+                       value="<?php echo htmlspecialchars($product['material'] ?? ''); ?>">
+                <datalist id="material-list">
+                    <?php foreach (productFieldSuggestions('material', ['Gold','Platinum','Silver','Rose Gold','White Gold','Titanium','Stainless Steel']) as $m): ?>
+                        <option value="<?php echo htmlspecialchars($m); ?>"></option>
                     <?php endforeach; ?>
-                </select>
+                </datalist>
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="edit_purity">Metal Purity</label>
-                <select id="edit_purity" name="metal_purity" class="form-input form-select">
-                    <option value="">Select Purity</option>
-                    <?php
-                    $purities = ['10K' => '10K','14K' => '14K','18K' => '18K','22K' => '22K','24K' => '24K','950' => '950 Platinum','925' => '925 Silver','N/A' => 'N/A'];
-                    foreach ($purities as $pVal => $pLabel): ?>
-                        <option value="<?php echo $pVal; ?>" <?php echo $product['metal_purity'] == $pVal ? 'selected' : ''; ?>><?php echo $pLabel; ?></option>
+                <input type="text" id="edit_purity" name="metal_purity" class="form-input" list="purity-list"
+                       placeholder="Pick one or type your own"
+                       value="<?php echo htmlspecialchars($product['metal_purity'] ?? ''); ?>">
+                <datalist id="purity-list">
+                    <?php foreach (productFieldSuggestions('metal_purity', ['10K','14K','18K','22K','24K','950','925','N/A']) as $p): ?>
+                        <option value="<?php echo htmlspecialchars($p); ?>"></option>
                     <?php endforeach; ?>
-                </select>
+                </datalist>
             </div>
         </div>
 
@@ -357,11 +359,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;" class="form-row-2col">
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="edit_stone">Stone Type</label>
-                <select id="edit_stone" name="stone_type" class="form-input form-select">
-                    <?php foreach (['None','Diamond','Ruby','Emerald','Sapphire','Pearl','Topaz','Amethyst'] as $s): ?>
-                        <option value="<?php echo $s; ?>" <?php echo $product['stone_type'] == $s ? 'selected' : ''; ?>><?php echo $s; ?></option>
+                <input type="text" id="edit_stone" name="stone_type" class="form-input" list="stone-list"
+                       placeholder="Pick one or type your own"
+                       value="<?php echo htmlspecialchars($product['stone_type'] ?? 'None'); ?>">
+                <datalist id="stone-list">
+                    <?php foreach (productFieldSuggestions('stone_type', ['None','Diamond','Ruby','Emerald','Sapphire','Pearl','Topaz','Amethyst','Zirconia','Moissanite','Opal','Garnet']) as $s): ?>
+                        <option value="<?php echo htmlspecialchars($s); ?>"></option>
                     <?php endforeach; ?>
-                </select>
+                </datalist>
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="edit_stone_w">Stone Weight (Carats)</label>
@@ -477,7 +482,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;">
                 <?php if (!empty($product['image'])): ?>
                 <div style="position:relative;border:1px solid var(--cream-dark);border-radius:10px;overflow:hidden;background:white;">
-                    <img src="<?php echo htmlspecialchars($product['image']); ?>" alt="Primary"
+                    <img src="<?php echo htmlspecialchars(productImageUrl($product['image'])); ?>" alt="Primary"
                          style="width:100%;height:120px;object-fit:cover;display:block;"
                          onerror="this.src='https://placehold.co/120x120/F5F5F4/78716C?text=J'">
                     <span style="position:absolute;top:6px;left:6px;background:var(--gold);color:white;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase;">Primary</span>

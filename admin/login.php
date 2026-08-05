@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     .login-shell { width: 100%; max-width: 420px; }
 
     .login-brand { text-align: center; margin-bottom: 26px; }
-    .login-brand img { height: 62px; width: auto; display: inline-block; }
+    .login-brand img { height: 92px; width: auto; max-width: 78%; display: inline-block; }
     .login-brand span {
       display: inline-block; margin-top: 12px;
       font-size: 10px; font-weight: 700; letter-spacing: 0.22em;
@@ -94,8 +94,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       font-family: 'Cormorant', Georgia, serif;
       font-size: 30px; font-weight: 700; line-height: 1.15;
       color: var(--black); margin-bottom: 6px;
+      text-align: center;
     }
-    .login-card .sub { font-size: 13px; color: var(--stone-mid); margin-bottom: 26px; }
+    .login-card .sub {
+      font-size: 13px; color: var(--stone-mid); margin-bottom: 26px;
+      text-align: center;
+    }
 
     .alert-error {
       background: #FEF2F2; border: 1px solid #FECACA; color: #B91C1C;
@@ -162,7 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       .login-card-inner { padding: 30px 22px 26px; }
       .login-foot { padding: 14px 22px 22px; }
       .login-card h1 { font-size: 26px; }
-      .login-brand img { height: 52px; }
+      .login-brand img { height: 74px; }
     }
   </style>
 </head>

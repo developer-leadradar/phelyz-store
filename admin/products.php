@@ -65,7 +65,7 @@ $categories = getAllCategories();
             <tr>
               <td style="min-width:100px;padding:8px 8px 8px 16px;">
                 <div style="width:80px;height:44px;border-radius:8px;overflow:hidden;flex-shrink:0;">
-                  <img src="<?php echo htmlspecialchars($p['image']); ?>" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src='https://placehold.co/80x44/F5F5F4/78716C?text=J'">
+                  <img src="<?php echo htmlspecialchars(productImageUrl($p['image'])); ?>" alt="" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.src='https://placehold.co/80x44/F5F5F4/78716C?text=J'">
                 </div>
               </td>
               <td>

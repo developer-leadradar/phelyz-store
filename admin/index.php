@@ -97,7 +97,7 @@ $statusColors       = ['pending'=>'status-pending','processing'=>'status-process
       <?php else: ?>
         <?php foreach ($topProducts as $p): ?>
           <div style="display:flex;align-items:center;gap:10px;padding:12px 12px;border-bottom:1px solid var(--cream-dark);">
-            <img src="<?php echo htmlspecialchars($p['image']); ?>" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0;" onerror="this.src='https://placehold.co/40x40/F5F5F4/78716C?text=J'">
+            <img src="<?php echo htmlspecialchars(productImageUrl($p['image'])); ?>" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0;" onerror="this.src='https://placehold.co/40x40/F5F5F4/78716C?text=J'">
             <div style="flex:1;min-width:0;">
               <div style="font-size:13px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($p['name']); ?></div>
               <div style="font-size:11px;color:var(--stone-mid);"><?php echo (int)$p['total_sold']; ?> sold · <?php echo formatPrice($p['revenue']); ?></div>

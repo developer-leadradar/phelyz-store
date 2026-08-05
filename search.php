@@ -153,12 +153,14 @@ function renderStars($r){
                 <?php echo htmlspecialchars($p['name']); ?>
               </a>
             </h3>
+            <?php if ((int)$p['review_count'] > 0): ?>
             <div class="stars" style="margin-bottom:8px;">
-              <?php echo renderStars((int)$p['rating']); ?>
+              <?php echo renderStars((int)round((float)$p['rating'])); ?>
               <span style="font-size:11px;color:var(--stone-mid);margin-left:4px;">
-                (<?php echo $p['review_count']; ?>)
+                (<?php echo (int)$p['review_count']; ?>)
               </span>
             </div>
+            <?php endif; ?>
             <div class="product-card-price">
               <span class="price-current"><?php echo formatPrice($p['price']); ?></span>
               <?php if ($p['compare_price'] > $p['price']): ?>

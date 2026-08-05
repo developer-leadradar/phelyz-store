@@ -53,7 +53,9 @@ function renderProductCard(array $p): void {
         <div class="product-card-cat"><?php echo htmlspecialchars($p['category_name'] ?? ''); ?></div>
         <h3 class="product-card-name"><a href="product.php?id=<?php echo (int)$p['id']; ?>" onclick="event.stopPropagation()"><?php echo htmlspecialchars($p['name']); ?></a></h3>
         <?php if (!empty($p['material'])): ?><div class="product-card-meta"><?php echo htmlspecialchars(trim(($p['metal_purity'] ?? '').' '.$p['material'])); ?></div><?php endif; ?>
-        <div class="stars" style="margin-bottom:8px;"><?php echo renderStars((int)$p['rating']); ?><span style="font-size:11px;color:var(--stone-mid);margin-left:4px;">(<?php echo (int)$p['review_count']; ?>)</span></div>
+        <?php if ((int)$p['review_count'] > 0): ?>
+          <div class="stars" style="margin-bottom:8px;"><?php echo renderStars((int)round((float)$p['rating'])); ?><span style="font-size:11px;color:var(--stone-mid);margin-left:4px;">(<?php echo (int)$p['review_count']; ?>)</span></div>
+        <?php endif; ?>
         <div class="product-card-price">
           <span class="price-current"><?php echo formatPrice($p['price']); ?></span>
           <?php if ($p['compare_price'] > $p['price']): ?><span class="price-original"><?php echo formatPrice($p['compare_price']); ?></span><?php endif; ?>

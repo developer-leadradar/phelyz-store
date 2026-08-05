@@ -90,7 +90,7 @@ $waNumber = preg_replace('/\D/', '', defined('SITE_WHATSAPP') ? SITE_WHATSAPP : 
            onclick="togglePromo(<?php echo (int)$p['id']; ?>)"
            style="border:2px solid var(--cream-dark);border-radius:12px;overflow:hidden;background:white;cursor:pointer;transition:border-color 0.15s;position:relative;">
         <div style="position:relative;">
-          <img src="<?php echo htmlspecialchars($p['image']); ?>" alt=""
+          <img src="<?php echo htmlspecialchars(productImageUrl($p['image'])); ?>" alt=""
                style="width:100%;height:150px;object-fit:cover;display:block;"
                onerror="this.src='https://placehold.co/150x150/F5F5F4/78716C?text=J'">
           <span class="promo-check" style="position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;background:white;border:2px solid var(--cream-dark);display:none;align-items:center;justify-content:center;">

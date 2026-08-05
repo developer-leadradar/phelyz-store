@@ -72,9 +72,13 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
       <div class="lg:sticky lg:top-24 self-start">
         <!-- Main Image -->
         <div class="relative bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-sm mb-3 aspect-square flex items-center justify-center p-8">
+          <!-- The one image worth fetching immediately: everything else on the
+               page can wait behind it. -->
           <img src="<?php echo htmlspecialchars($product['image']); ?>"
                alt="<?php echo htmlspecialchars($product['name']); ?>"
                id="main-product-image"
+               width="800" height="800"
+               fetchpriority="high" decoding="async"
                class="max-w-full max-h-full object-contain transition-transform duration-500 hover:scale-105">
 
           <?php if ($discountPct > 0): ?>
@@ -110,12 +114,12 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
         <div class="flex gap-2 overflow-x-auto pb-1">
           <button onclick="setMainImage('<?php echo htmlspecialchars($product['image'], ENT_QUOTES); ?>', this)"
             class="thumb-btn active flex-shrink-0 w-16 h-16 rounded-lg border-2 border-gold p-1 bg-white overflow-hidden">
-            <img src="<?php echo htmlspecialchars($product['image']); ?>" alt="Main" class="w-full h-full object-contain">
+            <img src="<?php echo htmlspecialchars($product['image']); ?>" alt="Main" width="64" height="64" decoding="async" class="w-full h-full object-contain">
           </button>
           <?php foreach ($additionalImages as $img): ?>
             <button onclick="setMainImage('<?php echo htmlspecialchars($img, ENT_QUOTES); ?>', this)"
               class="thumb-btn flex-shrink-0 w-16 h-16 rounded-lg border-2 border-stone-200 hover:border-gold p-1 bg-white overflow-hidden transition-colors">
-              <img src="<?php echo htmlspecialchars($img); ?>" alt="View" class="w-full h-full object-contain">
+              <img src="<?php echo htmlspecialchars($img); ?>" alt="View" width="64" height="64" loading="lazy" decoding="async" class="w-full h-full object-contain">
             </button>
           <?php endforeach; ?>
         </div>
@@ -132,16 +136,23 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
             <?php echo htmlspecialchars($product['name']); ?>
           </h1>
 
-          <!-- Rating -->
+          <!-- Rating. Only shown once real customers have reviewed the piece;
+               a star score with no reviews behind it is not worth anything. -->
+          <?php if ((int)$product['review_count'] > 0): ?>
           <div class="flex items-center gap-3">
             <div class="stars flex">
-              <?php echo renderStars((int)$product['rating']); ?>
+              <?php echo renderStars((int)round((float)$product['rating'])); ?>
             </div>
             <span class="text-sm font-semibold text-stone-700"><?php echo number_format((float)$product['rating'], 1); ?></span>
             <a href="#reviews" class="text-sm text-stone-400 hover:text-gold transition-colors">
               (<?php echo (int)$product['review_count']; ?> review<?php echo $product['review_count'] != 1 ? 's' : ''; ?>)
             </a>
           </div>
+          <?php else: ?>
+          <a href="#reviews" class="text-sm text-stone-400 hover:text-gold transition-colors">
+            No reviews yet. Be the first to review this piece.
+          </a>
+          <?php endif; ?>
         </div>
 
         <!-- Price -->

@@ -142,7 +142,16 @@ try {
         [date('Y-m-d 00:00:00', strtotime("-{$trafficDays} days"))]
     )['c'] ?? 0);
 } catch (Exception $e) {}
-$conversionRate = $overview['visitors'] > 0 ? ($ordersInWindow / $overview['visitors']) * 100 : 0;
+// Order rate needs a sensible number of visitors behind it before it means
+// anything. With one visitor and one older order it reads 100%, which is
+// nonsense, so hold the figure back until the sample is worth quoting. It is
+// also capped, since orders placed before a traffic reset still count.
+define('ORDER_RATE_MIN_VISITORS', 20);
+$hasEnoughTraffic = $overview['visitors'] >= ORDER_RATE_MIN_VISITORS;
+$conversionRate   = $overview['visitors'] > 0
+    ? min(100, ($ordersInWindow / $overview['visitors']) * 100)
+    : 0;
+$conversionLabel  = $hasEnoughTraffic ? number_format($conversionRate, 2) . '%' : '--';
 
 $maxDaily = 1;
 foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
@@ -304,7 +313,7 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
                         <tr>
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px;">
-                                    <img src="../<?php echo htmlspecialchars($prod['image']); ?>"
+                                    <img src="<?php echo htmlspecialchars(productImageUrl($prod['image'])); ?>"
                                          alt="<?php echo htmlspecialchars($prod['name']); ?>"
                                          style="width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0;border:1px solid var(--cream-dark);">
                                     <span style="font-weight:600;font-size:13px;color:var(--black);"><?php echo htmlspecialchars($prod['name']); ?></span>
@@ -457,7 +466,7 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
     ['Unique Visitors', number_format($overview['visitors']), '#0EA5E9', 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z'],
     ['Page Views',      number_format($overview['views']),    '#CA8A04', 'M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z'],
     ['Sessions',        number_format($overview['sessions']), '#8B5CF6', 'M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z'],
-    ['Order Rate',      number_format($conversionRate, 2) . '%', '#22C55E', 'M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941'],
+    ['Order Rate',      $conversionLabel, '#22C55E', 'M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941'],
   ];
   foreach ($trafficCards as [$label, $value, $colour, $icon]): ?>
     <div class="traffic-kpi">
@@ -471,6 +480,13 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
     </div>
   <?php endforeach; ?>
 </div>
+
+<?php if (!$hasEnoughTraffic): ?>
+  <p style="font-size:12px;color:var(--stone-mid);margin:-8px 0 18px;">
+    Order rate stays hidden until at least <?php echo ORDER_RATE_MIN_VISITORS; ?> visitors are recorded.
+    Below that the percentage swings wildly and tells you nothing.
+  </p>
+<?php endif; ?>
 
 <!-- Visitors trend -->
 <?php if (!empty($dailyVisitors)):
@@ -620,7 +636,7 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
         <?php foreach ($topViewed as $i => $p): ?>
           <div style="display:flex;align-items:center;gap:12px;padding:8px;border-radius:8px;<?php echo $i%2 ? 'background:var(--cream);' : ''; ?>">
             <span style="width:22px;font-size:12px;font-weight:700;color:var(--stone-mid);flex-shrink:0;"><?php echo $i+1; ?></span>
-            <img src="<?php echo htmlspecialchars($p['image']); ?>" alt=""
+            <img src="<?php echo htmlspecialchars(productImageUrl($p['image'])); ?>" alt=""
                  style="width:40px;height:40px;object-fit:cover;border-radius:7px;flex-shrink:0;background:var(--cream-dark);"
                  onerror="this.src='https://placehold.co/40x40/F5F5F4/78716C?text=J'">
             <div style="flex:1;min-width:0;">

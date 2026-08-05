@@ -68,9 +68,53 @@ function campaignAudiences() {
     ];
 }
 
+/**
+ * Audiences built from coupon usage, keyed "coupon_12".
+ *
+ * People who redeemed a code are proven buyers, so being able to mail exactly
+ * that group (say, everyone who used WELCOME10) is the most useful segment
+ * the shop has. Guests count too: the redemption row carries their email even
+ * when there is no account behind it.
+ */
+function campaignCouponAudiences() {
+    $out = [];
+    try {
+        $rows = getDB()->fetchAll(
+            "SELECT c.id, c.code, COUNT(DISTINCT r.email) AS people
+             FROM coupons c
+             JOIN coupon_redemptions r ON r.coupon_id = c.id
+             WHERE r.email IS NOT NULL AND r.email <> ''
+             GROUP BY c.id, c.code
+             ORDER BY c.code ASC"
+        );
+    } catch (Exception $e) {
+        return $out;
+    }
+
+    foreach ($rows as $r) {
+        $id = (int)$r['id'];
+        $out['coupon_' . $id] = [
+            'label' => 'Used coupon ' . $r['code'],
+            'desc'  => 'Proven buyers, ideal for a follow-up offer',
+            'sql'   => "SELECT MIN(u.id) AS id, r.email AS email, MIN(u.first_name) AS first_name
+                        FROM coupon_redemptions r
+                        LEFT JOIN users u ON u.id = r.user_id
+                        WHERE r.coupon_id = " . $id . "
+                          AND r.email IS NOT NULL AND r.email <> ''
+                        GROUP BY r.email",
+        ];
+    }
+    return $out;
+}
+
+/** Every audience, fixed plus the coupon-derived ones. */
+function campaignAllAudiences() {
+    return campaignAudiences() + campaignCouponAudiences();
+}
+
 /** Resolve an audience key to its recipient rows, minus anyone unsubscribed. */
 function campaignRecipientsFor($audienceKey) {
-    $audiences = campaignAudiences();
+    $audiences = campaignAllAudiences();
     if (!isset($audiences[$audienceKey])) return [];
 
     try {
