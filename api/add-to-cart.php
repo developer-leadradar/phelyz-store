@@ -36,9 +36,11 @@ if (!$product) {
     exit;
 }
 
-// If product has colour variants, a colour must be selected
+// If product has colour variants, a colour must be selected.
+// Skipped when the request carries a `variants` list, which is validated
+// colour by colour further down.
 $availableColors = parseProductColors($product['colors'] ?? '');
-if (!empty($availableColors)) {
+if (!empty($availableColors) && empty($data['variants'])) {
     $valid = false;
     foreach ($availableColors as $c) {
         if (strcasecmp($c['name'], (string)$selectedColor) === 0) {
@@ -51,6 +53,63 @@ if (!empty($availableColors)) {
         echo json_encode(['success' => false, 'message' => 'Please pick a valid colour']);
         exit;
     }
+}
+
+// A shopper buying the same piece in several colours sends them all together,
+// so the whole selection lands in the cart from one tap rather than forcing
+// them back to the swatches once per colour.
+if (!empty($data['variants']) && is_array($data['variants'])) {
+    $lines = [];
+    $totalQty = 0;
+
+    foreach ($data['variants'] as $v) {
+        $vQty   = isset($v['quantity']) ? (int)$v['quantity'] : 0;
+        $vColor = isset($v['color']) ? trim((string)$v['color']) : '';
+        if ($vQty < 1 || $vColor === '') continue;
+
+        $match = null;
+        foreach ($availableColors as $c) {
+            if (strcasecmp($c['name'], $vColor) === 0) { $match = $c['name']; break; }
+        }
+        if ($match === null) {
+            echo json_encode(['success' => false, 'message' => 'One of those colours is not available.']);
+            exit;
+        }
+        $lines[$match] = ($lines[$match] ?? 0) + $vQty;
+        $totalQty     += $vQty;
+    }
+
+    if (!$lines) {
+        echo json_encode(['success' => false, 'message' => 'Choose at least one colour and quantity.']);
+        exit;
+    }
+
+    // Stock is held against the piece as a whole, not per colour, so the
+    // combined quantity is what has to fit.
+    if (!isPreorderProduct($product) && $product['stock_quantity'] < $totalQty) {
+        echo json_encode([
+            'success' => false,
+            'message' => 'Only ' . $product['stock_quantity'] . ' available in total.'
+        ]);
+        exit;
+    }
+
+    $added = 0;
+    foreach ($lines as $colour => $qty) {
+        if (addToCart($productId, $qty, $colour)) $added++;
+    }
+
+    if (!$added) {
+        echo json_encode(['success' => false, 'message' => 'Failed to add to cart']);
+        exit;
+    }
+
+    echo json_encode([
+        'success'    => true,
+        'message'    => $totalQty . ' item' . ($totalQty === 1 ? '' : 's') . ' added to cart',
+        'cart_count' => getCartCount(),
+    ]);
+    exit;
 }
 
 // Stock check - pre-order items (express or sold-out) bypass the quantity limit

@@ -38,6 +38,12 @@ async function addToCart(productId, quantity, color) {
     if (data.success) {
       showToast(data.message || 'Added to cart!', 'success');
       updateCartBadge(data.cart_count);
+    } else if (/colour|color/i.test(data.message || '')) {
+      // Added from a listing tile, where there are no swatches to choose from.
+      // Send them to the piece itself rather than showing an error they cannot
+      // act on from here.
+      showToast('Choose a colour for this piece', 'error');
+      setTimeout(function () { window.location.href = '/product.php?id=' + productId; }, 700);
     } else {
       showToast(data.message || 'Could not add to cart', 'error');
     }

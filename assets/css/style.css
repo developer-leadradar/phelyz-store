@@ -1225,3 +1225,31 @@ table { max-width: 100% !important; }
   /* Stat tiles: two up is still readable, keep them from squashing text */
   .customer-detail-grid .cd-stats { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
 }
+
+/* ── Product page: quantity per colour ──────────────────── */
+.variant-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 12px;
+  border: 1.5px solid var(--cream-dark); border-radius: 12px;
+  background: #fff; transition: border-color 0.15s, background 0.15s;
+}
+.variant-row.is-chosen { border-color: var(--gold); background: rgba(202,138,4,0.045); }
+
+.variant-swatch {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  outline: 1px solid rgba(0,0,0,0.10); outline-offset: -1px;
+}
+.variant-name {
+  flex: 1; min-width: 0;
+  font-size: 13.5px; font-weight: 600; color: var(--black);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.variant-stepper { flex-shrink: 0; }
+.variant-stepper .qty-input { width: 42px; }
+
+@media (max-width: 420px) {
+  .variant-row { gap: 9px; padding: 8px 10px; }
+  .variant-name { font-size: 13px; }
+  .variant-swatch { width: 26px; height: 26px; }
+  .variant-stepper .qty-input { width: 36px; }
+}

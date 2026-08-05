@@ -2,6 +2,22 @@
 define('PHELYZ_ACCESS', true);
 require_once 'config.php';
 
+// ═══════════════════════════════════════════════════════════════════
+// LOCALHOST ONLY PROTECTION
+// ═══════════════════════════════════════════════════════════════════
+// This script runs database.sql, which drops and recreates every table. The
+// only thing that stood between the public internet and that was the presence
+// of a .installed file; lose it in a deploy or a tidy-up and a stranger could
+// wipe the live shop by loading a URL. Installation is a local job, so refuse
+// to run anywhere else, the same way uninstall.php already does.
+$isLocalhost = in_array($_SERVER['REMOTE_ADDR'] ?? '', ['127.0.0.1', '::1'], true)
+               || strpos($_SERVER['HTTP_HOST'] ?? '', 'localhost') !== false;
+
+if (!$isLocalhost) {
+    http_response_code(403);
+    die('<h1>Access Denied</h1><p>The installer can only be run from localhost.</p>');
+}
+
 // Check if already installed
 $check_file = __DIR__ . '/.installed';
 if (file_exists($check_file)) {

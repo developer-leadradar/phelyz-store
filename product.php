@@ -322,26 +322,42 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
           <?php endif; ?>
 
           <?php if (!empty($productColors)): ?>
+          <!-- One quantity box per colour. Plenty of customers want two of one
+               shade and one of another; making them add, go back, re-pick and
+               add again loses that second and third piece. -->
           <div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <label class="text-sm font-semibold text-stone-700">Colour <span style="color:#EF4444;">*</span></label>
-              <span id="selected-color-label" style="font-size:12px;color:var(--stone-mid);font-weight:600;"></span>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
+              <label class="text-sm font-semibold text-stone-700">Choose colours and quantities</label>
+              <span id="variant-total" style="font-size:12px;color:var(--stone-mid);font-weight:600;">Nothing selected yet</span>
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:10px;">
+
+            <div id="variant-rows" style="display:flex;flex-direction:column;gap:8px;">
               <?php foreach ($productColors as $idx => $c):
                 $bg = $c['hex'] ?: '#E5E7EB'; ?>
-                <button type="button"
-                        onclick="selectColor(this, <?php echo htmlspecialchars(json_encode($c['name']), ENT_QUOTES); ?>)"
-                        class="color-swatch-btn"
-                        data-color="<?php echo htmlspecialchars($c['name']); ?>"
-                        title="<?php echo htmlspecialchars($c['name']); ?>"
-                        style="position:relative;width:38px;height:38px;border-radius:50%;border:2px solid transparent;background:<?php echo $bg; ?>;cursor:pointer;padding:0;outline:1px solid rgba(0,0,0,0.08);transition:transform 0.15s;">
-                </button>
+                <div class="variant-row" data-color="<?php echo htmlspecialchars($c['name']); ?>">
+                  <span class="variant-swatch" style="background:<?php echo $bg; ?>;"></span>
+                  <span class="variant-name"><?php echo htmlspecialchars($c['name']); ?></span>
+                  <div class="qty-stepper variant-stepper">
+                    <button type="button" class="qty-btn" aria-label="Fewer <?php echo htmlspecialchars($c['name']); ?>"
+                            onclick="stepVariant(this,-1)">
+                      <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+                    </button>
+                    <input type="number" class="qty-input variant-qty" value="0" min="0"
+                           max="<?php echo $maxQty; ?>" readonly aria-label="<?php echo htmlspecialchars($c['name']); ?> quantity">
+                    <button type="button" class="qty-btn" aria-label="More <?php echo htmlspecialchars($c['name']); ?>"
+                            onclick="stepVariant(this,1)">
+                      <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+                    </button>
+                  </div>
+                </div>
               <?php endforeach; ?>
             </div>
-            <input type="hidden" id="selected-color" name="selected_color" value="">
+
+            <?php if ($effStatus === 'in_stock'): ?>
+              <p style="font-size:12px;color:var(--stone-mid);margin:10px 0 0;"><?php echo (int)$product['stock_quantity']; ?> available in total across all colours.</p>
+            <?php endif; ?>
           </div>
-          <?php endif; ?>
+          <?php else: ?>
 
           <div class="flex items-center gap-4">
             <label class="text-sm font-semibold text-stone-700">Quantity</label>
@@ -359,6 +375,7 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
             <span class="text-xs text-stone-400"><?php echo (int)$product['stock_quantity']; ?> available</span>
             <?php endif; ?>
           </div>
+          <?php endif; ?>
 
           <button onclick="addToCartWithQty(<?php echo (int)$product['id']; ?>)"
             class="btn btn-gold btn-full flex items-center justify-center gap-2 text-base">
@@ -825,19 +842,115 @@ function fetchShippingRate(state) {
   if (sel && sel.value) fetchShippingRate(sel.value);
 })();
 
-// Colour swatch selection
-function selectColor(btn, name) {
-  document.querySelectorAll('.color-swatch-btn').forEach(function(b) {
-    b.style.borderColor = 'transparent';
-    b.style.transform = '';
-  });
-  btn.style.borderColor = 'var(--gold)';
-  btn.style.transform = 'scale(1.08)';
-  var hidden = document.getElementById('selected-color');
-  if (hidden) hidden.value = name;
-  var lbl = document.getElementById('selected-color-label');
-  if (lbl) lbl.textContent = name;
+/* ── Colour quantities ──────────────────────────────────────
+   Each colour carries its own count, and the whole selection goes into the
+   cart in one request. */
+function stepVariant(btn, delta) {
+  var row   = btn.closest('.variant-row');
+  var input = row.querySelector('.variant-qty');
+  var max   = parseInt(input.getAttribute('max'), 10) || 99;
+  var next  = (parseInt(input.value, 10) || 0) + delta;
+
+  if (next < 0) next = 0;
+  if (next > max) next = max;
+  input.value = next;
+
+  row.classList.toggle('is-chosen', next > 0);
+  updateVariantTotal();
 }
+
+function collectVariants() {
+  var out = [];
+  document.querySelectorAll('.variant-row').forEach(function (row) {
+    var qty = parseInt(row.querySelector('.variant-qty').value, 10) || 0;
+    if (qty > 0) out.push({ color: row.dataset.color, quantity: qty });
+  });
+  return out;
+}
+
+function updateVariantTotal() {
+  var label = document.getElementById('variant-total');
+  if (!label) return;
+  var picked = collectVariants();
+  var total  = picked.reduce(function (n, v) { return n + v.quantity; }, 0);
+
+  if (total === 0) {
+    label.textContent = 'Nothing selected yet';
+    label.style.color = 'var(--stone-mid)';
+  } else {
+    label.textContent = total + ' piece' + (total === 1 ? '' : 's') + ' across '
+                      + picked.length + ' colour' + (picked.length === 1 ? '' : 's');
+    label.style.color = 'var(--gold)';
+  }
+}
+
+/* Overrides the shared handlers so the colour grid is what gets sent. */
+async function addToCartWithQty(productId) {
+  var rows = document.getElementById('variant-rows');
+  if (!rows) {
+    var qtyEl = document.getElementById('product-qty');
+    return addToCart(productId, qtyEl ? parseInt(qtyEl.value, 10) : 1);
+  }
+
+  var picked = collectVariants();
+  if (!picked.length) {
+    showToast('Choose at least one colour first', 'error');
+    return;
+  }
+  await sendVariants(productId, picked, false);
+}
+
+async function buyNow(productId) {
+  var rows = document.getElementById('variant-rows');
+  if (!rows) {
+    var qtyEl = document.getElementById('product-qty');
+    var qty   = qtyEl ? parseInt(qtyEl.value, 10) : 1;
+    try {
+      var r = await fetch('/api/add-to-cart.php', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: productId, quantity: qty })
+      });
+      var d = await r.json();
+      if (d.success) window.location.href = '/checkout.php';
+      else showToast(d.message || 'Could not add to cart', 'error');
+    } catch (e) { showToast('Network error', 'error'); }
+    return;
+  }
+
+  var picked = collectVariants();
+  if (!picked.length) { showToast('Choose at least one colour first', 'error'); return; }
+  await sendVariants(productId, picked, true);
+}
+
+async function sendVariants(productId, variants, goToCheckout) {
+  try {
+    var res = await fetch('/api/add-to-cart.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: productId, variants: variants })
+    });
+    var data = await res.json();
+    if (!data.success) { showToast(data.message || 'Could not add to cart', 'error'); return; }
+
+    if (goToCheckout) { window.location.href = '/checkout.php'; return; }
+
+    if (typeof updateCartCount === 'function') updateCartCount(data.cart_count);
+    var badge = document.getElementById('cart-count');
+    if (badge && typeof data.cart_count !== 'undefined') badge.textContent = data.cart_count;
+    showToast(data.message || 'Added to cart');
+
+    // Reset the pickers so a second selection starts clean.
+    document.querySelectorAll('.variant-row').forEach(function (row) {
+      row.querySelector('.variant-qty').value = 0;
+      row.classList.remove('is-chosen');
+    });
+    updateVariantTotal();
+  } catch (e) {
+    showToast('Network error', 'error');
+  }
+}
+
+updateVariantTotal();
 </script>
 
 <?php require_once 'includes/footer.php'; ?>
