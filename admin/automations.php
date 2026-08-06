@@ -196,22 +196,44 @@ $cronToken = getenv('CRON_TOKEN') ?: '';
       </div>
     </div>
 
+    <?php
+    // Has the scheduler actually run? The cron script leaves a timestamp, so
+    // this can report the truth instead of assuming.
+    $stampFile = __DIR__ . '/../data/cron-last-run.txt';
+    $lastRun   = is_file($stampFile) ? @strtotime(trim(@file_get_contents($stampFile))) : null;
+    $mins      = $lastRun ? floor((time() - $lastRun) / 60) : null;
+    $healthy   = $lastRun && $mins <= 90;
+    ?>
     <div class="card" style="padding:20px;">
-      <h2 style="font-size:15px;font-weight:700;margin:0 0 10px;">Turning it on</h2>
-      <p style="font-size:12.5px;color:var(--stone-mid);line-height:1.65;margin:0 0 12px;">
-        None of this runs until a cron job calls it. In cPanel go to <strong>Cron Jobs</strong>, choose
-        <strong>every 30 minutes</strong>, and paste this command:
-      </p>
-      <code style="display:block;background:var(--black);color:#E7E5E4;padding:12px 14px;border-radius:9px;
-                   font-size:11.5px;overflow-x:auto;white-space:pre;line-height:1.6;">/usr/local/bin/php -q /home/cimedgec/repositories/phelyz-store/cron/run-automations.php</code>
-      <p style="font-size:12px;color:var(--stone-mid);line-height:1.6;margin:12px 0 0;">
-        <?php if ($cronToken === ''): ?>
-          If your host only allows web cron, add <code style="background:var(--cream-dark);padding:1px 5px;border-radius:4px;">CRON_TOKEN</code>
-          to your .env first, then call the same file over https with <code style="background:var(--cream-dark);padding:1px 5px;border-radius:4px;">?token=</code>.
-        <?php else: ?>
-          A cron token is set, so the web version of this job will also work.
-        <?php endif; ?>
-      </p>
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:10px;">
+        <span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;
+                     background:<?php echo $healthy ? '#10B981' : ($lastRun ? '#D97706' : '#A8A29E'); ?>;"></span>
+        <h2 style="font-size:15px;font-weight:700;margin:0;">Scheduler</h2>
+      </div>
+
+      <?php if ($healthy): ?>
+        <p style="font-size:12.5px;color:var(--stone-mid);line-height:1.65;margin:0;">
+          Running normally. Last checked
+          <strong style="color:var(--black);"><?php echo $mins <= 1 ? 'a moment ago' : $mins . ' minutes ago'; ?></strong>,
+          and it looks again every 30 minutes.
+          <br><br>
+          Whatever you switch on above starts going out from the next check. Nothing sends between
+          9pm and 8am, and no customer gets more than one automated email a day.
+        </p>
+      <?php elseif ($lastRun): ?>
+        <p style="font-size:12.5px;color:#92400E;line-height:1.65;margin:0;">
+          The schedule last ran <strong><?php echo $mins; ?> minutes ago</strong>, which is longer than expected.
+          It should run every 30 minutes. Worth checking <strong>Cron Jobs</strong> in cPanel is still enabled.
+        </p>
+      <?php else: ?>
+        <p style="font-size:12.5px;color:var(--stone-mid);line-height:1.65;margin:0 0 10px;">
+          The cron job is installed and set to run every 30 minutes, but it has not reported in yet.
+          Give it half an hour and this will turn green. If it stays grey, check <strong>Cron Jobs</strong> in cPanel
+          still lists this command:
+        </p>
+        <code style="display:block;background:var(--black);color:#E7E5E4;padding:11px 13px;border-radius:9px;
+                     font-size:11px;overflow-x:auto;white-space:pre;line-height:1.6;">/usr/local/bin/php -q /home/cimedgec/repositories/phelyz-store/cron/run-automations.php</code>
+      <?php endif; ?>
     </div>
 
   </div>

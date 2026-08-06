@@ -288,16 +288,71 @@ function automationRunAll() {
  * year to year; the movable feasts are flagged so the admin sets the date.
  */
 function campaignSeasons() {
+    $shop = SITE_URL . '/shop.php';
     return [
-        'new_year'      => ['label' => 'New Year',            'when' => '01-01', 'movable' => false],
-        'valentines'    => ['label' => "Valentine's Day",     'when' => '02-14', 'movable' => false],
-        'mothers_day'   => ['label' => "Mother's Day",        'when' => null,    'movable' => true],
-        'easter'        => ['label' => 'Easter',              'when' => null,    'movable' => true],
-        'eid'           => ['label' => 'Eid',                 'when' => null,    'movable' => true],
-        'independence'  => ['label' => 'Nigeria Independence','when' => '10-01', 'movable' => false],
-        'black_friday'  => ['label' => 'Black Friday',        'when' => null,    'movable' => true],
-        'christmas'     => ['label' => 'Christmas',           'when' => '12-25', 'movable' => false],
-        'boxing_week'   => ['label' => 'End of year sale',    'when' => '12-26', 'movable' => false],
+        'new_year' => [
+            'label' => 'New Year', 'when' => '01-01', 'movable' => false,
+            'subject' => 'A brilliant new year from Phelyz Store',
+            'heading' => 'Here is to a year that shines',
+            'body'    => "Hello {name},\n\nThank you for being part of our year. Whatever you are stepping into, we hope it is bright.\n\nStart the year with something that lasts.",
+            'cta'     => 'See the new collection', 'url' => $shop,
+        ],
+        'valentines' => [
+            'label' => "Valentine's Day", 'when' => '02-14', 'movable' => false,
+            'subject' => 'Say it with something she will keep',
+            'heading' => 'A gift that outlasts the flowers',
+            'body'    => "Hello {name},\n\nValentine's is close. Flowers fade and chocolate goes, but a piece she can wear is remembered every time she puts it on.\n\nOrder in good time and we will make sure it arrives before the day.",
+            'cta'     => 'Find her gift', 'url' => $shop,
+        ],
+        'mothers_day' => [
+            'label' => "Mother's Day", 'when' => null, 'movable' => true,
+            'subject' => 'For the woman who gave you everything',
+            'heading' => 'Something worthy of her',
+            'body'    => "Hello {name},\n\nMother's Day is coming. If you are looking for something she will actually treasure, a piece of fine jewelry says it better than most things can.\n\nWe will wrap it beautifully.",
+            'cta'     => 'Choose her gift', 'url' => $shop,
+        ],
+        'easter' => [
+            'label' => 'Easter', 'when' => null, 'movable' => true,
+            'subject' => 'Easter blessings from Phelyz Store',
+            'heading' => 'Wishing you a peaceful Easter',
+            'body'    => "Hello {name},\n\nFrom all of us in Uyo, a happy and restful Easter to you and your family.\n\nIf you are seeing family this season, we have pieces that make a lovely thank you.",
+            'cta'     => 'Browse the collection', 'url' => $shop,
+        ],
+        'eid' => [
+            'label' => 'Eid', 'when' => null, 'movable' => true,
+            'subject' => 'Eid Mubarak from Phelyz Store',
+            'heading' => 'Eid Mubarak',
+            'body'    => "Hello {name},\n\nWishing you and your loved ones a joyful Eid filled with good company and good food.\n\nIf you are giving gifts this Eid, we would be glad to help you choose.",
+            'cta'     => 'See gift ideas', 'url' => $shop,
+        ],
+        'independence' => [
+            'label' => 'Nigeria Independence', 'when' => '10-01', 'movable' => false,
+            'subject' => 'Happy Independence Day',
+            'heading' => 'Proudly Nigerian',
+            'body'    => "Hello {name},\n\nHappy Independence Day. We are proud to be a Nigerian business serving Nigerian customers, and grateful you shop with us.\n\nHere is to everything ahead.",
+            'cta'     => 'Shop the collection', 'url' => $shop,
+        ],
+        'black_friday' => [
+            'label' => 'Black Friday', 'when' => null, 'movable' => true,
+            'subject' => 'Our biggest prices of the year',
+            'heading' => 'Black Friday starts now',
+            'body'    => "Hello {name},\n\nThis is the one week a year our prices come down properly. Stock is limited and the best pieces go first.\n\nIf there is something you have been watching, now is the moment.",
+            'cta'     => 'Shop the deals', 'url' => $shop,
+        ],
+        'christmas' => [
+            'label' => 'Christmas', 'when' => '12-25', 'movable' => false,
+            'subject' => 'Merry Christmas from Phelyz Store',
+            'heading' => 'Merry Christmas',
+            'body'    => "Hello {name},\n\nThank you for a wonderful year. Every order, every message and every kind word has meant a great deal to us.\n\nFrom all of us here in Uyo, a very merry Christmas to you and your family.",
+            'cta'     => 'Find a Christmas gift', 'url' => $shop,
+        ],
+        'boxing_week' => [
+            'label' => 'End of year sale', 'when' => '12-26', 'movable' => false,
+            'subject' => 'End of year prices',
+            'heading' => 'One last treat before the year closes',
+            'body'    => "Hello {name},\n\nThe year is nearly done. We are clearing space for what is coming, so this is the last chance at this year's prices.\n\nTreat yourself. You have earned it.",
+            'cta'     => 'See what is left', 'url' => $shop,
+        ],
     ];
 }
 

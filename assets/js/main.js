@@ -8,6 +8,10 @@ function getSelectedColorFromPage() {
 }
 
 function requireColorIfPresent() {
+  // Pieces sold in several colours use the quantity grid instead, which does
+  // its own checking. Nothing to enforce here.
+  if (document.getElementById('variant-rows')) return true;
+
   // If the product page exposes color swatches, a colour must be picked.
   var hidden = document.getElementById('selected-color');
   if (!hidden) return true; // no color picker on this page
@@ -53,13 +57,42 @@ async function addToCart(productId, quantity, color) {
   if (btn) btn.classList.remove('btn-loading');
 }
 
+/**
+ * Both of these live here rather than on the product page.
+ *
+ * This file is loaded from the footer, so it runs after any inline script in
+ * the page body. Defining these in both places meant whichever the product
+ * page set up was immediately replaced by the version here, which knew only
+ * about single-colour pieces and rejected a perfectly valid multi-colour
+ * selection with "pick a colour first". One definition, and it understands
+ * both layouts.
+ */
+function pickedVariants() {
+  if (!document.getElementById('variant-rows')) return null;
+  return (typeof collectVariants === 'function') ? collectVariants() : [];
+}
+
 async function addToCartWithQty(productId) {
+  var variants = pickedVariants();
+
+  if (variants) {
+    if (!variants.length) { showToast('Choose at least one colour first', 'error'); return; }
+    if (typeof sendVariants === 'function') return sendVariants(productId, variants, false);
+  }
+
   var qtyEl = document.getElementById('product-qty');
   var qty   = qtyEl ? parseInt(qtyEl.value) : 1;
   await addToCart(productId, qty);
 }
 
 async function buyNow(productId) {
+  var variants = pickedVariants();
+
+  if (variants) {
+    if (!variants.length) { showToast('Choose at least one colour first', 'error'); return; }
+    if (typeof sendVariants === 'function') return sendVariants(productId, variants, true);
+  }
+
   if (!requireColorIfPresent()) return;
   var qtyEl = document.getElementById('product-qty');
   var qty   = qtyEl ? parseInt(qtyEl.value) : 1;

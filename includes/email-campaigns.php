@@ -65,6 +65,23 @@ function campaignAudiences() {
                         WHERE u.role = 'customer' AND u.is_active = 1
                         AND EXISTS (SELECT 1 FROM wishlist w WHERE w.user_id = u.id)",
         ],
+        'leads' => [
+            'label' => 'Popup signups',
+            'desc'  => 'Gave their details for the welcome code',
+            'sql'   => "SELECT NULL AS id, l.email, l.first_name FROM leads l
+                        WHERE l.email IS NOT NULL AND l.email <> ''",
+        ],
+        'leads_cold' => [
+            'label' => 'Popup signups who never bought',
+            'desc'  => 'Took the code but have not ordered yet',
+            'sql'   => "SELECT NULL AS id, l.email, l.first_name FROM leads l
+                        WHERE l.email IS NOT NULL AND l.email <> ''
+                        AND NOT EXISTS (
+                            SELECT 1 FROM users u
+                            WHERE u.email = l.email
+                              AND EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)
+                        )",
+        ],
     ];
 }
 

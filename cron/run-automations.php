@@ -40,6 +40,13 @@ set_time_limit(300);
 ignore_user_abort(true);
 
 automationEnsureRows();
+
+// Leave a breadcrumb so the admin panel can show that the schedule is alive,
+// rather than telling the shop to set up a cron job that is already running.
+$stampDir = __DIR__ . '/../data';
+if (!is_dir($stampDir)) @mkdir($stampDir, 0755, true);
+@file_put_contents($stampDir . '/cron-last-run.txt', date('c'));
+
 $result = automationRunAll();
 
 $stamp = date('Y-m-d H:i:s');

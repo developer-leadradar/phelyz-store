@@ -155,35 +155,17 @@
     applyCurrency(cur);
   };
 
-  // ── Floating toggle pill ──────────────────────────────────────────────────
+  // ── Floating toggle pill (removed) ────────────────────────────────────────
+  // The display currency follows the visitor's country on its own, so the
+  // manual pill was a control nobody needed and a permanent obstruction over
+  // the bottom-left of every page. Kept as a no-op that also clears any pill
+  // left in a browser from an earlier visit.
   function buildPill() {
-    if (document.getElementById('currency-pill')) return;
-    var pill = document.createElement('div');
-    pill.id = 'currency-pill';
-    pill.title = 'Display currency - orders are charged in Naira (₦)';
-    pill.style.cssText =
-      'position:fixed;bottom:24px;left:24px;z-index:98;display:flex;align-items:center;' +
-      'background:rgba(28,25,23,0.92);border-radius:99px;padding:4px;gap:2px;' +
-      'box-shadow:0 4px 16px rgba(0,0,0,0.25);backdrop-filter:blur(4px);';
-    pill.innerHTML =
-      '<button data-cur="NGN" style="border:none;border-radius:99px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">₦ NGN</button>' +
-      '<button data-cur="USD" style="border:none;border-radius:99px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">$ USD</button>';
-    pill.querySelectorAll('button').forEach(function (b) {
-      b.addEventListener('click', function () { window.phelyzSetCurrency(b.getAttribute('data-cur')); });
-    });
-    document.body.appendChild(pill);
-    updatePill();
+    var stale = document.getElementById('currency-pill');
+    if (stale && stale.parentNode) stale.parentNode.removeChild(stale);
   }
 
-  function updatePill() {
-    var pill = document.getElementById('currency-pill');
-    if (!pill) return;
-    pill.querySelectorAll('button').forEach(function (b) {
-      var active = b.getAttribute('data-cur') === state.currency;
-      b.style.background = active ? 'var(--gold, #CA8A04)' : 'transparent';
-      b.style.color = active ? 'white' : 'rgba(255,255,255,0.65)';
-    });
-  }
+  function updatePill() { /* nothing to update */ }
 
   // ── Boot ──────────────────────────────────────────────────────────────────
   function init() {

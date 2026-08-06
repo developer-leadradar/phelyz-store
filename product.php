@@ -884,43 +884,10 @@ function updateVariantTotal() {
   }
 }
 
-/* Overrides the shared handlers so the colour grid is what gets sent. */
-async function addToCartWithQty(productId) {
-  var rows = document.getElementById('variant-rows');
-  if (!rows) {
-    var qtyEl = document.getElementById('product-qty');
-    return addToCart(productId, qtyEl ? parseInt(qtyEl.value, 10) : 1);
-  }
-
-  var picked = collectVariants();
-  if (!picked.length) {
-    showToast('Choose at least one colour first', 'error');
-    return;
-  }
-  await sendVariants(productId, picked, false);
-}
-
-async function buyNow(productId) {
-  var rows = document.getElementById('variant-rows');
-  if (!rows) {
-    var qtyEl = document.getElementById('product-qty');
-    var qty   = qtyEl ? parseInt(qtyEl.value, 10) : 1;
-    try {
-      var r = await fetch('/api/add-to-cart.php', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_id: productId, quantity: qty })
-      });
-      var d = await r.json();
-      if (d.success) window.location.href = '/checkout.php';
-      else showToast(d.message || 'Could not add to cart', 'error');
-    } catch (e) { showToast('Network error', 'error'); }
-    return;
-  }
-
-  var picked = collectVariants();
-  if (!picked.length) { showToast('Choose at least one colour first', 'error'); return; }
-  await sendVariants(productId, picked, true);
-}
+/* addToCartWithQty() and buyNow() live in assets/js/main.js.
+   That file is loaded from the footer, so anything defined here would be
+   overwritten by it a moment later. The helpers below stay here because
+   they are specific to this page, and main.js calls into them. */
 
 async function sendVariants(productId, variants, goToCheckout) {
   try {

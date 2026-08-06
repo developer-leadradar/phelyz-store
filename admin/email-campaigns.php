@@ -17,18 +17,26 @@ $presetAudience = isset($_GET['audience']) && isset($audiences[$_GET['audience']
 // occasion, a little ahead of the day itself so it lands in good time.
 $presetSeason = '';
 $presetWhen   = '';
+$seasonDraft  = null;
 if (!empty($_GET['season'])) {
     require_once __DIR__ . '/../includes/automations.php';
     $seasons = campaignSeasons();
     $key     = $_GET['season'];
     if (isset($seasons[$key])) {
         $presetSeason = $key;
+        $seasonDraft  = $seasons[$key];
         if (!empty($seasons[$key]['when'])) {
             $ts = strtotime(date('Y') . '-' . $seasons[$key]['when']);
             if ($ts < time()) $ts = strtotime((date('Y') + 1) . '-' . $seasons[$key]['when']);
             $presetWhen = date('Y-m-d\T09:00', strtotime('-3 days', $ts));
         }
     }
+}
+
+/** Value for a compose field: what was posted, else the festive draft, else blank. */
+function composeValue($postKey, $draftKey, $seasonDraft) {
+    if (isset($_POST[$postKey])) return $_POST[$postKey];
+    return $seasonDraft[$draftKey] ?? '';
 }
 
 // ── Send one batch (called by the progress loop on this page) ───────────────
@@ -158,6 +166,22 @@ try {
     $optOutRow = $db->fetchOne("SELECT COUNT(*) AS c FROM email_unsubscribes");
     $optOuts   = (int)($optOutRow['c'] ?? 0);
 } catch (Exception $e) { $optOuts = 0; }
+
+// People captured by the welcome popup. They gave a WhatsApp number too, which
+// is worth having in front of you: for a shop this size a message often lands
+// better than an email.
+$leads = [];
+$leadCount = 0;
+try {
+    $leads = $db->fetchAll(
+        "SELECT l.*,
+                EXISTS (SELECT 1 FROM users u
+                        WHERE u.email = l.email
+                          AND EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)) AS has_ordered
+         FROM leads l ORDER BY l.created_at DESC LIMIT 100"
+    );
+    $leadCount = (int)($db->fetchOne("SELECT COUNT(*) AS c FROM leads")['c'] ?? 0);
+} catch (Exception $e) { $leads = []; }
 ?>
 
 <div class="admin-topbar">
@@ -217,20 +241,20 @@ try {
       <label class="form-label">Subject line</label>
       <input type="text" name="subject" id="f-subject" class="form-input" maxlength="255" required
              placeholder="Just in: new pieces at Phelyz Store"
-             value="<?php echo htmlspecialchars($_POST['subject'] ?? ''); ?>">
+             value="<?php echo htmlspecialchars(composeValue('subject', 'subject', $seasonDraft)); ?>">
     </div>
 
     <div class="form-group">
       <label class="form-label">Headline <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--stone-mid);">(shown at the top of the email, optional)</span></label>
       <input type="text" name="heading" id="f-heading" class="form-input" maxlength="255"
              placeholder="Fresh from the workshop"
-             value="<?php echo htmlspecialchars($_POST['heading'] ?? ''); ?>">
+             value="<?php echo htmlspecialchars(composeValue('heading', 'heading', $seasonDraft)); ?>">
     </div>
 
     <div class="form-group">
       <label class="form-label">Message</label>
       <textarea name="body" id="f-body" class="form-input" rows="9" required
-                placeholder="Hello {name}, ..."><?php echo htmlspecialchars($_POST['body'] ?? ''); ?></textarea>
+                placeholder="Hello {name}, ..."><?php echo htmlspecialchars(composeValue('body', 'body', $seasonDraft)); ?></textarea>
       <p style="font-size:12px;color:var(--stone-mid);margin:6px 0 0;">
         Type <code style="background:var(--cream-dark);padding:1px 5px;border-radius:4px;">{name}</code> anywhere and it becomes the customer's first name. Leave a blank line between paragraphs.
       </p>
@@ -241,13 +265,13 @@ try {
         <label class="form-label">Button text <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--stone-mid);">(optional)</span></label>
         <input type="text" name="cta_text" id="f-cta" class="form-input" maxlength="100"
                placeholder="Shop new arrivals"
-               value="<?php echo htmlspecialchars($_POST['cta_text'] ?? ''); ?>">
+               value="<?php echo htmlspecialchars(composeValue('cta_text', 'cta', $seasonDraft)); ?>">
       </div>
       <div class="form-group">
         <label class="form-label">Button link</label>
         <input type="url" name="cta_url" id="f-url" class="form-input" maxlength="500"
                placeholder="<?php echo SITE_URL; ?>/shop.php"
-               value="<?php echo htmlspecialchars($_POST['cta_url'] ?? ''); ?>">
+               value="<?php echo htmlspecialchars(composeValue('cta_url', 'url', $seasonDraft)); ?>">
       </div>
     </div>
 
@@ -315,6 +339,59 @@ try {
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- ── Welcome popup signups ─────────────────────────── -->
+    <div class="card" style="padding:20px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
+        <h2 style="font-size:15px;font-weight:700;margin:0;">Popup signups</h2>
+        <?php if ($leadCount > 0): ?>
+          <a href="?audience=leads" class="btn btn-outline" style="font-size:12px;padding:5px 11px;">Email all <?php echo $leadCount; ?></a>
+        <?php endif; ?>
+      </div>
+      <p style="font-size:12.5px;color:var(--stone-mid);margin:0 0 12px;">
+        People who gave their details for the welcome code. Their WhatsApp number is here too.
+      </p>
+
+      <?php if (!$leads): ?>
+        <p style="font-size:13px;color:var(--stone-mid);margin:0;">
+          Nobody has used the popup yet. It shows to first-time visitors once they scroll down the shop.
+        </p>
+      <?php else: ?>
+        <div style="overflow-x:auto;">
+          <table class="data-table" style="min-width:460px;">
+            <thead><tr><th>Email</th><th>WhatsApp</th><th>Joined</th><th>Bought?</th></tr></thead>
+            <tbody>
+            <?php foreach ($leads as $l): ?>
+              <tr>
+                <td style="font-size:12.5px;overflow-wrap:anywhere;"><?php echo htmlspecialchars($l['email']); ?></td>
+                <td style="font-size:12.5px;white-space:nowrap;">
+                  <?php if (!empty($l['whatsapp'])):
+                    $wa = preg_replace('/\D/', '', $l['whatsapp']);
+                    if (strpos($wa, '0') === 0) $wa = '234' . substr($wa, 1); ?>
+                    <a href="https://wa.me/<?php echo htmlspecialchars($wa); ?>" target="_blank" rel="noopener"
+                       style="color:#25D366;font-weight:600;"><?php echo htmlspecialchars($l['whatsapp']); ?></a>
+                  <?php else: ?>
+                    <span style="color:var(--stone-mid);">-</span>
+                  <?php endif; ?>
+                </td>
+                <td style="font-size:12.5px;color:var(--stone-mid);white-space:nowrap;"><?php echo date('j M Y', strtotime($l['created_at'])); ?></td>
+                <td style="font-size:12px;white-space:nowrap;">
+                  <?php if (!empty($l['has_ordered'])): ?>
+                    <span style="color:#15803D;font-weight:700;">Yes</span>
+                  <?php else: ?>
+                    <span style="color:var(--stone-mid);">Not yet</span>
+                  <?php endif; ?>
+                </td>
+              </tr>
+            <?php endforeach; ?>
+            </tbody>
+          </table>
+        </div>
+        <?php if ($leadCount > count($leads)): ?>
+          <p style="font-size:12px;color:var(--stone-mid);margin:10px 0 0;">Showing the newest 100 of <?php echo $leadCount; ?>.</p>
+        <?php endif; ?>
+      <?php endif; ?>
     </div>
 
     <div class="card" style="padding:20px;">

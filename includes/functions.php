@@ -30,7 +30,9 @@ function requireLogin() {
 
 function requireAdmin() {
     if (!isAdmin()) {
-        redirect('admin/login.php');
+        // Absolute, not relative. Called from a page already inside /admin/,
+        // a relative path resolved to /admin/admin/login.php.
+        redirect(SITE_URL . '/admin/login.php');
     }
 }
 
