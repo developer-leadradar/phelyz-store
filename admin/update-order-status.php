@@ -45,6 +45,7 @@ if ($updated) {
             'Order ' . $order['order_number'] . ' is now ' . ucfirst($newStatus) . '.'
         );
         
+        emailContext(['category'=>'transactional','source_type'=>'order_status','source_id'=>$order['order_number']]);
         sendEmail($user['email'], $subject, $message);
     }
     

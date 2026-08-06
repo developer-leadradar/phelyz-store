@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Please enter a valid email address.';
     } else {
         $body = "Name: $name\nEmail: $email\nSubject: $subject\n\nMessage:\n$message";
+        emailContext(['category'=>'admin','source_type'=>'contact_form']);
         if (sendEmail(SITE_EMAIL, "Contact Form: $subject", nl2br($body))) {
             $success = 'Thank you! We received your message and will respond within 24 hours.';
         } else {

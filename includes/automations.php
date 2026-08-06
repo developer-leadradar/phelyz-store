@@ -159,6 +159,12 @@ function automationSend($automation, $email, $firstName, $reference, $userId = n
     ], $firstName, $email);
 
     $ok = false;
+    emailContext([
+        'category'    => 'automation',
+        'source_type' => $automation['automation_key'],
+        'source_id'   => $reference,
+        'to_name'     => $firstName ?: null,
+    ]);
     try { $ok = sendEmail($email, $automation['subject'], $html); }
     catch (Exception $e) { $ok = false; }
 

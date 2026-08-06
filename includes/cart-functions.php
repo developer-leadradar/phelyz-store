@@ -282,6 +282,7 @@ function sendOrderConfirmationEmail($email, $orderNumber) {
         'Order ' . $orderNumber . ' received and being processed.'
     );
     
+    emailContext(['category'=>'transactional','source_type'=>'order_confirmation','source_id'=>$orderNumber]);
     sendEmail($email, $subject, $message);
 }
 

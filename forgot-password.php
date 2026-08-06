@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               . '<p style="margin:0;color:#78716C;font-size:13px;">This link expires in 1 hour. If you did not ask for a password reset, you can safely ignore this email and nothing will change.</p>',
                 'Reset the password on your Phelyz Store account.'
             );
+            emailContext(['category'=>'transactional','source_type'=>'password_reset']);
             sendEmail($email, $subject, $message);
         }
         $success = 'If that email is registered, you will receive a password reset link shortly.';

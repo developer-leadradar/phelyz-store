@@ -317,6 +317,13 @@ function campaignSendBatch($campaignId, $limit = CAMPAIGN_BATCH_SIZE) {
         $html = campaignRenderEmail($campaign, $r['first_name'], $r['email']);
         $ok   = false;
         try {
+            emailContext([
+                'category'    => 'campaign',
+                'source_type' => 'campaign',
+                'source_id'   => $campaign['id'],
+                'audience'    => $campaign['audience'],
+                'to_name'     => $r['first_name'] ?? null,
+            ]);
             $ok = sendEmail($r['email'], $campaign['subject'], $html);
         } catch (Exception $e) {
             $ok = false;

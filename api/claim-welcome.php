@@ -62,6 +62,7 @@ try {
       . 'everything except made-to-order Express pieces.</p>',
         'Your 10% welcome code for Phelyz Store.'
     );
+    emailContext(['category'=>'transactional','source_type'=>'welcome_code']);
     sendEmail($email, 'Your 10% welcome code', $html);
 } catch (Exception $e) {
     error_log('Welcome code email failed: ' . $e->getMessage());

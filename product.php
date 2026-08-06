@@ -901,9 +901,12 @@ async function sendVariants(productId, variants, goToCheckout) {
 
     if (goToCheckout) { window.location.href = '/checkout.php'; return; }
 
-    if (typeof updateCartCount === 'function') updateCartCount(data.cart_count);
-    var badge = document.getElementById('cart-count');
-    if (badge && typeof data.cart_count !== 'undefined') badge.textContent = data.cart_count;
+    // The badge is .nav-badge / #cart-badge and the helper is updateCartBadge.
+    // This used to call updateCartCount() and look for #cart-count, neither of
+    // which exists, so the counter only caught up on the next page load.
+    if (typeof updateCartBadge === 'function' && typeof data.cart_count !== 'undefined') {
+      updateCartBadge(data.cart_count);
+    }
     showToast(data.message || 'Added to cart');
 
     // Reset the pickers so a second selection starts clean.

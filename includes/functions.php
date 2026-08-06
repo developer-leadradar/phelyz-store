@@ -1307,11 +1307,116 @@ function phelyzEmailButton($text, $url) {
       . htmlspecialchars($text) . '</a></td></tr></table>';
 }
 
+/**
+ * Context for the next email, so the log knows what it was and why.
+ *
+ * Set immediately before calling sendEmail(). Cleared automatically after,
+ * so a stray value can never mislabel a later message.
+ */
+$GLOBALS['PHELYZ_EMAIL_CONTEXT'] = [];
+
+function emailContext(array $ctx) {
+    $GLOBALS['PHELYZ_EMAIL_CONTEXT'] = $ctx;
+}
+
+/** A short, quotable reference for one message. */
+function emailToken() {
+    return substr(str_replace(['+', '/', '='], '', base64_encode(random_bytes(24))), 0, 24);
+}
+
+/**
+ * Record one email. Called from inside sendEmail() so nothing can be sent
+ * without leaving a trace, including anything added to the site later.
+ *
+ * @return string|null the token, used to build the open-tracking pixel
+ */
+function logEmail($to, $subject, $body, $status, $transport = null, $error = null) {
+    $ctx = $GLOBALS['PHELYZ_EMAIL_CONTEXT'] ?? [];
+    $token = emailToken();
+
+    $userId = null;
+    $subscribed = 1;
+    try {
+        $db = getDB();
+        $u = $db->fetchOne("SELECT id FROM users WHERE email = ?", [$to]);
+        $userId = $u['id'] ?? null;
+        $opt = $db->fetchOne("SELECT id FROM email_unsubscribes WHERE email = ?", [strtolower($to)]);
+        $subscribed = $opt ? 0 : 1;
+    } catch (Exception $e) {}
+
+    try {
+        getDB()->insert('email_log', [
+            'token'          => $token,
+            'to_email'       => $to,
+            'to_name'        => $ctx['to_name']     ?? null,
+            'subject'        => mb_substr($subject, 0, 255),
+            'body_html'      => $body,
+            'category'       => $ctx['category']    ?? 'other',
+            'source_type'    => $ctx['source_type'] ?? null,
+            'source_id'      => isset($ctx['source_id']) ? (string)$ctx['source_id'] : null,
+            'audience'       => $ctx['audience']    ?? null,
+            'status'         => $status,
+            'transport'      => $transport,
+            'error'          => $error ? mb_substr($error, 0, 255) : null,
+            'user_id'        => $userId,
+            'was_subscribed' => $subscribed,
+        ]);
+        return $token;
+    } catch (Exception $e) {
+        // The log must never stop mail going out.
+        return null;
+    }
+}
+
+/** Append the invisible open-tracking pixel to an HTML message. */
+function emailWithPixel($html, $token) {
+    if (!$token) return $html;
+    $pixel = '<img src="' . SITE_URL . '/api/email-open.php?m=' . urlencode($token)
+           . '" width="1" height="1" alt="" style="display:block;width:1px;height:1px;border:0;">';
+    if (stripos($html, '</body>') !== false) {
+        return str_ireplace('</body>', $pixel . '</body>', $html);
+    }
+    return $html . $pixel;
+}
+
+/**
+ * Send an email and record it.
+ *
+ * Every message in the store goes through here, so this is the one place that
+ * can guarantee a complete history. The tracking pixel is added before the
+ * message leaves, using the token minted by the log row.
+ */
 function sendEmail($to, $subject, $message) {
+    $token = logEmail($to, $subject, $message, 'sent');
+    $body  = emailWithPixel($message, $token);
+
+    $result = sendEmailRaw($to, $subject, $body);
+
+    // Correct the row if the send actually failed, and note which transport
+    // carried it so a deliverability problem can be traced to one route.
+    if ($token) {
+        try {
+            getDB()->update('email_log', [
+                'status'    => $result['ok'] ? 'sent' : 'failed',
+                'transport' => $result['transport'],
+                'error'     => $result['error'] ? mb_substr($result['error'], 0, 255) : null,
+            ], 'token = ?', [$token]);
+        } catch (Exception $e) {}
+    }
+
+    $GLOBALS['PHELYZ_EMAIL_CONTEXT'] = [];   // never leak into the next message
+    return $result['ok'];
+}
+
+/**
+ * The actual delivery, tried in order of preference.
+ * @return array ok, transport, error
+ */
+function sendEmailRaw($to, $subject, $message) {
     // Preferred on cPanel: authenticated SMTP through the domain mailbox.
     if (SMTP_HOST !== '' && SMTP_USERNAME !== '' && SMTP_PASSWORD !== '') {
         $r = smtpSend($to, $subject, $message);
-        if ($r['ok']) return true;
+        if ($r['ok']) return ['ok' => true, 'transport' => 'smtp', 'error' => null];
         error_log('SMTP send failed: ' . $r['error']);
         // fall through to the other transports rather than silently dropping mail
     }
@@ -1340,9 +1445,9 @@ function sendEmail($to, $subject, $message) {
         $code     = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if ($code === 200 || $code === 201) return true;
+        if ($code === 200 || $code === 201) return ['ok' => true, 'transport' => 'resend', 'error' => null];
         error_log('Resend error: ' . $response);
-        return false;
+        return ['ok' => false, 'transport' => 'resend', 'error' => substr((string)$response, 0, 200)];
     }
 
     // PHPMailer fallback (local dev with Composer)
@@ -1368,17 +1473,18 @@ function sendEmail($to, $subject, $message) {
             $mail->Body    = $message;
             $mail->AltBody = strip_tags($message);
             $mail->send();
-            return true;
+            return ['ok' => true, 'transport' => 'phpmailer', 'error' => null];
         } catch (Exception $e) {
             error_log('PHPMailer Error: ' . $mail->ErrorInfo);
-            return false;
+            return ['ok' => false, 'transport' => 'phpmailer', 'error' => $mail->ErrorInfo];
         }
     }
 
     // Basic mail() last resort
     $headers  = "From: " . SMTP_FROM_EMAIL . "\r\n";
     $headers .= "Content-Type: text/html; charset=UTF-8\r\n";
-    return mail($to, $subject, $message, $headers);
+    $sent = mail($to, $subject, $message, $headers);
+    return ['ok' => (bool)$sent, 'transport' => 'mail', 'error' => $sent ? null : 'mail() returned false'];
 }
 
 function getStatusBadge($status) {

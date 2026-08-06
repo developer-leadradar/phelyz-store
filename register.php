@@ -44,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               . '<p style="margin:0;color:#78716C;font-size:13px;">This link expires in 24 hours. If you did not create an account, you can ignore this email.</p>',
                 'Confirm your email address to activate your Phelyz Store account.'
             );
+            emailContext(['category'=>'transactional','source_type'=>'email_verification','source_id'=>$userId,'to_name'=>$firstName]);
             sendEmail($email, $subject, $message);
             $success = 'Account created! Check your email and click the verification link to activate your account.';
         } else {

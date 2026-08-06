@@ -30,6 +30,13 @@ trackPageView(
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?php echo isset($pageTitle) ? htmlspecialchars($pageTitle) . ' | ' : ''; ?><?php echo SITE_NAME; ?></title>
+<!-- Favicons. Small sizes use the brand's own P, since the full wordmark is an
+     illegible smudge at 16px; the larger home-screen icons carry the full mark. -->
+<link rel="icon" href="<?php echo SITE_URL; ?>/assets/images/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="<?php echo SITE_URL; ?>/assets/images/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="<?php echo SITE_URL; ?>/assets/images/favicon-16.png">
+<link rel="apple-touch-icon" sizes="180x180" href="<?php echo SITE_URL; ?>/assets/images/apple-touch-icon.png">
+
 <meta name="description" content="<?php echo isset($pageDescription) ? htmlspecialchars($pageDescription) : 'Premium jewelry - exquisite rings, necklaces, bracelets and more. Certified authentic, free shipping over ₦50,000.'; ?>">
 <meta name="theme-color" content="#1C1917">
 

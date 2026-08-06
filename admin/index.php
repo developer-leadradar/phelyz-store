@@ -10,11 +10,47 @@ $totalRevenue       = $db->fetchOne("SELECT SUM(total) as revenue FROM orders WH
 $pendingOrders      = $db->fetchOne("SELECT COUNT(*) as total FROM orders WHERE status = 'pending'")['total'];
 $lowStockProducts   = $db->fetchOne("SELECT COUNT(*) as total FROM products WHERE stock_quantity < 5 AND stock_quantity > 0")['total'];
 $outOfStockProducts = $db->fetchOne("SELECT COUNT(*) as total FROM products WHERE stock_quantity = 0")['total'];
+
+// Backup health. Read from the manifest the nightly job writes, so this shows
+// what actually happened rather than what is supposed to happen.
+$backup = null;
+$backupFile = __DIR__ . '/../data/backup-status.json';
+if (is_file($backupFile)) $backup = json_decode(@file_get_contents($backupFile), true);
+$backupAgeH = $backup && !empty($backup['last_run'])
+    ? (time() - strtotime($backup['last_run'])) / 3600 : null;
 $recentOrders       = $db->fetchAll("SELECT o.*, u.first_name, u.last_name FROM orders o LEFT JOIN users u ON o.user_id = u.id ORDER BY o.created_at DESC LIMIT 10");
 $topProducts        = $db->fetchAll("SELECT p.id, p.name, p.image, p.price, SUM(oi.quantity) as total_sold, SUM(oi.subtotal) as revenue FROM products p JOIN order_items oi ON p.id = oi.product_id GROUP BY p.id ORDER BY total_sold DESC LIMIT 5");
 $lowStock           = $db->fetchAll("SELECT * FROM products WHERE stock_quantity < 5 AND stock_quantity > 0 ORDER BY stock_quantity ASC LIMIT 5");
 $statusColors       = ['pending'=>'status-pending','processing'=>'status-processing','shipped'=>'status-shipped','delivered'=>'status-delivered','cancelled'=>'status-cancelled'];
 ?>
+
+<?php
+$bkOk   = $backupAgeH !== null && $backupAgeH <= 36;
+$bkWarn = $backupAgeH !== null && $backupAgeH > 36;
+?>
+<div class="card" style="padding:13px 16px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+  <span style="width:9px;height:9px;border-radius:50%;flex-shrink:0;
+               background:<?php echo $bkOk ? '#10B981' : ($bkWarn ? '#D97706' : '#A8A29E'); ?>;"></span>
+  <div style="flex:1;min-width:200px;">
+    <div style="font-size:13px;font-weight:700;color:var(--black);">Backups</div>
+    <div style="font-size:12px;color:var(--stone-mid);">
+      <?php if ($bkOk): ?>
+        Last taken <?php echo $backupAgeH < 1 ? 'less than an hour ago' : round($backupAgeH) . ' hours ago'; ?>.
+        <?php echo (int)($backup['db_copies'] ?? 0); ?> database
+        and <?php echo (int)($backup['photo_copies'] ?? 0); ?> photo copies kept,
+        <?php echo round(($backup['total_bytes'] ?? 0) / 1048576, 1); ?> MB.
+      <?php elseif ($bkWarn): ?>
+        Last backup was <?php echo round($backupAgeH / 24); ?> days ago. It should run nightly.
+      <?php else: ?>
+        No backup has run yet. Add the nightly cron job so your data is protected.
+      <?php endif; ?>
+    </div>
+  </div>
+  <?php if (!$bkOk): ?>
+    <code style="font-size:10.5px;background:var(--black);color:#E7E5E4;padding:7px 10px;border-radius:7px;overflow-x:auto;max-width:100%;">/usr/local/bin/php -q /home/cimedgec/repositories/phelyz-store/cron/backup.php</code>
+  <?php endif; ?>
+</div>
+
 
 <!-- KPI cards -->
 <div class="admin-kpi-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
