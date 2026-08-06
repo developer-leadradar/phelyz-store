@@ -55,9 +55,17 @@ $welcomeCode = 'WELCOME10';
 </div>
 
 <style>
+/* The [hidden] rule has to come with the display rule and win over it.
+   An author `display:flex` beats the browser's own `[hidden]{display:none}`,
+   which left this overlay stretched invisibly over the whole page, eating
+   every click on the site. */
+.wp-overlay[hidden]{display:none !important;}
 .wp-overlay{position:fixed;inset:0;z-index:9998;background:rgba(28,25,23,0.55);backdrop-filter:blur(3px);
-  display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .25s;}
-.wp-overlay.is-open{opacity:1;}
+  display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .25s;
+  /* Belt and braces: until it is actually open it cannot receive a click,
+     whatever happens to the hidden attribute. */
+  pointer-events:none;}
+.wp-overlay.is-open{opacity:1;pointer-events:auto;}
 .wp-card{position:relative;width:100%;max-width:420px;background:#fff;border-radius:18px;overflow:hidden;
   box-shadow:0 24px 60px rgba(0,0,0,.32);transform:translateY(14px);transition:transform .25s;}
 .wp-overlay.is-open .wp-card{transform:translateY(0);}
