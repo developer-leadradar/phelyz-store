@@ -1197,31 +1197,44 @@ function smtpSend($to, $subject, $htmlBody) {
 
     $host_name = parse_url(SITE_URL, PHP_URL_HOST) ?: 'localhost';
 
-    $steps = [];
-    $steps[] = $cmd(null, 220);                       // greeting
-    $steps[] = $cmd('EHLO ' . $host_name, 250);
+    // Each step is checked as it happens. Running the whole conversation and
+    // only then looking for a failure means a rejected password is followed by
+    // MAIL FROM and DATA, which confuses the server and buries the real cause.
+    $run = function ($label, $line, $expect) use ($cmd, $fp) {
+        $r = $cmd($line, $expect);
+        if (!$r['ok']) {
+            fclose($fp);
+            return ['ok' => false, 'error' => $label . ' rejected: ' . $r['res']];
+        }
+        return ['ok' => true];
+    };
+
+    foreach ([['greeting', null, 220], ['EHLO', 'EHLO ' . $host_name, 250]] as $st) {
+        $r = $run($st[0], $st[1], $st[2]);
+        if (!$r['ok']) return $r;
+    }
 
     if ($enc === 'tls') {
-        $steps[] = $cmd('STARTTLS', 220);
+        $r = $run('STARTTLS', 'STARTTLS', 220);
+        if (!$r['ok']) return $r;
         if (!@stream_socket_enable_crypto($fp, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
             fclose($fp);
             return ['ok' => false, 'error' => 'STARTTLS negotiation failed'];
         }
-        $steps[] = $cmd('EHLO ' . $host_name, 250);
+        $r = $run('EHLO after STARTTLS', 'EHLO ' . $host_name, 250);
+        if (!$r['ok']) return $r;
     }
 
-    $steps[] = $cmd('AUTH LOGIN', 334);
-    $steps[] = $cmd(base64_encode($user), 334);
-    $steps[] = $cmd(base64_encode($pass), 235);
-    $steps[] = $cmd('MAIL FROM:<' . SMTP_FROM_EMAIL . '>', 250);
-    $steps[] = $cmd('RCPT TO:<' . $to . '>', [250, 251]);
-    $steps[] = $cmd('DATA', 354);
-
-    foreach ($steps as $i => $s) {
-        if (!$s['ok']) {
-            fclose($fp);
-            return ['ok' => false, 'error' => 'SMTP step ' . $i . ' rejected: ' . $s['res']];
-        }
+    foreach ([
+        ['AUTH LOGIN',  'AUTH LOGIN',                            334],
+        ['username',    base64_encode($user),                    334],
+        ['password',    base64_encode($pass),                    235],
+        ['MAIL FROM',   'MAIL FROM:<' . SMTP_FROM_EMAIL . '>',   250],
+        ['RCPT TO',     'RCPT TO:<' . $to . '>',                 [250, 251]],
+        ['DATA',        'DATA',                                  354],
+    ] as $st) {
+        $r = $run($st[0], $st[1], $st[2]);
+        if (!$r['ok']) return $r;
     }
 
     $boundary = 'phelyz_' . bin2hex(random_bytes(8));
@@ -1390,7 +1403,14 @@ function sendEmail($to, $subject, $message) {
     $token = logEmail($to, $subject, $message, 'sent');
     $body  = emailWithPixel($message, $token);
 
+    $GLOBALS['PHELYZ_SMTP_FALLBACK'] = null;
     $result = sendEmailRaw($to, $subject, $body);
+
+    // A message that went out on a fallback route still counts as sent, but the
+    // reason the preferred route failed is worth keeping on the row.
+    if ($result['ok'] && !empty($GLOBALS['PHELYZ_SMTP_FALLBACK'])) {
+        $result['error'] = 'Fell back from SMTP: ' . $GLOBALS['PHELYZ_SMTP_FALLBACK'];
+    }
 
     // Correct the row if the send actually failed, and note which transport
     // carried it so a deliverability problem can be traced to one route.
@@ -1418,6 +1438,10 @@ function sendEmailRaw($to, $subject, $message) {
         $r = smtpSend($to, $subject, $message);
         if ($r['ok']) return ['ok' => true, 'transport' => 'smtp', 'error' => null];
         error_log('SMTP send failed: ' . $r['error']);
+        // Remember why. Falling back keeps the mail flowing, but a primary
+        // transport that is quietly broken costs deliverability, and without
+        // this the reason never reaches anywhere anyone looks.
+        $GLOBALS['PHELYZ_SMTP_FALLBACK'] = $r['error'];
         // fall through to the other transports rather than silently dropping mail
     }
 
