@@ -99,7 +99,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
       $pm  = parcelStatusMeta($p['status']);
       $evs = getParcelEvents($p['id']); ?>
       <div style="border:1px solid var(--cream-dark);border-radius:11px;padding:18px;margin-bottom:14px;">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
+        <div class="parcel-head" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:16px;">
           <div>
             <div style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--stone-mid);">Tracking ID</div>
             <div style="font-size:17px;font-weight:700;color:var(--black);letter-spacing:0.03em;font-family:'Cormorant',serif;">
@@ -170,14 +170,14 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
             </div>
             <?php foreach (array_slice(array_reverse($evs), 0, 6) as $ev):
               $em = parcelStatusMeta($ev['status']); ?>
-              <div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:9px;font-size:12.5px;">
+              <div class="parcel-event" style="display:flex;align-items:flex-start;gap:9px;margin-bottom:9px;font-size:12.5px;">
                 <span style="width:8px;height:8px;border-radius:50%;background:<?php echo $em['colour']; ?>;margin-top:5px;flex-shrink:0;"></span>
                 <div style="flex:1;">
                   <strong style="color:var(--black);"><?php echo htmlspecialchars($em['label'] ?? ''); ?></strong>
                   <?php if ($ev['label']): ?><span style="color:var(--stone);"> - <?php echo htmlspecialchars($ev['label'] ?? ''); ?></span><?php endif; ?>
                   <?php if ($ev['note']): ?><div style="color:var(--stone-mid);font-size:11.5px;"><?php echo htmlspecialchars($ev['note'] ?? ''); ?></div><?php endif; ?>
                 </div>
-                <span style="color:var(--stone-mid);font-size:11px;white-space:nowrap;"><?php echo date('j M, g:ia', strtotime($ev['created_at'])); ?></span>
+                <span class="parcel-event-time" style="color:var(--stone-mid);font-size:11px;white-space:nowrap;"><?php echo date('j M, g:ia', strtotime($ev['created_at'])); ?></span>
               </div>
             <?php endforeach; ?>
           </div>
@@ -261,7 +261,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
         <span class="status-badge status-<?php echo $order['status']; ?>">
           <?php echo ucfirst($order['status'] ?? ''); ?>
         </span>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+        <svg class="status-row-arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
              stroke-width="2" stroke="var(--stone-mid)" width="14" height="14">
           <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/>
         </svg>
@@ -682,6 +682,68 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
 @media (max-width: 1024px) {
   .order-detail-grid { grid-template-columns: 1fr !important; }
   .order-detail-grid > div:last-child { position: static !important; }
+}
+
+/* ── Phones and small tablets ──────────────────────────────────────────────
+   Everything below the 1024px breakpoint was still laid out for a wide
+   screen: two address columns side by side, the status form on a single
+   line, a select pinned to 200px and dates told never to wrap. On a 412px
+   phone those fight each other for room and overlap. */
+@media (max-width: 640px) {
+
+  /* Every hard two-column grid on the page stacks. Covers the shipping and
+     billing addresses and the optional map coordinates. */
+  .addr-2col,
+  [style*="grid-template-columns:1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+    max-width: none !important;
+  }
+
+  /* The status changer: label, badge, arrow, select and button were one
+     unbroken row. Let it stack and give the controls the full width. */
+  [style*="min-width:200px"] {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+  form[action="update-order-status.php"] {
+    display: flex !important;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 10px !important;
+  }
+  form[action="update-order-status.php"] .btn { width: 100%; }
+
+  /* The chevron between "Current: <badge>" and the select points sideways
+     across a layout that is now vertical. */
+  .status-row-arrow { display: none !important; }
+
+  /* Timestamps in the parcel history were nowrap, so a long status label had
+     nowhere to break and shoved the date past the edge. Put it on its own
+     line instead. */
+  .parcel-event { flex-wrap: wrap; }
+  .parcel-event-time {
+    white-space: normal !important;
+    width: 100%;
+    padding-left: 17px;   /* clears the coloured dot */
+    margin-top: 2px;
+  }
+
+  /* Tracking id and its status pill: let them sit one above the other rather
+     than squeezing onto one line. */
+  .parcel-head { flex-direction: column; gap: 12px !important; }
+
+  /* Give the cards their space back. */
+  .card { padding: 16px !important; }
+  .order-detail-grid { gap: 16px !important; }
+
+  /* The items table already scrolls sideways in its own box; make sure the
+     box itself cannot stretch the page. */
+  .data-table { min-width: 460px; }
+}
+
+@media (max-width: 400px) {
+  /* Below this the auto-fit tracks still try for two columns. */
+  [style*="minmax(180px,1fr)"] { grid-template-columns: 1fr !important; }
 }
 </style>
 
