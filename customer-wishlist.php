@@ -68,21 +68,15 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 </div>
 <script>
 async function removeFromWishlistAndRefresh(productId) {
-  try {
-    const res  = await fetch('/api/add-to-wishlist.php', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ product_id: productId, action: 'remove' })
-    });
-    const data = await res.json();
-    if (data.success) {
-      showToast(data.message || 'Removed from wishlist', 'success');
-      setTimeout(function(){ location.reload(); }, 600);
-    } else {
-      showToast(data.message || 'Could not remove', 'error');
-    }
-  } catch(e) {
-    showToast('Network error', 'error');
+  // wishlistPost() lives in main.js and reports real errors rather than
+  // blaming the network for whatever went wrong.
+  const data = await wishlistPost(productId, 'remove');
+  if (!data) return;
+  if (data.success) {
+    showToast(data.message || 'Removed from wishlist', 'success');
+    setTimeout(function(){ location.reload(); }, 600);
+  } else {
+    showToast(data.message || 'Could not remove', 'error');
   }
 }
 </script>

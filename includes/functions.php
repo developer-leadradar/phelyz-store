@@ -739,13 +739,17 @@ function removeFromWishlist($productId) {
     if (!isLoggedIn()) {
         return false;
     }
-    
-    $db = getDB();
-    return $db->delete(
+
+    $db   = getDB();
+    // delete() hands back the statement, which is truthy even when it matched
+    // nothing - so ask how many rows actually went, or the caller cheerfully
+    // reports "removed" for an item that was never there.
+    $stmt = $db->delete(
         'wishlist',
         'user_id = ? AND product_id = ?',
         [$_SESSION['user_id'], $productId]
     );
+    return $stmt ? $stmt->rowCount() > 0 : false;
 }
 
 function getWishlistItems() {
@@ -767,14 +771,16 @@ function isInWishlist($productId) {
     if (!isLoggedIn()) {
         return false;
     }
-    
+
     $db = getDB();
     $item = $db->fetchOne(
         "SELECT id FROM wishlist WHERE user_id = ? AND product_id = ?",
         [$_SESSION['user_id'], $productId]
     );
-    
-    return $item !== null;
+
+    // Deliberately not `!== null`: this has to stay right whatever the driver
+    // returns for an empty result.
+    return !empty($item);
 }
 
 // ===========================================

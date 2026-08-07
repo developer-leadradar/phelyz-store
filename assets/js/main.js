@@ -115,49 +115,65 @@ async function buyNow(productId) {
    it went - without this the button looks identical before and after and the
    next tap silently undoes the save. */
 async function addToWishlist(productId, btn) {
-  try {
-    var res  = await fetch('/api/add-to-wishlist.php', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ product_id: productId, action: 'toggle' })
-    });
-    var data = await res.json();
-    if (data.success) {
-      var added = data.action === 'added';
-      if (btn && btn.classList) {
-        btn.classList.toggle('active', added);
-        btn.title = added ? 'Saved to Wishlist' : 'Add to Wishlist';
-        var svg = btn.querySelector('svg');
-        if (svg) svg.setAttribute('fill', added ? 'currentColor' : 'none');
-      }
-      showToast(data.message || 'Wishlist updated', 'success');
-    } else {
-      showToast(data.message || 'Sign in to use wishlist', 'info');
-    }
-  } catch(e) { showToast('Network error', 'error'); }
+  var data = await wishlistPost(productId, 'toggle');
+  if (!data) return;
+  paintWishlistButton(btn, data.in_wishlist);
+  if (data.success) showToast(data.message || 'Wishlist updated', 'success');
+  else              showToast(data.message || 'Sign in to save items', 'info');
 }
 
-async function toggleWishlist(productId) {
+/* One place that talks to the wishlist endpoint. Returns the parsed reply, or
+   null after showing why it could not. Reading the body as text first means a
+   server that answers with an error page reports what it actually said instead
+   of the misleading "Network error" a failed res.json() used to produce. */
+async function wishlistPost(productId, action) {
+  var res, body;
   try {
-    var res  = await fetch('/api/add-to-wishlist.php', {
+    res = await fetch('/api/add-to-wishlist.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ product_id: productId, action: 'toggle' })
+      body:    JSON.stringify({ product_id: productId, action: action })
     });
-    var data = await res.json();
-    if (data.success) {
-      showToast(data.message, 'success');
-      var btn  = document.getElementById('wishlist-btn');
-      var icon = document.getElementById('wishlist-icon');
-      var text = document.getElementById('wishlist-text');
-      if (btn && icon && text) {
-        var added = data.action === 'added';
-        icon.setAttribute('fill', added ? 'currentColor' : 'none');
-        btn.style.color = added ? '#EF4444' : '';
-        text.textContent = added ? 'Saved to Wishlist' : 'Add to Wishlist';
-      }
-    } else { showToast(data.message || 'Sign in first', 'info'); }
-  } catch(e) { showToast('Network error', 'error'); }
+    body = await res.text();
+  } catch (e) {
+    showToast('No connection. Please check your internet and try again.', 'error');
+    return null;
+  }
+  try {
+    return JSON.parse(body);
+  } catch (e) {
+    console.error('Wishlist endpoint returned non-JSON:', res.status, body.slice(0, 400));
+    showToast('Could not save that item. Please try again.', 'error');
+    return null;
+  }
+}
+
+/* Show whichever state the server says is true, rather than assuming the
+   toggle went the way we asked. */
+function paintWishlistButton(btn, saved) {
+  if (!btn || !btn.classList || typeof saved !== 'boolean') return;
+  btn.classList.toggle('active', saved);
+  btn.title = saved ? 'Saved to Wishlist' : 'Add to Wishlist';
+  var svg = btn.querySelector('svg');
+  if (svg) svg.setAttribute('fill', saved ? 'currentColor' : 'none');
+}
+
+/* The full-width button on a product page. */
+async function toggleWishlist(productId) {
+  var data = await wishlistPost(productId, 'toggle');
+  if (!data) return;
+
+  if (typeof data.in_wishlist === 'boolean') {
+    var btn  = document.getElementById('wishlist-btn');
+    var icon = document.getElementById('wishlist-icon');
+    var text = document.getElementById('wishlist-text');
+    if (icon) icon.setAttribute('fill', data.in_wishlist ? 'currentColor' : 'none');
+    if (btn)  btn.style.color = data.in_wishlist ? '#EF4444' : '';
+    if (text) text.textContent = data.in_wishlist ? 'Saved to Wishlist' : 'Add to Wishlist';
+  }
+
+  if (data.success) showToast(data.message || 'Wishlist updated', 'success');
+  else              showToast(data.message || 'Sign in to save items', 'info');
 }
 
 /* ── Cart badge ────────────────────────────────────── */

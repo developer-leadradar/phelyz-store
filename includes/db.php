@@ -46,9 +46,18 @@ class Database {
         return $stmt ? $stmt->fetchAll() : [];
     }
 
+    /**
+     * One row, or null when there isn't one.
+     *
+     * PDO's fetch() signals "no row" with false, not null, which quietly breaks
+     * any caller written as `$row !== null` - that test is true for false, so
+     * an empty result reads as a hit. Normalise it here.
+     */
     public function fetchOne($sql, $params = []) {
         $stmt = $this->query($sql, $params);
-        return $stmt ? $stmt->fetch() : null;
+        if (!$stmt) return null;
+        $row = $stmt->fetch();
+        return $row === false ? null : $row;
     }
 
     public function insert($table, $data) {
