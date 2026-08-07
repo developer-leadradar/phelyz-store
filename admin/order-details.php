@@ -502,7 +502,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
                      color:var(--black);">Customer</h2>
         </div>
         <?php if ($customer): ?>
-          <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+          <div class="customer-row" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
             <div style="width:52px;height:52px;border-radius:50%;background:var(--gold);
                         display:flex;align-items:center;justify-content:center;
                         font-family:'Cormorant',serif;font-size:20px;font-weight:700;
@@ -679,6 +679,11 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
   </div><!-- /grid -->
 
 <style>
+/* Grid items have the same min-width:auto default as flex items, so without
+   this the column holding the order items table widens to fit the table and
+   pushes everything else off the screen. */
+.order-detail-grid > * { min-width: 0; }
+
 @media (max-width: 1024px) {
   .order-detail-grid { grid-template-columns: 1fr !important; }
   .order-detail-grid > div:last-child { position: static !important; }
@@ -736,9 +741,14 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
   .card { padding: 16px !important; }
   .order-detail-grid { gap: 16px !important; }
 
-  /* The items table already scrolls sideways in its own box; make sure the
-     box itself cannot stretch the page. */
+  /* The items table keeps a readable width and scrolls sideways inside its own
+     box, which only works now the columns above are allowed to shrink. */
   .data-table { min-width: 460px; }
+
+  /* "View Profile" sat at the end of a row with the customer's name and email
+     and was the first thing to be clipped off the right edge. */
+  .customer-row { flex-direction: column; align-items: flex-start !important; }
+  .customer-row .btn { width: 100%; justify-content: center; }
 }
 
 @media (max-width: 400px) {

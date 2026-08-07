@@ -222,6 +222,13 @@ button { font-family: var(--font-b); }
    ============================================================ */
 .admin-main {
     flex: 1;
+    /* A flex item defaults to min-width:auto, which means it refuses to shrink
+       below the width of its widest child. One wide table anywhere in the admin
+       therefore stretched this column past the screen and took the whole page
+       with it - cards ran off the right edge and the totals were cut in half on
+       a phone. Allowing it to shrink is what lets the overflow-x:auto boxes
+       inside actually do their job. */
+    min-width: 0;
     margin-left: var(--sidebar-w);
     display: flex;
     flex-direction: column;

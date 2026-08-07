@@ -71,7 +71,10 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
       <!-- Left: Gallery -->
       <div class="lg:sticky lg:top-24 self-start">
         <!-- Main Image -->
-        <div class="relative bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-sm mb-3 aspect-square flex items-center justify-center p-8">
+        <!-- The padding used to be a flat p-8. On a phone that is 64px of the
+             square gone before the photo starts, which made every picture look
+             smaller than it is. It now scales with the screen. -->
+        <div class="relative bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-sm mb-3 aspect-square flex items-center justify-center p-3 sm:p-5 lg:p-8">
           <!-- The one image worth fetching immediately: everything else on the
                page can wait behind it. -->
           <img src="<?php echo htmlspecialchars($product['image'] ?? ''); ?>"
