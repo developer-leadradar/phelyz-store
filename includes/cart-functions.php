@@ -211,6 +211,21 @@ function processCheckout($formData) {
         $orderData['utm_campaign'] = $attr['utm_campaign'] ?? null;
     }
     
+    // Supersede an earlier card attempt from this same session that was never
+    // paid for. Because the cart now survives a cancelled payment, a shopper
+    // can come back and try again - and without this each retry would leave
+    // another abandoned order behind.
+    if (!empty($_SESSION['phelyz_pending_order'])) {
+        try {
+            $db->query(
+                "UPDATE orders SET status = 'cancelled', payment_status = 'failed'
+                  WHERE id = ? AND payment_status = 'pending'",
+                [(int)$_SESSION['phelyz_pending_order']]
+            );
+        } catch (Exception $e) { /* housekeeping only - never block the order */ }
+        unset($_SESSION['phelyz_pending_order']);
+    }
+
     // Create order
     $orderResult = createOrder($orderData);
     
