@@ -158,8 +158,12 @@ if (!empty($activeFilters)):
           function radioOpts($name, $items, $valKey, $current) {
             $out = '';
             foreach ($items as $item) {
-              $v = htmlspecialchars($item[$valKey]);
-              $checked = isset($current) && $current == $item[$valKey] ? 'checked' : '';
+              // The key is a variable here, so this one escaped the sweep that
+              // guarded the literal-key reads.
+              $raw = $item[$valKey] ?? '';
+              if ($raw === '') continue;   // nothing to filter by
+              $v = htmlspecialchars($raw);
+              $checked = isset($current) && $current == $raw ? 'checked' : '';
               $out .= '<label style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;">
                 <input type="radio" name="'.$name.'" value="'.$v.'" '.$checked.' style="accent-color:var(--gold);width:14px;height:14px;">
                 <span style="font-size:13px;color:var(--stone);">'.$v.'</span>
