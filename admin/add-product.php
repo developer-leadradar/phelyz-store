@@ -475,20 +475,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- Drop zone -->
             <div id="drop-zone"
                  onclick="document.getElementById('product_image').click()"
-                 style="border:2px dashed var(--cream-dark);border-radius:12px;padding:40px 24px;text-align:center;cursor:pointer;transition:border-color 200ms,background 200ms;background:var(--cream);"
-                 ondragover="event.preventDefault();this.style.borderColor='var(--gold)';this.style.background='rgba(202,138,4,0.04)';"
-                 ondragleave="this.style.borderColor='var(--cream-dark)';this.style.background='var(--cream)';"
-                 ondrop="handleDrop(event)">
+                 style="border:2px dashed var(--cream-dark);border-radius:12px;padding:40px 24px;text-align:center;cursor:pointer;transition:border-color 200ms,background 200ms;background:var(--cream);">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                      style="width:40px;height:40px;color:var(--stone-mid);margin:0 auto 12px;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
                 </svg>
                 <p style="font-size:14px;font-weight:600;color:var(--black);margin:0 0 4px;">Drag &amp; drop image(s) here</p>
-                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse - PNG, JPG, WebP &middot; up to <?php echo htmlspecialchars(ini_get('upload_max_filesize')); ?> each &middot; Select multiple to add a gallery</p>
-                <p style="font-size:11.5px;color:var(--stone-mid);margin:6px 0 0;">Straight from your phone is fine. Full-size camera photos are resized and straightened for you after they upload.</p>
+                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse - PNG, JPG, WebP &middot; Select multiple to add a gallery</p>
+                <p style="font-size:11.5px;color:var(--stone-mid);margin:6px 0 0;">Pick photos straight off your phone at full size. They are shrunk and turned the right way up here in your browser before they are sent, so the size limit never gets in the way.</p>
             </div>
             <input type="file" id="product_image" name="images[]" accept="image/*" multiple
-                   style="display:none;" onchange="previewImages(this)">
+                   style="display:none;">
+
+            <p id="image-preview-container-busy" style="display:none;margin-top:12px;font-size:12.5px;font-weight:600;color:var(--gold);">Preparing photos…</p>
 
             <!-- Multi-image preview grid -->
             <div id="image-preview-container" style="margin-top:16px;display:none;">
@@ -523,6 +522,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 </style>
 
+<script src="<?php echo SITE_URL; ?>/assets/js/admin-image-upload.js?v=2"></script>
 <script>
 function highlightStatus() {
     document.querySelectorAll('.status-label').forEach(function(label) {
@@ -531,77 +531,17 @@ function highlightStatus() {
     });
 }
 
-function formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-}
+/* The picker owns the file list, draws the previews and shrinks camera photos
+   before they are sent. See assets/js/admin-image-upload.js. */
+var productImagePicker = phelyzImagePicker({
+    input:     'product_image',
+    dropZone:  'drop-zone',
+    container: 'image-preview-container',
+    grid:      'image-preview-grid',
+    label:     'image-count-label'
+});
 
-function previewImages(input) {
-    const container = document.getElementById('image-preview-container');
-    const grid      = document.getElementById('image-preview-grid');
-    const dropZone  = document.getElementById('drop-zone');
-    const label     = document.getElementById('image-count-label');
-
-    if (!input.files || !input.files.length) return;
-    grid.innerHTML = '';
-    const total = input.files.length;
-    label.textContent = total === 1
-        ? 'Selected Image'
-        : 'Selected Images (' + total + ', first is primary)';
-
-    Array.from(input.files).forEach(function(file, idx) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const card = document.createElement('div');
-            card.style.cssText = 'position:relative;border:1px solid var(--cream-dark);border-radius:10px;overflow:hidden;background:white;';
-            card.innerHTML =
-                '<div style="position:relative;">' +
-                    '<img src="' + e.target.result + '" alt="Preview ' + (idx+1) + '" style="width:100%;height:140px;object-fit:cover;display:block;">' +
-                    (idx === 0 ? '<span style="position:absolute;top:6px;left:6px;background:var(--gold);color:white;font-size:10px;font-weight:700;padding:3px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase;">Primary</span>' : '') +
-                '</div>' +
-                '<div style="padding:8px 10px;">' +
-                    '<div style="font-size:12px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + escapeHtmlAttr(file.name) + '">' + escapeHtmlAttr(file.name) + '</div>' +
-                    '<div style="font-size:11px;color:var(--stone-mid);">' + formatFileSize(file.size) + '</div>' +
-                '</div>';
-            grid.appendChild(card);
-        };
-        reader.readAsDataURL(file);
-    });
-    container.style.display = 'block';
-    dropZone.style.display = 'none';
-}
-
-function escapeHtmlAttr(s) {
-    return String(s).replace(/[&<>"']/g, function(c){
-        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
-    });
-}
-
-// Backwards-compatible alias for code that still calls previewImage(input)
-function previewImage(input) { previewImages(input); }
-
-function clearImage() {
-    document.getElementById('product_image').value = '';
-    document.getElementById('image-preview-container').style.display = 'none';
-    document.getElementById('image-preview-grid').innerHTML = '';
-    document.getElementById('drop-zone').style.display = 'block';
-}
-
-function handleDrop(e) {
-    e.preventDefault();
-    const dz = document.getElementById('drop-zone');
-    dz.style.borderColor = 'var(--cream-dark)';
-    dz.style.background = 'var(--cream)';
-    const files = e.dataTransfer.files;
-    if (files && files.length) {
-        const input = document.getElementById('product_image');
-        const dt = new DataTransfer();
-        Array.from(files).forEach(function(f) { dt.items.add(f); });
-        input.files = dt.files;
-        previewImages(input);
-    }
-}
+function clearImage() { if (productImagePicker) productImagePicker.clear(); }
 
 /* ── Colors tag input ─────────────────────────── */
 var productColors = [];

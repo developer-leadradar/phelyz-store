@@ -536,19 +536,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             <div id="drop-zone"
                  onclick="document.getElementById('edit_product_image').click()"
-                 style="border:2px dashed var(--cream-dark);border-radius:12px;padding:32px 24px;text-align:center;cursor:pointer;transition:border-color 200ms,background 200ms;background:var(--cream);"
-                 ondragover="event.preventDefault();this.style.borderColor='var(--gold)';this.style.background='rgba(202,138,4,0.04)';"
-                 ondragleave="this.style.borderColor='var(--cream-dark)';this.style.background='var(--cream)';"
-                 ondrop="handleDrop(event)">
+                 style="border:2px dashed var(--cream-dark);border-radius:12px;padding:32px 24px;text-align:center;cursor:pointer;transition:border-color 200ms,background 200ms;background:var(--cream);">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
                      style="width:36px;height:36px;color:var(--stone-mid);margin:0 auto 10px;">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
                 </svg>
                 <p style="font-size:14px;font-weight:600;color:var(--black);margin:0 0 4px;">Drag &amp; drop image(s) here</p>
-                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse - PNG, JPG, WebP &middot; up to <?php echo htmlspecialchars(ini_get('upload_max_filesize')); ?> each &middot; full-size phone photos are fine</p>
+                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse - PNG, JPG, WebP &middot; select multiple to add several</p>
+                <p style="font-size:11.5px;color:var(--stone-mid);margin:6px 0 0;">Full-size phone photos are fine. They are shrunk and turned the right way up in your browser before being sent.</p>
             </div>
             <input type="file" id="edit_product_image" name="images[]" accept="image/*" multiple
-                   style="display:none;" onchange="previewImages(this)">
+                   style="display:none;">
+
+            <p id="image-preview-container-busy" style="display:none;margin-top:12px;font-size:12.5px;font-weight:600;color:var(--gold);">Preparing photos&hellip;</p>
 
             <div id="image-preview-container" style="margin-top:16px;display:none;">
                 <p style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--stone-mid);margin-bottom:8px;">
@@ -582,6 +582,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 </style>
 
+<script src="<?php echo SITE_URL; ?>/assets/js/admin-image-upload.js?v=2"></script>
 <script>
 function highlightStatus() {
     document.querySelectorAll('.status-label').forEach(function(label) {
@@ -590,152 +591,19 @@ function highlightStatus() {
     });
 }
 
-function formatFileSize(bytes) {
-    if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-}
-
-function previewImages(input) {
-    const container = document.getElementById('image-preview-container');
-    const grid      = document.getElementById('image-preview-grid');
-    const dropZone  = document.getElementById('drop-zone');
-    const label     = document.getElementById('image-count-label');
-
-    if (!input.files || !input.files.length) return;
-    grid.innerHTML = '';
-    const total = input.files.length;
-    label.textContent = total === 1
-        ? 'New Image'
-        : 'New Images (' + total + ')';
-
-    Array.from(input.files).forEach(function(file, idx) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const card = document.createElement('div');
-            card.style.cssText = 'position:relative;border:1px solid var(--cream-dark);border-radius:10px;overflow:hidden;background:white;';
-            card.innerHTML =
-                '<div style="position:relative;">' +
-                    '<img src="' + e.target.result + '" alt="Preview ' + (idx+1) + '" style="width:100%;height:140px;object-fit:cover;display:block;">' +
-                '</div>' +
-                '<div style="padding:8px 10px;">' +
-                    '<div style="font-size:12px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="' + escapeHtmlAttr(file.name) + '">' + escapeHtmlAttr(file.name) + '</div>' +
-                    '<div style="font-size:11px;color:var(--stone-mid);">' + formatFileSize(file.size) + '</div>' +
-                '</div>';
-            grid.appendChild(card);
-        };
-        reader.readAsDataURL(file);
-    });
-    container.style.display = 'block';
-    dropZone.style.display = 'none';
-}
-
-function escapeHtmlAttr(s) {
-    return String(s).replace(/[&<>"']/g, function(c){
-        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
-    });
-}
-
-function previewImage(input) { previewImages(input); }
-
-function clearImage() {
-    document.getElementById('edit_product_image').value = '';
-    document.getElementById('image-preview-container').style.display = 'none';
-    document.getElementById('image-preview-grid').innerHTML = '';
-    document.getElementById('drop-zone').style.display = 'block';
-}
-
-/* Mark an existing gallery image for deletion */
-var deletedImageIds = [];
-function markImageForDelete(id) {
-    if (deletedImageIds.indexOf(id) !== -1) return;
-    deletedImageIds.push(id);
-    document.getElementById('delete-image-ids').value = deletedImageIds.join(',');
-    var el = document.getElementById('existing-img-' + id);
-    if (el) el.style.display = 'none';
-}
-
-/* ── Colors tag input ─────────────────────────── */
-var productColors = [];
-
-function syncColorsHidden() {
-    document.getElementById('colors-hidden').value =
-        productColors.map(c => c.name + (c.hex ? '|' + c.hex : '')).join(',');
-}
-
-function renderColorChips() {
-    var list = document.getElementById('colors-list');
-    if (!productColors.length) { list.innerHTML = ''; syncColorsHidden(); return; }
-    list.innerHTML = productColors.map(function(c, i) {
-        var hex = c.hex || '#E5E7EB';
-        return '<span style="display:inline-flex;align-items:center;gap:8px;padding:6px 10px 6px 8px;border:1px solid var(--cream-dark);border-radius:99px;background:white;font-size:13px;">' +
-               '<span style="width:18px;height:18px;border-radius:50%;background:' + hex + ';border:1px solid rgba(0,0,0,0.08);flex-shrink:0;"></span>' +
-               '<span style="font-weight:600;color:var(--black);">' + escapeHtml(c.name) + '</span>' +
-               '<button type="button" onclick="removeColorChip(' + i + ')" aria-label="Remove" style="background:none;border:none;color:var(--stone-mid);cursor:pointer;padding:0 2px;font-size:16px;line-height:1;">&times;</button>' +
-               '</span>';
-    }).join('');
-    syncColorsHidden();
-}
-
-function addColorChip() {
-    var nameEl = document.getElementById('color-name-input');
-    var hexEl  = document.getElementById('color-hex-input');
-    var name = (nameEl.value || '').trim();
-    var hex  = (hexEl.value  || '').trim();
-    if (!name) { nameEl.focus(); return; }
-    if (productColors.some(c => c.name.toLowerCase() === name.toLowerCase())) {
-        nameEl.value = '';
-        return;
-    }
-    productColors.push({ name: name, hex: hex });
-    nameEl.value = '';
-    renderColorChips();
-    nameEl.focus();
-}
-
-function removeColorChip(i) {
-    productColors.splice(i, 1);
-    renderColorChips();
-}
-
-function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, function(c){
-        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
-    });
-}
-
-(function() {
-    var existing = document.getElementById('colors-hidden').value;
-    if (!existing) return;
-    existing.split(',').forEach(function(chunk) {
-        chunk = chunk.trim();
-        if (!chunk) return;
-        var parts = chunk.split('|');
-        var name = (parts[0] || '').trim();
-        var hex  = ((parts[1] || '').trim()).match(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/) ? parts[1].trim() : '';
-        if (name) productColors.push({ name: name, hex: hex });
-    });
-    renderColorChips();
-})();
-
-document.getElementById('color-name-input').addEventListener('keydown', function(e) {
-    if (e.key === 'Enter') { e.preventDefault(); addColorChip(); }
+/* The picker owns the file list, draws the previews and shrinks camera photos
+   before they are sent. See assets/js/admin-image-upload.js. New photos join
+   the gallery here, so no "Primary" badge - the checkbox above decides that. */
+var productImagePicker = phelyzImagePicker({
+    input:        'edit_product_image',
+    dropZone:     'drop-zone',
+    container:    'image-preview-container',
+    grid:         'image-preview-grid',
+    label:        'image-count-label',
+    primaryBadge: false
 });
 
-function handleDrop(e) {
-    e.preventDefault();
-    const dz = document.getElementById('drop-zone');
-    dz.style.borderColor = 'var(--cream-dark)';
-    dz.style.background = 'var(--cream)';
-    const files = e.dataTransfer.files;
-    if (files && files.length) {
-        const input = document.getElementById('edit_product_image');
-        const dt = new DataTransfer();
-        Array.from(files).forEach(function(f) { dt.items.add(f); });
-        input.files = dt.files;
-        previewImages(input);
-    }
-}
+function clearImage() { if (productImagePicker) productImagePicker.clear(); }
 </script>
 
 <?php require_once 'includes/footer.php'; ?>
