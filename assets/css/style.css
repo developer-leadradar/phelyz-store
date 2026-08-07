@@ -367,6 +367,13 @@ input, select, textarea, button { font-family: inherit; }
   transition: opacity var(--transition), transform var(--transition);
 }
 .product-card:hover .product-card-actions { opacity: 1; transform: translateX(0); }
+
+/* A phone or tablet has no hover, so these buttons would sit at opacity 0 for
+   ever - invisible, and unusable in practice. On touch screens show them all
+   the time instead. */
+@media (hover: none) {
+  .product-card-actions { opacity: 1; transform: none; }
+}
 .product-card-body { padding: 14px 16px 18px; }
 .product-card-cat {
   font-size: 10px; font-weight: 700; letter-spacing: 0.09em;

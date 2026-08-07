@@ -110,7 +110,11 @@ async function buyNow(productId) {
 }
 
 /* ── Wishlist ──────────────────────────────────────── */
-async function addToWishlist(productId, callback) {
+
+/* The little heart on a product card. It toggles, so it has to show which way
+   it went - without this the button looks identical before and after and the
+   next tap silently undoes the save. */
+async function addToWishlist(productId, btn) {
   try {
     var res  = await fetch('/api/add-to-wishlist.php', {
       method:  'POST',
@@ -119,8 +123,14 @@ async function addToWishlist(productId, callback) {
     });
     var data = await res.json();
     if (data.success) {
+      var added = data.action === 'added';
+      if (btn && btn.classList) {
+        btn.classList.toggle('active', added);
+        btn.title = added ? 'Saved to Wishlist' : 'Add to Wishlist';
+        var svg = btn.querySelector('svg');
+        if (svg) svg.setAttribute('fill', added ? 'currentColor' : 'none');
+      }
       showToast(data.message || 'Wishlist updated', 'success');
-      if (callback) callback(data);
     } else {
       showToast(data.message || 'Sign in to use wishlist', 'info');
     }

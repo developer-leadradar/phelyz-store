@@ -3,7 +3,7 @@
 // Update cart item quantity
 async function updateCartItemQuantity(itemId, newQuantity) {
     try {
-        const response = await fetch('/phelyz-store/api/update-cart.php', {
+        const response = await fetch('/api/update-cart.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -34,7 +34,7 @@ async function removeCartItem(itemId) {
     }
 
     try {
-        const response = await fetch('/phelyz-store/api/update-cart.php', {
+        const response = await fetch('/api/update-cart.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -66,7 +66,7 @@ async function clearEntireCart() {
     }
 
     try {
-        const response = await fetch('/phelyz-store/api/update-cart.php', {
+        const response = await fetch('/api/update-cart.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -167,7 +167,7 @@ async function applyCoupon() {
     }
 
     try {
-        const response = await fetch('/phelyz-store/api/apply-coupon.php', {
+        const response = await fetch('/api/apply-coupon.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -194,7 +194,7 @@ async function applyCoupon() {
 // Save for later
 async function saveForLater(itemId) {
     try {
-        const response = await fetch('/phelyz-store/api/save-for-later.php', {
+        const response = await fetch('/api/save-for-later.php', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

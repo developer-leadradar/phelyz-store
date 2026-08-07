@@ -1040,6 +1040,36 @@ function getProductGallery($product) {
     return $gallery;
 }
 
+/**
+ * Turn a PHP upload error code into something a shop owner can act on.
+ *
+ * Returns '' when the file arrived cleanly. Worth showing rather than
+ * swallowing: a photo that is one megabyte over the limit otherwise vanishes
+ * without a word and the product saves with a placeholder picture.
+ */
+function uploadErrorMessage($code, $filename = '') {
+    $name = $filename !== '' ? '"' . $filename . '"' : 'That file';
+    switch ((int)$code) {
+        case UPLOAD_ERR_OK:
+            return '';
+        case UPLOAD_ERR_INI_SIZE:
+        case UPLOAD_ERR_FORM_SIZE:
+            return $name . ' is bigger than this server accepts (limit is '
+                 . ini_get('upload_max_filesize') . ' per photo).';
+        case UPLOAD_ERR_PARTIAL:
+            return $name . ' only uploaded part way. Please try again.';
+        case UPLOAD_ERR_NO_FILE:
+            return '';
+        case UPLOAD_ERR_NO_TMP_DIR:
+        case UPLOAD_ERR_CANT_WRITE:
+            return $name . ' could not be saved on the server. Please contact support.';
+        case UPLOAD_ERR_EXTENSION:
+            return $name . ' was blocked by the server.';
+        default:
+            return $name . ' could not be uploaded.';
+    }
+}
+
 function uploadImage($file, $directory = 'products') {
     $allowed = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     $ext     = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -1090,6 +1120,18 @@ function uploadImage($file, $directory = 'products') {
     return false;
 }
 
+/** memory_limit in bytes. Returns 0 when the limit is unlimited. */
+function imageMemoryLimitBytes() {
+    $raw = trim((string)ini_get('memory_limit'));
+    if ($raw === '' || $raw === '-1') return 0;
+    $unit = strtolower(substr($raw, -1));
+    $n    = (float)$raw;
+    if ($unit === 'g') return (int)($n * 1024 * 1024 * 1024);
+    if ($unit === 'm') return (int)($n * 1024 * 1024);
+    if ($unit === 'k') return (int)($n * 1024);
+    return (int)$n;
+}
+
 /**
  * Resize an oversized upload in place and re-encode it.
  *
@@ -1098,7 +1140,7 @@ function uploadImage($file, $directory = 'products') {
  *
  * @return bool true when the file was rewritten
  */
-function optimiseImageFile($path, $maxWidth = 1400, $quality = 82) {
+function optimiseImageFile($path, $maxWidth = 1600, $quality = 84) {
     if (!function_exists('imagecreatetruecolor')) return false;
     if (!is_file($path)) return false;
 
@@ -1110,7 +1152,39 @@ function optimiseImageFile($path, $maxWidth = 1400, $quality = 82) {
 
     // Animated GIFs would lose their frames, so leave them alone.
     if ($mime === 'image/gif') return false;
-    if ($width <= $maxWidth && filesize($path) < 350 * 1024) return false;
+
+    // A photo straight off a phone is usually rotated by an EXIF tag rather
+    // than in the pixels. GD ignores that tag, so a resized copy would come out
+    // lying on its side. Work out whether we have to turn it ourselves.
+    $rotate = 0;
+    $flip   = false;
+    if ($mime === 'image/jpeg' && function_exists('exif_read_data')) {
+        $exif = @exif_read_data($path);
+        switch ((int)($exif['Orientation'] ?? 1)) {
+            case 2: $flip = true;                 break;
+            case 3: $rotate = 180;                break;
+            case 4: $rotate = 180; $flip = true;  break;
+            case 5: $rotate = 270; $flip = true;  break;
+            case 6: $rotate = 270;                break;
+            case 7: $rotate = 90;  $flip = true;  break;
+            case 8: $rotate = 90;                 break;
+        }
+    }
+
+    // Nothing to do: already web-sized, small enough, and the right way up.
+    if ($width <= $maxWidth && filesize($path) < 350 * 1024 && !$rotate && !$flip) return false;
+
+    // Decoding happens into an uncompressed bitmap: 4 bytes a pixel, plus room
+    // for the resized copy and normal request overhead. Running out here is a
+    // fatal error that would take the whole product save down with it, so ask
+    // for the headroom first and give up quietly if we cannot have it.
+    $needed = (int)($width * $height * 4 * 2.2) + (32 * 1024 * 1024);
+    $limit  = imageMemoryLimitBytes();
+    if ($limit > 0 && $limit < $needed) {
+        @ini_set('memory_limit', (int)ceil($needed / (1024 * 1024)) . 'M');
+        $limit = imageMemoryLimitBytes();
+        if ($limit > 0 && $limit < $needed) return false; // host won't allow it
+    }
 
     switch ($mime) {
         case 'image/jpeg': $src = @imagecreatefromjpeg($path); break;
@@ -1119,6 +1193,18 @@ function optimiseImageFile($path, $maxWidth = 1400, $quality = 82) {
         default: return false;
     }
     if (!$src) return false;
+
+    // Straighten it before measuring, so a portrait photo is scaled by its real
+    // width rather than the width it happens to be stored at.
+    if ($rotate) {
+        $turned = @imagerotate($src, $rotate, 0);
+        if ($turned) { imagedestroy($src); $src = $turned; }
+    }
+    if ($flip && function_exists('imageflip')) {
+        imageflip($src, IMG_FLIP_HORIZONTAL);
+    }
+    $width  = imagesx($src);
+    $height = imagesy($src);
 
     $newWidth  = min($width, $maxWidth);
     $newHeight = (int)round($height * ($newWidth / $width));

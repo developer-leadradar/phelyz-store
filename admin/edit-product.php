@@ -49,9 +49,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $extraImages = [];
 
             $uploadedFiles = [];
+            $uploadWarnings = [];
             if (isset($_FILES['images']) && is_array($_FILES['images']['name'])) {
                 $count = count($_FILES['images']['name']);
                 for ($i = 0; $i < $count; $i++) {
+                    // Say when the server refused a photo. Skipping it quietly
+                    // looks exactly like the upload having worked.
+                    $why = uploadErrorMessage($_FILES['images']['error'][$i], $_FILES['images']['name'][$i]);
+                    if ($why !== '') { $uploadWarnings[] = $why; continue; }
+
                     if ($_FILES['images']['error'][$i] === 0 && $_FILES['images']['size'][$i] > 0) {
                         $uploadedFiles[] = [
                             'name'     => $_FILES['images']['name'][$i],
@@ -76,7 +82,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     } else {
                         $extraImages[] = $uploaded;
                     }
+                } else {
+                    $uploadWarnings[] = '"' . $f['name'] . '" could not be saved. '
+                                      . 'Please check it is a JPG, PNG or WebP.';
                 }
+            }
+            if (!empty($uploadWarnings)) {
+                $_SESSION['admin_notice'] = 'Some photos were not added: '
+                                          . implode(' ', $uploadWarnings);
             }
 
             // Prepare update data
@@ -527,7 +540,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
                 </svg>
                 <p style="font-size:14px;font-weight:600;color:var(--black);margin:0 0 4px;">Drag &amp; drop image(s) here</p>
-                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse - PNG, JPG, WebP &middot; Max 5MB each</p>
+                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse - PNG, JPG, WebP &middot; up to <?php echo htmlspecialchars(ini_get('upload_max_filesize')); ?> each &middot; full-size phone photos are fine</p>
             </div>
             <input type="file" id="edit_product_image" name="images[]" accept="image/*" multiple
                    style="display:none;" onchange="previewImages(this)">

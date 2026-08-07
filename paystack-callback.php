@@ -11,6 +11,7 @@ define('PHELYZ_ACCESS', true);
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/cart-functions.php';
 require_once __DIR__ . '/includes/paystack.php';
 
 $orderId   = isset($_GET['order']) ? (int)$_GET['order'] : 0;
@@ -34,19 +35,35 @@ if (($order['payment_status'] ?? 'pending') === 'paid') {
 $result = paystackVerify($reference);
 
 if ($result['ok'] && $result['paid'] && $result['amount_ngn'] >= ((float)$order['total'] - 1)) {
-    $db->update('orders', [
-        'payment_status'    => 'paid',
-        'status'            => 'processing',
-        'payment_reference' => $reference,
-    ], 'id = ?', [$orderId]);
-    // Now that payment is confirmed, reduce stock (idempotent)
-    reduceStockForOrder($orderId);
+    // Claim the order atomically. The webhook may be racing us with the same
+    // news, and only one of us may reduce stock, bank the coupon, issue a
+    // tracking number and send the confirmation email.
+    $claim = $db->query(
+        "UPDATE orders SET payment_status = 'paid', status = 'processing', payment_reference = ?
+         WHERE id = ? AND payment_status <> 'paid'",
+        [$reference, $orderId]
+    );
+
+    if ($claim && $claim->rowCount() > 0) {
+        finaliseOrderAfterPayment($orderId);
+    } else {
+        // The webhook got there first. It could not touch this shopper's
+        // session, so clear the cart here instead.
+        clearCart();
+        couponSessionClear();
+        unset($_SESSION['phelyz_pending_order']);
+    }
+
     redirect('order-details.php?id=' . $orderId . '&success=1');
 }
 
-// Payment failed, abandoned, or amount mismatch
+// Payment failed, abandoned, or amount mismatch. Cancel the reservation but
+// leave the cart and any applied coupon exactly as they were, so the customer
+// lands back on a full cart and can simply try again.
 $db->update('orders', [
     'payment_status'    => 'failed',
+    'status'            => 'cancelled',
     'payment_reference' => $reference,
 ], 'id = ?', [$orderId]);
-redirect('order-details.php?id=' . $orderId . '&payment=failed');
+unset($_SESSION['phelyz_pending_order']);
+redirect('cart.php?payment=failed');

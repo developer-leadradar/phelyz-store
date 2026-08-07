@@ -16,6 +16,7 @@ define('PHELYZ_ACCESS', true);
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/includes/db.php';
 require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/cart-functions.php';
 require_once __DIR__ . '/includes/paystack.php';
 
 // Only accept POST
@@ -62,11 +63,20 @@ if (($order['payment_status'] ?? 'pending') === 'paid') exit;
 
 $paidNgn = isset($data['amount']) ? ((float)$data['amount'] / 100) : 0.0;
 if (($data['status'] ?? '') === 'success' && $paidNgn >= ((float)$order['total'] - 1)) {
-    $db->update('orders', [
-        'payment_status'    => 'paid',
-        'status'            => 'processing',
-        'payment_reference' => $reference,
-    ], 'id = ?', [(int)$order['id']]);
-    reduceStockForOrder((int)$order['id']);
+    // Claim the order atomically - the customer's browser may be arriving at
+    // paystack-callback.php with the same news at this very moment, and the
+    // work below must only ever run once.
+    $claim = $db->query(
+        "UPDATE orders SET payment_status = 'paid', status = 'processing', payment_reference = ?
+         WHERE id = ? AND payment_status <> 'paid'",
+        [$reference, (int)$order['id']]
+    );
+
+    if ($claim && $claim->rowCount() > 0) {
+        // No cart clearing here: this request runs server-to-server on a
+        // session that has nothing to do with the shopper. Their cart is
+        // emptied by cartSyncPendingOrder() next time they open it.
+        finaliseOrderAfterPayment((int)$order['id'], false);
+    }
 }
 exit;

@@ -43,9 +43,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Normalise the multi-file input ($_FILES['images']) into a flat list
             $uploadedFiles = [];
+            $uploadWarnings = [];
             if (isset($_FILES['images']) && is_array($_FILES['images']['name'])) {
                 $count = count($_FILES['images']['name']);
                 for ($i = 0; $i < $count; $i++) {
+                    // A photo the server refused must say so. Skipping it in
+                    // silence saves the product with a placeholder picture and
+                    // leaves no clue why.
+                    $why = uploadErrorMessage($_FILES['images']['error'][$i], $_FILES['images']['name'][$i]);
+                    if ($why !== '') { $uploadWarnings[] = $why; continue; }
+
                     if ($_FILES['images']['error'][$i] === 0 && $_FILES['images']['size'][$i] > 0) {
                         $uploadedFiles[] = [
                             'name'     => $_FILES['images']['name'][$i],
@@ -70,7 +77,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     } else {
                         $extraImages[] = $uploaded;
                     }
+                } else {
+                    $uploadWarnings[] = '"' . $f['name'] . '" could not be saved. '
+                                      . 'Please check it is a JPG, PNG or WebP.';
                 }
+            }
+
+            // A whole form submitted with nothing but rejected photos is almost
+            // certainly a mistake, so stop rather than save a placeholder.
+            if (!empty($uploadWarnings) && empty($uploadedFiles)) {
+                $error = implode(' ', $uploadWarnings);
             }
 
             // Prepare product data
@@ -104,9 +120,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 'review_count' => 0
             ];
 
-            $productId = $db->insert('products', $productData);
+            $productId = empty($error) ? $db->insert('products', $productData) : false;
 
             if ($productId) {
+                // Some photos made it and some did not. The product is saved, so
+                // say what was left out rather than letting it pass unnoticed.
+                if (!empty($uploadWarnings)) {
+                    $_SESSION['admin_notice'] = 'Product saved, but some photos were not: '
+                                              . implode(' ', $uploadWarnings);
+                }
                 // Save extra gallery images (if any)
                 if (!empty($extraImages)) {
                     try {
@@ -125,7 +147,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     }
                 }
                 redirect('products.php?success=1');
-            } else {
+            } elseif (empty($error)) {
                 $error = 'Failed to add product';
             }
         }
@@ -462,7 +484,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
                 </svg>
                 <p style="font-size:14px;font-weight:600;color:var(--black);margin:0 0 4px;">Drag &amp; drop image(s) here</p>
-                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse - PNG, JPG, WebP &middot; Max 5MB each &middot; 800&times;800px recommended &middot; Select multiple to add a gallery</p>
+                <p style="font-size:12px;color:var(--stone-mid);margin:0;">or click to browse - PNG, JPG, WebP &middot; up to <?php echo htmlspecialchars(ini_get('upload_max_filesize')); ?> each &middot; Select multiple to add a gallery</p>
+                <p style="font-size:11.5px;color:var(--stone-mid);margin:6px 0 0;">Straight from your phone is fine. Full-size camera photos are resized and straightened for you after they upload.</p>
             </div>
             <input type="file" id="product_image" name="images[]" accept="image/*" multiple
                    style="display:none;" onchange="previewImages(this)">

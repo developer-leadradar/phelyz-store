@@ -224,34 +224,6 @@ function processCheckout($formData) {
     // Add order items
     addOrderItems($orderResult['order_id'], $cartSummary['items']);
 
-    // Bank the coupon now that the order exists, so per-customer limits and
-    // per-code reporting stay accurate. Then release it from the session.
-    if (!empty($cartSummary['coupon_code'])) {
-        couponRecordRedemption(
-            $cartSummary['coupon_code'],
-            $orderResult['order_id'],
-            (float)($cartSummary['discount'] ?? 0)
-        );
-        couponSessionClear();
-    }
-
-    // Reduce stock immediately for cash-on-delivery / bank transfer (order is
-    // committed). Card (Paystack) orders stay pending until payment is verified -
-    // their stock is reduced in the callback/webhook after a successful charge.
-    $method = $formData['payment_method'] ?? 'cod';
-    if ($method !== 'paystack') {
-        reduceStockForOrder($orderResult['order_id']);
-    }
-
-    // Create the parcel record so the customer gets a tracking id straight away.
-    // Everything bought together ships as one parcel with one tracking number.
-    if (function_exists('createParcelForOrder')) {
-        createParcelForOrder($orderResult['order_id']);
-    }
-
-    // Clear cart
-    clearCart();
-
     // Track this order against the current session so a guest can view their
     // own confirmation without an account.
     if (!isset($_SESSION['guest_orders']) || !is_array($_SESSION['guest_orders'])) {
@@ -259,10 +231,16 @@ function processCheckout($formData) {
     }
     $_SESSION['guest_orders'][] = (int)$orderResult['order_id'];
 
-    // Send confirmation email
-    if (isLoggedIn()) {
-        $user = getCurrentUser();
-        sendOrderConfirmationEmail($user['email'], $orderResult['order_number']);
+    // Cash-on-delivery and bank transfer are committed the moment the order is
+    // placed. A card order is not: the customer is about to be handed over to
+    // Paystack and may never pay. Until the money is confirmed we touch nothing
+    // else - the cart stays full, the coupon stays applied, no stock moves, no
+    // tracking number is issued and no confirmation email goes out. If they back
+    // out of the payment page they come straight back to the cart they had.
+    if (($formData['payment_method'] ?? 'cod') === 'paystack') {
+        $_SESSION['phelyz_pending_order'] = (int)$orderResult['order_id'];
+    } else {
+        finaliseOrderAfterPayment((int)$orderResult['order_id']);
     }
 
     return [
@@ -270,6 +248,94 @@ function processCheckout($formData) {
         'order_id' => $orderResult['order_id'],
         'order_number' => $orderResult['order_number']
     ];
+}
+
+/**
+ * Everything that must happen exactly once, when an order is really committed.
+ *
+ * For cash-on-delivery and bank transfer that moment is when the order is
+ * placed. For a card order it is when Paystack confirms the money - and that
+ * confirmation can arrive twice, because the customer's browser comes back to
+ * paystack-callback.php AND Paystack posts to paystack-webhook.php. Whichever
+ * gets there first wins the atomic "flip to paid" update and calls this; the
+ * steps below are written to survive a second call regardless.
+ *
+ * $clearTheCart is false for the webhook, which runs server-to-server on a
+ * session that has nothing to do with the shopper.
+ */
+function finaliseOrderAfterPayment($orderId, $clearTheCart = true) {
+    $db    = getDB();
+    $order = $db->fetchOne("SELECT * FROM orders WHERE id = ?", [(int)$orderId]);
+    if (!$order) return false;
+
+    // Stock. Guarded by its own stock_reduced flag.
+    reduceStockForOrder((int)$orderId);
+
+    // Coupon. One redemption row per order, so a repeat call must not double
+    // count it against the code's usage limit.
+    if (!empty($order['coupon_code'])) {
+        $already = null;
+        try {
+            $already = $db->fetchOne(
+                "SELECT id FROM coupon_redemptions WHERE order_id = ?", [(int)$orderId]
+            );
+        } catch (Exception $e) { /* table may not exist yet - non-fatal */ }
+        if (!$already) {
+            couponRecordRedemption(
+                $order['coupon_code'], (int)$orderId, (float)($order['discount'] ?? 0)
+            );
+        }
+    }
+
+    // The tracking parcel. createParcelForOrder() would cheerfully add a second
+    // one (-P2), so only create it when the order has none.
+    if (function_exists('createParcelForOrder')) {
+        $hasParcel = null;
+        try {
+            $hasParcel = $db->fetchOne("SELECT id FROM parcels WHERE order_id = ?", [(int)$orderId]);
+        } catch (Exception $e) { /* parcels table may not exist yet - non-fatal */ }
+        if (!$hasParcel) createParcelForOrder((int)$orderId);
+    }
+
+    if ($clearTheCart) {
+        clearCart();
+        couponSessionClear();
+        unset($_SESSION['phelyz_pending_order']);
+    }
+
+    // Confirmation email. Look the address up from the order's own user rather
+    // than the current session, because the webhook path has no shopper logged
+    // in and would otherwise skip the email entirely.
+    if (!empty($order['user_id'])) {
+        $buyer = $db->fetchOne("SELECT email FROM users WHERE id = ?", [(int)$order['user_id']]);
+        if (!empty($buyer['email'])) {
+            sendOrderConfirmationEmail($buyer['email'], $order['order_number']);
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Tidy up after a payment that completed while the shopper was not looking.
+ *
+ * If they paid on Paystack and then closed the tab instead of returning, the
+ * webhook marked the order paid but their cart is still sitting there full of
+ * things they have already bought. Called when the cart or checkout page loads.
+ */
+function cartSyncPendingOrder() {
+    if (empty($_SESSION['phelyz_pending_order'])) return;
+
+    $id  = (int)$_SESSION['phelyz_pending_order'];
+    $row = getDB()->fetchOne("SELECT payment_status FROM orders WHERE id = ?", [$id]);
+
+    if (!$row) { unset($_SESSION['phelyz_pending_order']); return; }
+
+    if (($row['payment_status'] ?? '') === 'paid') {
+        clearCart();
+        couponSessionClear();
+        unset($_SESSION['phelyz_pending_order']);
+    }
 }
 
 function sendOrderConfirmationEmail($email, $orderNumber) {

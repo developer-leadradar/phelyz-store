@@ -4,6 +4,10 @@ require_once 'includes/header.php';
 require_once 'includes/cart-functions.php';
 require_once 'includes/paystack.php';
 
+// If a card payment completed while they were away from the site, the cart is
+// stale - empty it before deciding whether there is anything to check out.
+cartSyncPendingOrder();
+
 // Pre-compute state so the summary reflects it on page load
 $checkoutState = sanitize($_POST['shipping_state'] ?? $_SESSION['phelyz_shipping_state'] ?? '');
 $cartSummary = getCartSummary($checkoutState ?: null);
@@ -69,27 +73,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <!-- Steps indicator -->
-<div style="background:var(--white);border-bottom:1px solid var(--cream-dark);padding:16px 0;">
+<div class="co-steps-bar">
   <div class="container">
-    <div style="display:flex;align-items:center;justify-content:center;gap:0;">
+    <div class="co-steps">
       <?php
-      $steps = [['1','Cart'],['2','Shipping & Payment'],['3','Confirmation']];
-      foreach ($steps as $i => [$num, $label]):
+      // The short label is what shows on a phone. "Shipping & Payment" spelled
+      // out needs more room than a 412px screen has, and used to be clipped.
+      $steps = [['1','Cart','Cart'],['2','Shipping & Payment','Shipping'],['3','Confirmation','Done']];
+      foreach ($steps as $i => [$num, $label, $short]):
         $active = $i === 1;
         $done   = $i === 0;
+        $state  = $done ? 'is-done' : ($active ? 'is-active' : '');
       ?>
-        <div style="display:flex;align-items:center;gap:0;">
-          <div style="display:flex;align-items:center;gap:8px;padding:0 12px;">
-            <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
-              <?php echo $done?'background:var(--gold);color:white;':($active?'background:var(--black);color:white;':'background:var(--cream-dark);color:var(--stone-mid);'); ?>">
-              <?php echo $done?'<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>':$num; ?>
-            </div>
-            <span style="font-size:13px;font-weight:<?php echo $active?'700':'500'; ?>;color:<?php echo $active?'var(--black)':($done?'var(--stone-mid)':'var(--stone-mid)'); ?>;"><?php echo $label; ?></span>
+        <div class="co-step <?php echo $state; ?>">
+          <div class="co-step-num">
+            <?php echo $done?'<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5"/></svg>':$num; ?>
           </div>
-          <?php if ($i < count($steps)-1): ?>
-            <div style="width:40px;height:1px;background:var(--cream-dark);flex-shrink:0;"></div>
-          <?php endif; ?>
+          <span class="co-step-label co-step-long"><?php echo $label; ?></span>
+          <span class="co-step-label co-step-short"><?php echo $short; ?></span>
         </div>
+        <?php if ($i < count($steps)-1): ?>
+          <div class="co-step-line"></div>
+        <?php endif; ?>
       <?php endforeach; ?>
     </div>
   </div>
@@ -344,13 +349,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <style>
+/* ── Steps indicator ─────────────────────────────────────────────
+   Spelled out in full this strip wants about 440px. A Galaxy S22 Ultra gives
+   the page 412, so on a phone the first and last steps were being sliced off
+   at the edges. It now shrinks in stages instead of overflowing. */
+.co-steps-bar { background:var(--white); border-bottom:1px solid var(--cream-dark); padding:16px 0; }
+.co-steps     { display:flex; align-items:center; justify-content:center; min-width:0; }
+.co-step      { display:flex; align-items:center; gap:8px; padding:0 12px; min-width:0; }
+.co-step-num  {
+  width:28px; height:28px; border-radius:50%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700;
+  background:var(--cream-dark); color:var(--stone-mid);
+}
+.co-step.is-done   .co-step-num { background:var(--gold);  color:#fff; }
+.co-step.is-active .co-step-num { background:var(--black); color:#fff; }
+.co-step-label { font-size:13px; font-weight:500; color:var(--stone-mid); white-space:nowrap; }
+.co-step.is-active .co-step-label { font-weight:700; color:var(--black); }
+.co-step-line  { width:40px; height:1px; background:var(--cream-dark); flex-shrink:0; }
+.co-step-short { display:none; }
+
+@media (max-width:620px) {
+  .co-step      { padding:0 7px; gap:6px; }
+  .co-step-line { width:18px; }
+  .co-step-num  { width:25px; height:25px; font-size:11px; }
+  .co-step-label{ font-size:12px; }
+  /* Swap to the short wording: "Shipping" instead of "Shipping & Payment" */
+  .co-step-long { display:none; }
+  .co-step-short{ display:inline; }
+}
+@media (max-width:400px) {
+  .co-steps-bar { padding:12px 0; }
+  .co-step      { padding:0 5px; gap:5px; }
+  .co-step-line { width:12px; }
+  /* Last resort: keep the numbered circles and label only where the user is */
+  .co-step:not(.is-active) .co-step-label { display:none; }
+}
+
+/* ── Layout ──────────────────────────────────────────────────────
+   Two columns need roughly 700px of usable width before the summary card
+   starts squeezing the form, so tablets in portrait get a single column with
+   the summary underneath - but capped, so the fields don't sprawl across the
+   full width of an iPad. */
 @media(max-width:900px){
-  #checkout-cols { grid-template-columns:1fr !important; }
+  #checkout-cols { grid-template-columns:1fr !important; max-width:640px; margin:0 auto; }
   #checkout-cols > div:last-child { position:static !important; }
 }
+@media(min-width:901px) and (max-width:1100px){
+  /* Small laptops and landscape tablets: narrow the summary so the address
+     fields keep a comfortable width. */
+  #checkout-cols { grid-template-columns:1fr 300px !important; gap:24px !important; }
+}
 @media(max-width:480px){
-  /* Compact checkout steps on tiny phones */
   #checkout-cols .card { padding:18px !important; }
+}
+@media(max-width:380px){
+  /* Two fields side by side stop being usable below this */
+  #checkout-cols [style*="grid-template-columns:1fr 1fr"] { grid-template-columns:1fr !important; }
 }
 </style>
 

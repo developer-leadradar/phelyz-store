@@ -132,4 +132,18 @@ $adminNav = [
         </div>
       </div>
     </div>
+    <?php
+    // A one-shot message carried across a redirect, e.g. "the product saved but
+    // two of your photos were too big". Shown once, then forgotten.
+    if (!empty($_SESSION['admin_notice'])):
+        $adminNotice = $_SESSION['admin_notice'];
+        unset($_SESSION['admin_notice']);
+    ?>
+      <div style="display:flex;align-items:flex-start;gap:10px;background:#FEF3C7;border:1px solid #FCD34D;color:#78350F;
+                  border-radius:10px;padding:14px 16px;margin-bottom:20px;font-size:13px;line-height:1.6;">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:18px;height:18px;flex-shrink:0;margin-top:1px;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+        <span><?php echo htmlspecialchars($adminNotice); ?></span>
+      </div>
+    <?php endif; ?>
+
     <!-- PAGE CONTENT -->

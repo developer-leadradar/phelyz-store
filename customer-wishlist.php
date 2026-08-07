@@ -69,7 +69,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
 <script>
 async function removeFromWishlistAndRefresh(productId) {
   try {
-    const res  = await fetch('/phelyz-store/api/add-to-wishlist.php', {
+    const res  = await fetch('/api/add-to-wishlist.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ product_id: productId, action: 'remove' })
