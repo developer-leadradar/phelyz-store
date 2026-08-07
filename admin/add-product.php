@@ -221,7 +221,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php foreach ($categories as $cat): ?>
                     <option value="<?php echo $cat['id']; ?>"
                             <?php echo (isset($_POST['category_id']) && $_POST['category_id'] == $cat['id']) ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($cat['name']); ?>
+                        <?php echo htmlspecialchars($cat['name'] ?? ''); ?>
                     </option>
                 <?php endforeach; ?>
             </select>

@@ -143,10 +143,10 @@ function qs(array $over = []) {
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
         <div style="min-width:0;flex:1;">
           <div style="font-family:'Cormorant',serif;font-size:19px;font-weight:700;color:var(--black);overflow-wrap:anywhere;">
-            <?php echo htmlspecialchars($viewing['subject']); ?>
+            <?php echo htmlspecialchars($viewing['subject'] ?? ''); ?>
           </div>
           <div style="font-size:12.5px;color:var(--stone-mid);margin-top:5px;overflow-wrap:anywhere;">
-            To <strong style="color:var(--black);"><?php echo htmlspecialchars($viewing['to_email']); ?></strong>
+            To <strong style="color:var(--black);"><?php echo htmlspecialchars($viewing['to_email'] ?? ''); ?></strong>
             &middot; <?php echo date('j M Y, g:ia', strtotime($viewing['created_at'])); ?>
           </div>
         </div>
@@ -172,34 +172,34 @@ function qs(array $over = []) {
 
       <?php if ($viewing['error']): ?>
         <div style="margin-top:11px;background:#FEF2F2;border:1px solid #FECACA;border-radius:8px;padding:10px 12px;font-size:12.5px;color:#B91C1C;overflow-wrap:anywhere;">
-          <?php echo htmlspecialchars($viewing['error']); ?>
+          <?php echo htmlspecialchars($viewing['error'] ?? ''); ?>
         </div>
       <?php endif; ?>
 
       <div style="font-size:11.5px;color:var(--stone-mid);margin-top:11px;">
-        Reference <code style="background:var(--cream-dark);padding:2px 7px;border-radius:5px;"><?php echo htmlspecialchars($viewing['token']); ?></code>
-        <?php if ($viewing['transport']): ?> &middot; sent via <?php echo htmlspecialchars($viewing['transport']); ?><?php endif; ?>
+        Reference <code style="background:var(--cream-dark);padding:2px 7px;border-radius:5px;"><?php echo htmlspecialchars($viewing['token'] ?? ''); ?></code>
+        <?php if ($viewing['transport']): ?> &middot; sent via <?php echo htmlspecialchars($viewing['transport'] ?? ''); ?><?php endif; ?>
         <?php if ($viewing['opened_at']): ?> &middot; first opened <?php echo date('j M, g:ia', strtotime($viewing['opened_at'])); ?><?php endif; ?>
       </div>
     </div>
 
     <!-- The message exactly as it was received -->
-    <iframe src="?view=<?php echo urlencode($viewing['token']); ?>&raw=1"
+    <iframe src="?view=<?php echo urlencode($viewing['token'] ?? ''); ?>&raw=1"
             title="Message body" style="width:100%;height:620px;border:0;background:#F5F5F4;display:block;"></iframe>
   </div>
 
   <div class="card" style="padding:20px;min-width:0;">
     <h2 style="font-size:14px;font-weight:700;margin:0 0 4px;">Everything sent to this address</h2>
-    <p style="font-size:12px;color:var(--stone-mid);margin:0 0 12px;overflow-wrap:anywhere;"><?php echo htmlspecialchars($viewing['to_email']); ?></p>
+    <p style="font-size:12px;color:var(--stone-mid);margin:0 0 12px;overflow-wrap:anywhere;"><?php echo htmlspecialchars($viewing['to_email'] ?? ''); ?></p>
     <div style="display:flex;flex-direction:column;gap:7px;">
       <?php foreach ($thread as $t): $isThis = $t['token'] === $viewing['token']; ?>
-        <a href="?view=<?php echo urlencode($t['token']); ?>"
+        <a href="?view=<?php echo urlencode($t['token'] ?? ''); ?>"
            style="display:block;text-decoration:none;border:1px solid <?php echo $isThis ? 'var(--gold)' : 'var(--cream-dark)'; ?>;
                   background:<?php echo $isThis ? 'rgba(202,138,4,.05)' : '#fff'; ?>;border-radius:9px;padding:9px 11px;">
-          <div style="font-size:12.5px;font-weight:600;color:var(--black);overflow-wrap:anywhere;"><?php echo htmlspecialchars($t['subject']); ?></div>
+          <div style="font-size:12.5px;font-weight:600;color:var(--black);overflow-wrap:anywhere;"><?php echo htmlspecialchars($t['subject'] ?? ''); ?></div>
           <div style="font-size:11px;color:var(--stone-mid);margin-top:3px;">
             <?php echo date('j M Y', strtotime($t['created_at'])); ?>
-            &middot; <?php echo htmlspecialchars(ucfirst($t['category'])); ?>
+            &middot; <?php echo htmlspecialchars(ucfirst($t['category'] ?? '')); ?>
             <?php if ($t['status'] === 'failed'): ?>
               &middot; <span style="color:#B91C1C;font-weight:700;">failed</span>
             <?php elseif ($t['opened_at']): ?>
@@ -217,10 +217,10 @@ function qs(array $over = []) {
 
 <div class="traffic-kpis">
   <?php foreach ([
-    ['Delivered',   number_format($stats['sent']),   '#10B981'],
-    ['Failed',      number_format($stats['failed']), $stats['failed'] > 0 ? '#EF4444' : '#A8A29E'],
-    ['Opened',      number_format($stats['opened']) . ' (' . number_format($openRate, 0) . '%)', '#0EA5E9'],
-    ['People',      number_format($stats['people']), '#CA8A04'],
+    ['Delivered',   number_format($stats['sent'] ?? 0),   '#10B981'],
+    ['Failed',      number_format($stats['failed'] ?? 0), $stats['failed'] > 0 ? '#EF4444' : '#A8A29E'],
+    ['Opened',      number_format($stats['opened'] ?? 0) . ' (' . number_format($openRate, 0) . '%)', '#0EA5E9'],
+    ['People',      number_format($stats['people'] ?? 0), '#CA8A04'],
   ] as [$label, $value, $colour]): ?>
     <div class="traffic-kpi">
       <div class="traffic-kpi-icon" style="background:<?php echo $colour; ?>1F;">
@@ -283,18 +283,18 @@ function qs(array $over = []) {
             </td>
             <td style="font-size:12.5px;overflow-wrap:anywhere;max-width:190px;">
               <?php if ($r['to_name']): ?>
-                <div style="font-weight:600;color:var(--black);"><?php echo htmlspecialchars($r['to_name']); ?></div>
+                <div style="font-weight:600;color:var(--black);"><?php echo htmlspecialchars($r['to_name'] ?? ''); ?></div>
               <?php endif; ?>
-              <?php echo htmlspecialchars($r['to_email']); ?>
+              <?php echo htmlspecialchars($r['to_email'] ?? ''); ?>
               <?php if (!$r['was_subscribed']): ?>
                 <div style="font-size:10.5px;color:#92400E;font-weight:700;">unsubscribed</div>
               <?php endif; ?>
             </td>
-            <td style="font-size:12.5px;overflow-wrap:anywhere;max-width:250px;"><?php echo htmlspecialchars($r['subject']); ?></td>
+            <td style="font-size:12.5px;overflow-wrap:anywhere;max-width:250px;"><?php echo htmlspecialchars($r['subject'] ?? ''); ?></td>
             <td><?php echo catBadge($r['category']); ?></td>
             <td style="font-size:12px;color:var(--stone-mid);white-space:nowrap;">
               <?php echo htmlspecialchars(prettySource($r['source_type'])); ?>
-              <?php if ($r['audience']): ?><br><span style="font-size:10.5px;"><?php echo htmlspecialchars($r['audience']); ?></span><?php endif; ?>
+              <?php if ($r['audience']): ?><br><span style="font-size:10.5px;"><?php echo htmlspecialchars($r['audience'] ?? ''); ?></span><?php endif; ?>
             </td>
             <td style="white-space:nowrap;font-size:12px;">
               <?php if ($r['status'] === 'failed'): ?>
@@ -306,7 +306,7 @@ function qs(array $over = []) {
                 <span style="color:var(--stone-mid);">Delivered</span>
               <?php endif; ?>
             </td>
-            <td style="white-space:nowrap;"><a href="?view=<?php echo urlencode($r['token']); ?>" style="color:var(--gold);font-weight:600;font-size:12.5px;">Open</a></td>
+            <td style="white-space:nowrap;"><a href="?view=<?php echo urlencode($r['token'] ?? ''); ?>" style="color:var(--gold);font-weight:600;font-size:12.5px;">Open</a></td>
           </tr>
         <?php endforeach; ?>
         </tbody>

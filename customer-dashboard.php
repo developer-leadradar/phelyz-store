@@ -16,15 +16,15 @@ $cartCount = getCartCount();
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:nowrap;">
         <!-- Avatar -->
         <div style="width:58px;height:58px;border-radius:50%;background:rgba(202,138,4,0.20);border:2px solid rgba(202,138,4,0.40);display:flex;align-items:center;justify-content:center;font-family:'Cormorant',serif;font-size:24px;font-weight:700;color:var(--gold);flex-shrink:0;">
-          <?php echo strtoupper(substr($user['first_name'],0,1).substr($user['last_name'],0,1)); ?>
+          <?php echo strtoupper(substr($user['first_name'] ?? '',0,1).substr($user['last_name'] ?? '',0,1)); ?>
         </div>
         <!-- Info -->
         <div style="flex:1;min-width:0;overflow:hidden;">
           <p style="font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(202,138,4,0.80);margin-bottom:2px;">Member Account</p>
           <h1 style="font-family:'Cormorant',serif;font-size:clamp(20px,5vw,32px);font-weight:700;color:white;margin-bottom:2px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-            Hello, <?php echo htmlspecialchars($user['first_name']); ?> <?php echo htmlspecialchars($user['last_name']); ?>
+            Hello, <?php echo htmlspecialchars($user['first_name'] ?? ''); ?> <?php echo htmlspecialchars($user['last_name'] ?? ''); ?>
           </h1>
-          <p style="font-size:12px;color:rgba(255,255,255,0.50);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($user['email']); ?></p>
+          <p style="font-size:12px;color:rgba(255,255,255,0.50);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($user['email'] ?? ''); ?></p>
         </div>
       </div>
       <!-- Cart badge - full row below on all screen sizes -->

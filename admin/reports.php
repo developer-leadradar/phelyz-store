@@ -314,12 +314,12 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
                             <td>
                                 <div style="display:flex;align-items:center;gap:10px;">
                                     <img src="<?php echo htmlspecialchars(productImageUrl($prod['image'])); ?>"
-                                         alt="<?php echo htmlspecialchars($prod['name']); ?>"
+                                         alt="<?php echo htmlspecialchars($prod['name'] ?? ''); ?>"
                                          style="width:36px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0;border:1px solid var(--cream-dark);">
-                                    <span style="font-weight:600;font-size:13px;color:var(--black);"><?php echo htmlspecialchars($prod['name']); ?></span>
+                                    <span style="font-weight:600;font-size:13px;color:var(--black);"><?php echo htmlspecialchars($prod['name'] ?? ''); ?></span>
                                 </div>
                             </td>
-                            <td style="color:var(--stone-mid);font-size:12px;"><?php echo htmlspecialchars($prod['category_name']); ?></td>
+                            <td style="color:var(--stone-mid);font-size:12px;"><?php echo htmlspecialchars($prod['category_name'] ?? ''); ?></td>
                             <td style="text-align:center;">
                                 <span style="background:rgba(202,138,4,0.10);color:var(--gold);font-weight:700;font-size:12px;padding:3px 10px;border-radius:99px;"><?php echo $prod['units_sold']; ?></span>
                             </td>
@@ -352,7 +352,7 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
                 <div>
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
                         <div>
-                            <span style="font-size:13px;font-weight:600;color:var(--black);"><?php echo htmlspecialchars($cat['category_name']); ?></span>
+                            <span style="font-size:13px;font-weight:600;color:var(--black);"><?php echo htmlspecialchars($cat['category_name'] ?? ''); ?></span>
                             <span style="font-size:11px;color:var(--stone-mid);margin-left:6px;"><?php echo $cat['units_sold']; ?> units</span>
                         </div>
                         <span style="font-size:13px;font-weight:700;color:var(--black);"><?php echo formatPrice($cat['revenue']); ?></span>
@@ -395,12 +395,12 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
                         <td>
                             <div style="display:flex;align-items:center;gap:10px;">
                                 <div style="width:34px;height:34px;border-radius:50%;background:rgba(202,138,4,0.12);display:flex;align-items:center;justify-content:center;font-family:'Cormorant',serif;font-size:15px;font-weight:700;color:var(--gold);flex-shrink:0;">
-                                    <?php echo strtoupper(substr($customer['first_name'],0,1)); ?>
+                                    <?php echo strtoupper(substr($customer['first_name'] ?? '',0,1)); ?>
                                 </div>
                                 <span style="font-weight:600;color:var(--black);"><?php echo htmlspecialchars($customer['first_name'] . ' ' . $customer['last_name']); ?></span>
                             </div>
                         </td>
-                        <td style="color:var(--stone-mid);font-size:13px;"><?php echo htmlspecialchars($customer['email']); ?></td>
+                        <td style="color:var(--stone-mid);font-size:13px;"><?php echo htmlspecialchars($customer['email'] ?? ''); ?></td>
                         <td style="text-align:center;">
                             <span style="background:rgba(59,130,246,0.10);color:#1E40AF;font-weight:700;font-size:12px;padding:3px 10px;border-radius:99px;"><?php echo $customer['order_count']; ?></span>
                         </td>
@@ -463,9 +463,9 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
 <div class="traffic-kpis">
   <?php
   $trafficCards = [
-    ['Unique Visitors', number_format($overview['visitors']), '#0EA5E9', 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z'],
-    ['Page Views',      number_format($overview['views']),    '#CA8A04', 'M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z'],
-    ['Sessions',        number_format($overview['sessions']), '#8B5CF6', 'M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z'],
+    ['Unique Visitors', number_format($overview['visitors'] ?? 0), '#0EA5E9', 'M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z'],
+    ['Page Views',      number_format($overview['views'] ?? 0),    '#CA8A04', 'M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z'],
+    ['Sessions',        number_format($overview['sessions'] ?? 0), '#8B5CF6', 'M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z'],
     ['Order Rate',      $conversionLabel, '#22C55E', 'M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941'],
   ];
   foreach ($trafficCards as [$label, $value, $colour, $icon]): ?>
@@ -612,7 +612,7 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
         $col = $devColours[$dv['device']] ?? '#A8A29E'; ?>
         <div style="margin-bottom:14px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;">
-            <span style="font-weight:600;color:var(--black);text-transform:capitalize;"><?php echo htmlspecialchars($dv['device']); ?></span>
+            <span style="font-weight:600;color:var(--black);text-transform:capitalize;"><?php echo htmlspecialchars($dv['device'] ?? ''); ?></span>
             <span style="color:var(--stone-mid);"><?php echo round($pct); ?>%</span>
           </div>
           <div style="height:8px;background:var(--cream-dark);border-radius:99px;overflow:hidden;">
@@ -641,7 +641,7 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
                  onerror="this.src='https://placehold.co/40x40/F5F5F4/78716C?text=J'">
             <div style="flex:1;min-width:0;">
               <a href="../product.php?id=<?php echo (int)$p['product_id']; ?>" target="_blank"
-                 style="font-size:13px;font-weight:600;color:var(--black);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($p['name']); ?></a>
+                 style="font-size:13px;font-weight:600;color:var(--black);text-decoration:none;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($p['name'] ?? ''); ?></a>
               <span style="font-size:11.5px;color:var(--gold);font-weight:600;"><?php echo formatPrice($p['price']); ?></span>
             </div>
             <div style="text-align:right;flex-shrink:0;">
@@ -662,8 +662,8 @@ foreach ($dailyVisitors as $d) $maxDaily = max($maxDaily, (int)$d['visitors']);
       <div style="display:flex;flex-direction:column;gap:9px;">
         <?php foreach ($topPages as $pg): ?>
           <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:8px;border-bottom:1px solid var(--cream-dark);">
-            <span style="font-size:12.5px;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?php echo htmlspecialchars($pg['path']); ?>">
-              <?php echo htmlspecialchars($pg['path']); ?>
+            <span style="font-size:12.5px;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="<?php echo htmlspecialchars($pg['path'] ?? ''); ?>">
+              <?php echo htmlspecialchars($pg['path'] ?? ''); ?>
             </span>
             <span style="font-size:12px;font-weight:700;color:var(--black);flex-shrink:0;"><?php echo number_format((int)$pg['views']); ?></span>
           </div>

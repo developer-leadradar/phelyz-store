@@ -59,10 +59,10 @@ $currentPage=basename($_SERVER['PHP_SELF']);
 
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
       <div>
-        <div class="breadcrumb"><a href="customer-dashboard.php">Account</a><svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg><a href="customer-orders.php">Orders</a><svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg><span><?php echo htmlspecialchars($order['order_number']); ?></span></div>
-        <h1 style="font-family:'Cormorant',serif;font-size:26px;font-weight:700;color:var(--black);">Order #<?php echo htmlspecialchars($order['order_number']); ?></h1>
+        <div class="breadcrumb"><a href="customer-dashboard.php">Account</a><svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg><a href="customer-orders.php">Orders</a><svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg><span><?php echo htmlspecialchars($order['order_number'] ?? ''); ?></span></div>
+        <h1 style="font-family:'Cormorant',serif;font-size:26px;font-weight:700;color:var(--black);">Order #<?php echo htmlspecialchars($order['order_number'] ?? ''); ?></h1>
       </div>
-      <span class="status-badge <?php echo $statusColors[$order['status']]??'status-pending'; ?>" style="font-size:12px;"><?php echo ucfirst($order['status']); ?></span>
+      <span class="status-badge <?php echo $statusColors[$order['status']]??'status-pending'; ?>" style="font-size:12px;"><?php echo ucfirst($order['status'] ?? ''); ?></span>
     </div>
 
     <!-- Tracking -->
@@ -73,16 +73,16 @@ $currentPage=basename($_SERVER['PHP_SELF']);
             <div>
               <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:4px;">Tracking ID</div>
               <div style="font-family:'Cormorant',serif;font-size:21px;font-weight:700;color:var(--black);letter-spacing:0.03em;">
-                <?php echo htmlspecialchars($op['tracking_id']); ?>
+                <?php echo htmlspecialchars($op['tracking_id'] ?? ''); ?>
               </div>
               <div style="font-size:12.5px;color:<?php echo $opm['colour']; ?>;font-weight:700;margin-top:4px;">
-                <?php echo htmlspecialchars($opm['label']); ?>
+                <?php echo htmlspecialchars($opm['label'] ?? ''); ?>
                 <?php if (!empty($op['current_label'])): ?>
-                  <span style="color:var(--stone-mid);font-weight:500;"> · near <?php echo htmlspecialchars($op['current_label']); ?></span>
+                  <span style="color:var(--stone-mid);font-weight:500;"> · near <?php echo htmlspecialchars($op['current_label'] ?? ''); ?></span>
                 <?php endif; ?>
               </div>
             </div>
-            <a href="track.php?id=<?php echo urlencode($op['tracking_id']); ?>" class="btn btn-gold" style="white-space:nowrap;">
+            <a href="track.php?id=<?php echo urlencode($op['tracking_id'] ?? ''); ?>" class="btn btn-gold" style="white-space:nowrap;">
               Track on Map
             </a>
           </div>
@@ -111,11 +111,11 @@ echo htmlspecialchars($pmLabels[$order['payment_method']] ?? ucwords(str_replace
       </div>
       <?php foreach ($orderItems as $item): ?>
         <div style="display:flex;align-items:center;gap:14px;padding:16px 20px;border-bottom:1px solid var(--cream-dark);">
-          <img src="<?php echo htmlspecialchars($item['image']); ?>" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px;flex-shrink:0;" onerror="this.src='https://placehold.co/64x64/F5F5F4/78716C?text=J'">
+          <img src="<?php echo htmlspecialchars($item['image'] ?? ''); ?>" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px;flex-shrink:0;" onerror="this.src='https://placehold.co/64x64/F5F5F4/78716C?text=J'">
           <div style="flex:1;">
             <div style="font-size:14px;font-weight:600;color:var(--black);margin-bottom:3px;"><?php echo htmlspecialchars($item['product_name'] ?? ''); ?></div>
             <?php if (!empty($item['selected_color'])): ?>
-            <div style="font-size:12px;color:var(--stone-mid);">Colour: <?php echo htmlspecialchars($item['selected_color']); ?></div>
+            <div style="font-size:12px;color:var(--stone-mid);">Colour: <?php echo htmlspecialchars($item['selected_color'] ?? ''); ?></div>
             <?php endif; ?>
             <div style="font-size:12px;color:var(--stone-mid);">Qty: <?php echo $item['quantity']; ?> × <?php echo formatPrice($item['price_at_purchase'] ?? $item['price'] ?? 0); ?></div>
           </div>
@@ -135,9 +135,9 @@ echo htmlspecialchars($pmLabels[$order['payment_method']] ?? ucwords(str_replace
       <h3 style="font-family:'Cormorant',serif;font-size:18px;font-weight:700;color:var(--black);margin-bottom:14px;">Shipping Address</h3>
       <div style="font-size:14px;color:var(--stone-mid);line-height:1.70;">
         <?php echo htmlspecialchars($order['shipping_first_name'].' '.$order['shipping_last_name']); ?><br>
-        <?php echo htmlspecialchars($order['shipping_address']); ?><br>
-        <?php echo htmlspecialchars($order['shipping_city']); ?><br>
-        Phone: <?php echo htmlspecialchars($order['shipping_phone']); ?>
+        <?php echo htmlspecialchars($order['shipping_address'] ?? ''); ?><br>
+        <?php echo htmlspecialchars($order['shipping_city'] ?? ''); ?><br>
+        Phone: <?php echo htmlspecialchars($order['shipping_phone'] ?? ''); ?>
       </div>
     </div>
 

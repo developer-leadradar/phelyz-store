@@ -96,7 +96,7 @@ $templates = getImageTemplates();
         <select name="category_id" class="form-input form-select">
           <option value="">Any category</option>
           <?php foreach ($categories as $cat): ?>
-          <option value="<?php echo (int)$cat['id']; ?>"><?php echo htmlspecialchars($cat['name']); ?></option>
+          <option value="<?php echo (int)$cat['id']; ?>"><?php echo htmlspecialchars($cat['name'] ?? ''); ?></option>
           <?php endforeach; ?>
         </select>
       </div>
@@ -135,7 +135,7 @@ $templates = getImageTemplates();
       ?>
       <div style="border:1px solid var(--cream-dark);border-radius:12px;overflow:hidden;background:white;">
         <div style="position:relative;">
-          <img src="<?php echo htmlspecialchars($t['image_path']); ?>" alt=""
+          <img src="<?php echo htmlspecialchars($t['image_path'] ?? ''); ?>" alt=""
                style="width:100%;height:160px;object-fit:cover;display:block;"
                onerror="this.src='https://placehold.co/220x160/F5F5F4/78716C?text=Template'">
           <?php if ((int)$t['is_default'] === 1): ?>
@@ -143,12 +143,12 @@ $templates = getImageTemplates();
           <?php endif; ?>
         </div>
         <div style="padding:12px 14px;">
-          <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;"><?php echo htmlspecialchars($t['name']); ?></div>
+          <div style="font-size:14px;font-weight:700;color:var(--black);margin-bottom:2px;"><?php echo htmlspecialchars($t['name'] ?? ''); ?></div>
           <?php if ($catName): ?>
             <div style="font-size:11px;color:var(--stone-mid);margin-bottom:4px;"><?php echo htmlspecialchars($catName); ?></div>
           <?php endif; ?>
           <?php if (!empty($t['description'])): ?>
-            <div style="font-size:12px;color:var(--stone-mid);line-height:1.4;"><?php echo htmlspecialchars($t['description']); ?></div>
+            <div style="font-size:12px;color:var(--stone-mid);line-height:1.4;"><?php echo htmlspecialchars($t['description'] ?? ''); ?></div>
           <?php endif; ?>
           <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
             <?php if ((int)$t['is_default'] !== 1): ?>

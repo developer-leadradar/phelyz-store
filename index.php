@@ -39,7 +39,7 @@ function renderStars($rating) {
       <?php if ($isCustomArt): ?>
         <div class="promo-slide promo-slide-art" style="flex:0 0 100%;">
           <a href="<?php echo htmlspecialchars($url); ?>" style="display:block;">
-            <img src="<?php echo htmlspecialchars($b['bg_image']); ?>"
+            <img src="<?php echo htmlspecialchars($b['bg_image'] ?? ''); ?>"
                  alt="<?php echo htmlspecialchars($b['title'] ?: 'Promotion'); ?>"
                  style="width:100%;height:auto;display:block;">
           </a>
@@ -50,17 +50,17 @@ function renderStars($rating) {
         <div class="container" style="padding:44px 0;display:flex;align-items:center;justify-content:space-between;gap:26px;flex-wrap:wrap;">
           <div style="min-width:240px;flex:1;">
             <h2 style="font-family:'Cormorant',serif;font-size:clamp(26px,3.4vw,38px);font-weight:700;line-height:1.15;margin:0;">
-              <?php echo $b['emoji'] ? htmlspecialchars($b['emoji']) . ' ' : ''; ?><?php echo htmlspecialchars($b['title']); ?>
+              <?php echo $b['emoji'] ? htmlspecialchars($b['emoji'] ?? '') . ' ' : ''; ?><?php echo htmlspecialchars($b['title'] ?? ''); ?>
             </h2>
             <?php if (!empty($b['subtitle'])): ?>
-              <p style="font-size:15px;opacity:0.9;margin:10px 0 0;max-width:560px;line-height:1.55;"><?php echo htmlspecialchars($b['subtitle']); ?></p>
+              <p style="font-size:15px;opacity:0.9;margin:10px 0 0;max-width:560px;line-height:1.55;"><?php echo htmlspecialchars($b['subtitle'] ?? ''); ?></p>
             <?php endif; ?>
           </div>
           <?php if (!empty($b['cta_text'])): ?>
             <a href="<?php echo htmlspecialchars($url); ?>"
                style="background:<?php echo $st['accent']; ?>;color:<?php echo $st['onAcc']; ?>;padding:14px 30px;border-radius:999px;font-size:13.5px;font-weight:700;letter-spacing:0.03em;text-decoration:none;white-space:nowrap;flex-shrink:0;transition:transform 0.15s;"
                onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
-              <?php echo htmlspecialchars($b['cta_text']); ?>
+              <?php echo htmlspecialchars($b['cta_text'] ?? ''); ?>
             </a>
           <?php endif; ?>
         </div>
@@ -236,7 +236,7 @@ function renderStars($rating) {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="#CA8A04" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="<?php echo $icon; ?>"/></svg>
           </div>
           <div>
-            <div style="font-size:13px;font-weight:700;color:var(--black);margin-bottom:3px;"><?php echo htmlspecialchars($cat['name']); ?></div>
+            <div style="font-size:13px;font-weight:700;color:var(--black);margin-bottom:3px;"><?php echo htmlspecialchars($cat['name'] ?? ''); ?></div>
             <div style="font-size:11px;color:var(--gold);font-weight:600;letter-spacing:0.06em;text-transform:uppercase;">View →</div>
           </div>
         </a>
@@ -264,8 +264,8 @@ function renderStars($rating) {
       <?php foreach ($featuredProducts as $p): ?>
         <div class="product-card" onclick="window.location='product.php?id=<?php echo $p['id']; ?>'">
           <div class="product-card-img">
-            <img src="<?php echo htmlspecialchars($p['image']); ?>"
-                 alt="<?php echo htmlspecialchars($p['name']); ?>"
+            <img src="<?php echo htmlspecialchars($p['image'] ?? ''); ?>"
+                 alt="<?php echo htmlspecialchars($p['name'] ?? ''); ?>"
                  loading="lazy"
                  onerror="this.src='https://placehold.co/400x400/F5F5F4/78716C?text=Jewelry'">
             <?php if ($p['compare_price'] > $p['price']): ?>
@@ -291,9 +291,9 @@ function renderStars($rating) {
             </div>
           </div>
           <div class="product-card-body">
-            <div class="product-card-cat"><?php echo htmlspecialchars($p['category_name']); ?></div>
+            <div class="product-card-cat"><?php echo htmlspecialchars($p['category_name'] ?? ''); ?></div>
             <h3 class="product-card-name">
-              <a href="product.php?id=<?php echo $p['id']; ?>" onclick="event.stopPropagation()"><?php echo htmlspecialchars($p['name']); ?></a>
+              <a href="product.php?id=<?php echo $p['id']; ?>" onclick="event.stopPropagation()"><?php echo htmlspecialchars($p['name'] ?? ''); ?></a>
             </h3>
             <?php if ($p['material']): ?>
               <div class="product-card-meta"><?php echo htmlspecialchars($p['metal_purity'].' '.$p['material']); ?></div>
@@ -372,8 +372,8 @@ function renderStars($rating) {
       <?php foreach ($newArrivals as $p): ?>
         <div class="product-card" onclick="window.location='product.php?id=<?php echo $p['id']; ?>'">
           <div class="product-card-img">
-            <img src="<?php echo htmlspecialchars($p['image']); ?>"
-                 alt="<?php echo htmlspecialchars($p['name']); ?>"
+            <img src="<?php echo htmlspecialchars($p['image'] ?? ''); ?>"
+                 alt="<?php echo htmlspecialchars($p['name'] ?? ''); ?>"
                  loading="lazy"
                  onerror="this.src='https://placehold.co/400x400/F5F5F4/78716C?text=Jewelry'">
             <span class="product-card-badge badge-new">New</span>
@@ -390,7 +390,7 @@ function renderStars($rating) {
           </div>
           <div class="product-card-body">
             <h3 class="product-card-name">
-              <a href="product.php?id=<?php echo $p['id']; ?>" onclick="event.stopPropagation()"><?php echo htmlspecialchars($p['name']); ?></a>
+              <a href="product.php?id=<?php echo $p['id']; ?>" onclick="event.stopPropagation()"><?php echo htmlspecialchars($p['name'] ?? ''); ?></a>
             </h3>
             <div class="product-card-price">
               <span class="price-current"><?php echo formatPrice($p['price']); ?></span>

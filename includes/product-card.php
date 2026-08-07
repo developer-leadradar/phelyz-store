@@ -25,8 +25,8 @@ function renderProductCard(array $p): void {
     ?>
     <div class="product-card" onclick="window.location='product.php?id=<?php echo (int)$p['id']; ?>'">
       <div class="product-card-img">
-        <img src="<?php echo htmlspecialchars($p['image']); ?>"
-             alt="<?php echo htmlspecialchars($p['name']); ?>" loading="lazy"
+        <img src="<?php echo htmlspecialchars($p['image'] ?? ''); ?>"
+             alt="<?php echo htmlspecialchars($p['name'] ?? ''); ?>" loading="lazy"
              onerror="this.src='https://placehold.co/400x400/F5F5F4/78716C?text=Jewelry'">
         <?php if ($p['compare_price'] > $p['price']): ?>
           <span class="product-card-badge badge-sale">Sale</span>
@@ -51,7 +51,7 @@ function renderProductCard(array $p): void {
       </div>
       <div class="product-card-body">
         <div class="product-card-cat"><?php echo htmlspecialchars($p['category_name'] ?? ''); ?></div>
-        <h3 class="product-card-name"><a href="product.php?id=<?php echo (int)$p['id']; ?>" onclick="event.stopPropagation()"><?php echo htmlspecialchars($p['name']); ?></a></h3>
+        <h3 class="product-card-name"><a href="product.php?id=<?php echo (int)$p['id']; ?>" onclick="event.stopPropagation()"><?php echo htmlspecialchars($p['name'] ?? ''); ?></a></h3>
         <?php if (!empty($p['material'])): ?><div class="product-card-meta"><?php echo htmlspecialchars(trim(($p['metal_purity'] ?? '').' '.$p['material'])); ?></div><?php endif; ?>
         <?php if ((int)$p['review_count'] > 0): ?>
           <div class="stars" style="margin-bottom:8px;"><?php echo renderStars((int)round((float)$p['rating'])); ?><span style="font-size:11px;color:var(--stone-mid);margin-left:4px;">(<?php echo (int)$p['review_count']; ?>)</span></div>

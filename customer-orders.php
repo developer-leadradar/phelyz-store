@@ -42,12 +42,12 @@ $statusColors  = ['pending'=>'status-pending','processing'=>'status-processing',
           <div class="card" style="padding:0;overflow:hidden;">
             <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--cream);border-bottom:1px solid var(--cream-dark);flex-wrap:wrap;gap:10px;">
               <div style="display:flex;gap:24px;flex-wrap:wrap;">
-                <div><div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);">Order #</div><div style="font-size:13px;font-weight:700;color:var(--black);"><?php echo htmlspecialchars($order['order_number']); ?></div></div>
+                <div><div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);">Order #</div><div style="font-size:13px;font-weight:700;color:var(--black);"><?php echo htmlspecialchars($order['order_number'] ?? ''); ?></div></div>
                 <div><div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);">Date</div><div style="font-size:13px;font-weight:600;color:var(--black);"><?php echo formatDate($order['created_at']); ?></div></div>
                 <div><div style="font-size:10px;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--stone-mid);">Total</div><div style="font-size:13px;font-weight:700;color:var(--black);"><?php echo formatPrice($order['total']); ?></div></div>
               </div>
               <div style="display:flex;align-items:center;gap:10px;">
-                <span class="status-badge <?php echo $statusColors[$order['status']]??'status-pending'; ?>"><?php echo ucfirst($order['status']); ?></span>
+                <span class="status-badge <?php echo $statusColors[$order['status']]??'status-pending'; ?>"><?php echo ucfirst($order['status'] ?? ''); ?></span>
                 <a href="order-details.php?id=<?php echo $order['id']; ?>" class="btn btn-outline btn-sm">View</a>
               </div>
             </div>

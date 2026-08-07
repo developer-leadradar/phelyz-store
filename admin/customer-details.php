@@ -34,7 +34,7 @@ if (!empty($customer['date_of_birth'])) {
 }
 
 $initials = strtoupper(
-    substr($customer['first_name'], 0, 1) . substr($customer['last_name'], 0, 1)
+    substr($customer['first_name'] ?? '', 0, 1) . substr($customer['last_name'] ?? '', 0, 1)
 );
 $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_name']);
 ?>
@@ -121,7 +121,7 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
               <p style="font-size:10px;font-weight:700;letter-spacing:0.07em;
                         text-transform:uppercase;color:var(--stone-mid);margin-bottom:2px;">Email</p>
               <p style="font-size:13px;color:var(--black);word-break:break-all;">
-                <?php echo htmlspecialchars($customer['email']); ?>
+                <?php echo htmlspecialchars($customer['email'] ?? ''); ?>
               </p>
             </div>
           </div>
@@ -195,7 +195,7 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
                 <p style="font-size:10px;font-weight:700;letter-spacing:0.07em;
                           text-transform:uppercase;color:var(--stone-mid);margin-bottom:2px;">Profile Address</p>
                 <p style="font-size:13px;color:var(--black);line-height:1.55;">
-                  <?php echo htmlspecialchars($customer['address']); ?><br>
+                  <?php echo htmlspecialchars($customer['address'] ?? ''); ?><br>
                   <?php echo htmlspecialchars($customer['city'].', '.$customer['state'].' '.($customer['zip_code']??'')); ?><br>
                   <?php echo htmlspecialchars($customer['country'] ?? 'Nigeria'); ?>
                 </p>
@@ -217,7 +217,7 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
             </div>
             <p style="font-size:13px;color:var(--black);line-height:1.6;margin:0;">
               <strong><?php echo htmlspecialchars(trim($lastShip['shipping_first_name'].' '.$lastShip['shipping_last_name'])); ?></strong><br>
-              <?php echo htmlspecialchars($lastShip['shipping_address']); ?><br>
+              <?php echo htmlspecialchars($lastShip['shipping_address'] ?? ''); ?><br>
               <?php
                 $line2 = trim($lastShip['shipping_city'] . ', ' . $lastShip['shipping_state']);
                 if (!empty($lastShip['shipping_zip'])) $line2 .= ' ' . $lastShip['shipping_zip'];
@@ -225,7 +225,7 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
               ?><br>
               <?php echo htmlspecialchars($lastShip['shipping_country'] ?: 'Nigeria'); ?>
               <?php if (!empty($lastShip['shipping_phone'])): ?>
-                <br><span style="color:var(--stone-mid);">Tel: <?php echo htmlspecialchars($lastShip['shipping_phone']); ?></span>
+                <br><span style="color:var(--stone-mid);">Tel: <?php echo htmlspecialchars($lastShip['shipping_phone'] ?? ''); ?></span>
               <?php endif; ?>
             </p>
             <a href="https://www.google.com/maps/search/?api=1&query=<?php echo urlencode(trim($lastShip['shipping_address'].', '.$lastShip['shipping_city'].', '.$lastShip['shipping_state'].', Nigeria')); ?>"
@@ -240,7 +240,7 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
 
         <!-- Send email CTA -->
         <div style="padding:0 20px 20px;">
-          <a href="mailto:<?php echo htmlspecialchars($customer['email']); ?>"
+          <a href="mailto:<?php echo htmlspecialchars($customer['email'] ?? ''); ?>"
              class="btn btn-gold btn-full">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                  stroke-width="2" stroke="currentColor" width="15" height="15">
@@ -409,7 +409,7 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
                   <tr>
                     <td style="padding-left:20px;">
                       <strong style="color:var(--black);">
-                        <?php echo htmlspecialchars($order['order_number']); ?>
+                        <?php echo htmlspecialchars($order['order_number'] ?? ''); ?>
                       </strong>
                     </td>
                     <td style="color:var(--stone);">
@@ -423,7 +423,7 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
                     </td>
                     <td>
                       <span class="status-badge status-<?php echo $order['status']; ?>">
-                        <?php echo ucfirst($order['status']); ?>
+                        <?php echo ucfirst($order['status'] ?? ''); ?>
                       </span>
                     </td>
                     <td style="padding-right:20px;">
@@ -483,10 +483,10 @@ $fullName = htmlspecialchars($customer['first_name'] . ' ' . $customer['last_nam
                 <div style="padding-bottom:<?php echo $i < min(4, count($orders)-1) ? '14px' : '0'; ?>;flex:1;min-width:0;">
                   <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
                     <p style="font-weight:600;font-size:13px;color:var(--black);">
-                      Order <?php echo htmlspecialchars($order['order_number']); ?>
+                      Order <?php echo htmlspecialchars($order['order_number'] ?? ''); ?>
                     </p>
                     <span class="status-badge status-<?php echo $order['status']; ?>">
-                      <?php echo ucfirst($order['status']); ?>
+                      <?php echo ucfirst($order['status'] ?? ''); ?>
                     </span>
                   </div>
                   <p style="font-size:12px;color:var(--stone-mid);margin-top:2px;">

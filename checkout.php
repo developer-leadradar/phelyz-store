@@ -255,16 +255,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php foreach ($cartSummary['items'] as $item): ?>
               <div style="display:flex;align-items:center;gap:10px;">
                 <div style="position:relative;flex-shrink:0;">
-                  <img src="<?php echo htmlspecialchars($item['image']); ?>"
-                       alt="<?php echo htmlspecialchars($item['name']); ?>"
+                  <img src="<?php echo htmlspecialchars($item['image'] ?? ''); ?>"
+                       alt="<?php echo htmlspecialchars($item['name'] ?? ''); ?>"
                        style="width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid var(--cream-dark);"
                        onerror="this.src='https://placehold.co/48x48/F5F5F4/78716C?text=J'">
                   <span style="position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;background:var(--stone);color:white;border-radius:99px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px;"><?php echo $item['quantity']; ?></span>
                 </div>
                 <div style="flex:1;min-width:0;">
-                  <div style="font-size:13px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($item['name']); ?></div>
+                  <div style="font-size:13px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($item['name'] ?? ''); ?></div>
                   <?php if (!empty($item['selected_color'])): ?>
-                  <div style="font-size:11px;color:var(--stone-mid);">Colour: <?php echo htmlspecialchars($item['selected_color']); ?></div>
+                  <div style="font-size:11px;color:var(--stone-mid);">Colour: <?php echo htmlspecialchars($item['selected_color'] ?? ''); ?></div>
                   <?php endif; ?>
                   <div style="font-size:12px;color:var(--stone-mid);"><?php echo formatPrice($item['price']); ?> each</div>
                 </div>
@@ -298,7 +298,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           <!-- Coupon -->
           <div style="margin-bottom:16px;padding:14px;background:var(--cream);border:1px solid var(--cream-dark);border-radius:10px;">
             <?php if (!empty($cartSummary['coupon_notice'])): ?>
-              <p style="font-size:12px;color:#B91C1C;margin:0 0 10px;"><?php echo htmlspecialchars($cartSummary['coupon_notice']); ?></p>
+              <p style="font-size:12px;color:#B91C1C;margin:0 0 10px;"><?php echo htmlspecialchars($cartSummary['coupon_notice'] ?? ''); ?></p>
             <?php endif; ?>
 
             <div id="coupon-applied" style="display:<?php echo !empty($cartSummary['coupon_code']) ? 'flex' : 'none'; ?>;align-items:center;justify-content:space-between;gap:10px;">

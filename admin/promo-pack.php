@@ -45,7 +45,7 @@ $waNumber = preg_replace('/\D/', '', defined('SITE_WHATSAPP') ? SITE_WHATSAPP : 
   <select id="promo-category" onchange="filterPromoCat(this.value)" class="form-input form-select" style="max-width:200px;margin:0;">
     <option value="">All categories</option>
     <?php foreach ($categories as $c): ?>
-    <option value="<?php echo htmlspecialchars($c['name']); ?>"><?php echo htmlspecialchars($c['name']); ?></option>
+    <option value="<?php echo htmlspecialchars($c['name'] ?? ''); ?>"><?php echo htmlspecialchars($c['name'] ?? ''); ?></option>
     <?php endforeach; ?>
   </select>
   <button type="button" onclick="promoSelectAllVisible()" class="btn btn-outline btn-sm">Select visible</button>
@@ -85,7 +85,7 @@ $waNumber = preg_replace('/\D/', '', defined('SITE_WHATSAPP') ? SITE_WHATSAPP : 
   <div id="promo-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;">
     <?php foreach ($products as $p): ?>
       <div class="promo-item" data-id="<?php echo (int)$p['id']; ?>"
-           data-name="<?php echo htmlspecialchars(strtolower($p['name'])); ?>"
+           data-name="<?php echo htmlspecialchars(strtolower($p['name'] ?? '')); ?>"
            data-cat="<?php echo htmlspecialchars($p['category_name'] ?? ''); ?>"
            onclick="togglePromo(<?php echo (int)$p['id']; ?>)"
            style="border:2px solid var(--cream-dark);border-radius:12px;overflow:hidden;background:white;cursor:pointer;transition:border-color 0.15s;position:relative;">
@@ -98,7 +98,7 @@ $waNumber = preg_replace('/\D/', '', defined('SITE_WHATSAPP') ? SITE_WHATSAPP : 
           </span>
         </div>
         <div style="padding:8px 10px;">
-          <div style="font-size:12px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($p['name']); ?></div>
+          <div style="font-size:12px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($p['name'] ?? ''); ?></div>
           <div style="font-size:12px;color:var(--gold);font-weight:700;"><?php echo formatPrice($p['price']); ?></div>
         </div>
       </div>

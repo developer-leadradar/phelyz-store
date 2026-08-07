@@ -5,7 +5,7 @@ require_once 'includes/header.php';
 if (isLoggedIn()) redirect('customer-dashboard.php');
 
 $db          = getDB();
-$token       = isset($_GET['token']) ? trim($_GET['token']) : '';
+$token       = isset($_GET['token']) ? trim($_GET['token'] ?? '') : '';
 $error       = '';
 $success     = '';
 $resetRecord = null;

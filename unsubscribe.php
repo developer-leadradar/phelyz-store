@@ -4,8 +4,8 @@ require_once 'includes/header.php';
 require_once __DIR__ . '/includes/email-campaigns.php';
 
 $db     = getDB();
-$email  = isset($_GET['e']) ? trim($_GET['e']) : '';
-$token  = isset($_GET['t']) ? trim($_GET['t']) : '';
+$email  = isset($_GET['e']) ? trim($_GET['e'] ?? '') : '';
+$token  = isset($_GET['t']) ? trim($_GET['t'] ?? '') : '';
 $state  = 'invalid'; // invalid | done | already | resubscribed
 
 // The link is signed, so only addresses we actually mailed can be opted out.

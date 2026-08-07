@@ -127,7 +127,7 @@ function getCartSummary($selectedState = null) {
         $coupon = couponFind(couponSessionCode());
         $check  = couponValidate($coupon, $items, $subtotal, $shipping);
         if ($check['ok']) {
-            $couponCode = strtoupper($coupon['code']);
+            $couponCode = strtoupper($coupon['code'] ?? '');
             $discount   = (float)$check['discount'];
             if (!empty($check['free_shipping'])) $shipping = 0;
         } else {

@@ -67,12 +67,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'enable_tax'              => isset($_POST['enable_tax']) ? 1 : 0,
         // Keep the existing key if the user submits empty (treats the input
         // like a password field - paste once, never see it again).
-        'gemini_api_key'          => !empty($_POST['gemini_api_key']) ? trim($_POST['gemini_api_key']) : ($s['gemini_api_key'] ?? ''),
+        'gemini_api_key'          => !empty($_POST['gemini_api_key']) ? trim($_POST['gemini_api_key'] ?? '') : ($s['gemini_api_key'] ?? ''),
         'image_studio_provider'   => sanitize($_POST['image_studio_provider'] ?? 'gemini'),
         'image_studio_model'      => sanitize($_POST['image_studio_model'] ?? 'gemini-3.1-flash-image'),
         'image_studio_aspect'     => sanitize($_POST['image_studio_aspect'] ?? '1:1'),
-        'paystack_public_key'     => !empty($_POST['paystack_public_key']) ? trim($_POST['paystack_public_key']) : ($s['paystack_public_key'] ?? ''),
-        'paystack_secret_key'     => !empty($_POST['paystack_secret_key']) ? trim($_POST['paystack_secret_key']) : ($s['paystack_secret_key'] ?? ''),
+        'paystack_public_key'     => !empty($_POST['paystack_public_key']) ? trim($_POST['paystack_public_key'] ?? '') : ($s['paystack_public_key'] ?? ''),
+        'paystack_secret_key'     => !empty($_POST['paystack_secret_key']) ? trim($_POST['paystack_secret_key'] ?? '') : ($s['paystack_secret_key'] ?? ''),
     ];
 
     $dataDir = __DIR__ . '/../data';
@@ -129,7 +129,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="form-group">
             <label class="form-label" for="s_store_name">Store Name</label>
             <input type="text" id="s_store_name" name="store_name" class="form-input"
-                   value="<?php echo htmlspecialchars($s['store_name']); ?>">
+                   value="<?php echo htmlspecialchars($s['store_name'] ?? ''); ?>">
         </div>
 
         <!-- Store Email + Phone -->
@@ -137,12 +137,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="s_email">Store Email</label>
                 <input type="email" id="s_email" name="store_email" class="form-input"
-                       value="<?php echo htmlspecialchars($s['store_email']); ?>">
+                       value="<?php echo htmlspecialchars($s['store_email'] ?? ''); ?>">
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="s_phone">Store Phone</label>
                 <input type="tel" id="s_phone" name="store_phone" class="form-input"
-                       value="<?php echo htmlspecialchars($s['store_phone']); ?>">
+                       value="<?php echo htmlspecialchars($s['store_phone'] ?? ''); ?>">
             </div>
         </div>
 
@@ -161,7 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="form-group" style="margin-bottom:0;">
             <label class="form-label" for="s_address">Store Address</label>
             <textarea id="s_address" name="store_address" rows="3"
-                      class="form-input" style="resize:vertical;"><?php echo htmlspecialchars($s['store_address']); ?></textarea>
+                      class="form-input" style="resize:vertical;"><?php echo htmlspecialchars($s['store_address'] ?? ''); ?></textarea>
         </div>
 
         <!-- Section Save -->
@@ -189,7 +189,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="form-group">
             <label class="form-label" for="s_smtp_host">SMTP Host</label>
             <input type="text" id="s_smtp_host" name="smtp_host" class="form-input"
-                   value="<?php echo htmlspecialchars($s['smtp_host']); ?>" placeholder="smtp.example.com">
+                   value="<?php echo htmlspecialchars($s['smtp_host'] ?? ''); ?>" placeholder="smtp.example.com">
         </div>
 
         <!-- SMTP Port + Encryption -->
@@ -214,7 +214,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="s_smtp_user">SMTP Username</label>
                 <input type="text" id="s_smtp_user" name="smtp_username" class="form-input"
-                       value="<?php echo htmlspecialchars($s['smtp_username']); ?>" placeholder="your@email.com">
+                       value="<?php echo htmlspecialchars($s['smtp_username'] ?? ''); ?>" placeholder="your@email.com">
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="s_smtp_pass">SMTP Password</label>
@@ -237,12 +237,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="s_from_email">From Email</label>
                 <input type="email" id="s_from_email" name="from_email" class="form-input"
-                       value="<?php echo htmlspecialchars($s['from_email']); ?>" placeholder="noreply@phelyz.com">
+                       value="<?php echo htmlspecialchars($s['from_email'] ?? ''); ?>" placeholder="noreply@phelyz.com">
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="s_from_name">From Name</label>
                 <input type="text" id="s_from_name" name="from_name" class="form-input"
-                       value="<?php echo htmlspecialchars($s['from_name']); ?>" placeholder="Phelyz Store">
+                       value="<?php echo htmlspecialchars($s['from_name'] ?? ''); ?>" placeholder="Phelyz Store">
             </div>
         </div>
 
@@ -618,7 +618,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="form-group" style="margin:0;">
                 <label class="form-label" for="s_ps_pub">Public Key</label>
                 <input type="text" id="s_ps_pub" name="paystack_public_key" autocomplete="off"
-                       placeholder="<?php echo !empty($s['paystack_public_key']) ? substr($s['paystack_public_key'], 0, 12) . '… (saved - leave empty to keep)' : 'pk_test_… or pk_live_…'; ?>"
+                       placeholder="<?php echo !empty($s['paystack_public_key']) ? substr($s['paystack_public_key'] ?? '', 0, 12) . '… (saved - leave empty to keep)' : 'pk_test_… or pk_live_…'; ?>"
                        class="form-input">
             </div>
             <div class="form-group" style="margin:0;">

@@ -63,7 +63,7 @@
         foreach ($footerCats as $cat):
           if ($count >= 6) break;
         ?>
-          <a href="shop.php?category=<?php echo $cat['id']; ?>"><?php echo htmlspecialchars($cat['name']); ?></a>
+          <a href="shop.php?category=<?php echo $cat['id']; ?>"><?php echo htmlspecialchars($cat['name'] ?? ''); ?></a>
         <?php $count++; endforeach; ?>
       </div>
 

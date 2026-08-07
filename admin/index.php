@@ -114,11 +114,11 @@ $bkWarn = $backupAgeH !== null && $backupAgeH > 36;
           <tbody>
             <?php foreach ($recentOrders as $o): ?>
               <tr>
-                <td style="font-weight:600;color:var(--black);"><?php echo htmlspecialchars($o['order_number']); ?></td>
+                <td style="font-weight:600;color:var(--black);"><?php echo htmlspecialchars($o['order_number'] ?? ''); ?></td>
                 <td><?php echo htmlspecialchars(($o['first_name']??'Guest').' '.($o['last_name']??'')); ?></td>
                 <td style="color:var(--stone-mid);"><?php echo formatDate($o['created_at']); ?></td>
                 <td style="font-weight:700;"><?php echo formatPrice($o['total']); ?></td>
-                <td><span class="status-badge <?php echo $statusColors[$o['status']]??'status-pending'; ?>"><?php echo ucfirst($o['status']); ?></span></td>
+                <td><span class="status-badge <?php echo $statusColors[$o['status']]??'status-pending'; ?>"><?php echo ucfirst($o['status'] ?? ''); ?></span></td>
                 <td><a href="order-details.php?id=<?php echo $o['id']; ?>" style="font-size:12px;font-weight:600;color:var(--gold);">View</a></td>
               </tr>
             <?php endforeach; ?>
@@ -142,7 +142,7 @@ $bkWarn = $backupAgeH !== null && $backupAgeH > 36;
           <div style="display:flex;align-items:center;gap:10px;padding:12px 12px;border-bottom:1px solid var(--cream-dark);">
             <img src="<?php echo htmlspecialchars(productImageUrl($p['image'])); ?>" alt="" style="width:40px;height:40px;object-fit:cover;border-radius:8px;flex-shrink:0;" onerror="this.src='https://placehold.co/40x40/F5F5F4/78716C?text=J'">
             <div style="flex:1;min-width:0;">
-              <div style="font-size:13px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($p['name']); ?></div>
+              <div style="font-size:13px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><?php echo htmlspecialchars($p['name'] ?? ''); ?></div>
               <div style="font-size:11px;color:var(--stone-mid);"><?php echo (int)$p['total_sold']; ?> sold · <?php echo formatPrice($p['revenue']); ?></div>
             </div>
             <a href="edit-product.php?id=<?php echo $p['id']; ?>" style="font-size:11px;color:var(--gold);font-weight:600;flex-shrink:0;">Edit</a>
@@ -166,7 +166,7 @@ $bkWarn = $backupAgeH !== null && $backupAgeH > 36;
       <tbody>
         <?php foreach ($lowStock as $p): ?>
           <tr>
-            <td style="font-weight:600;color:var(--black);"><?php echo htmlspecialchars($p['name']); ?></td>
+            <td style="font-weight:600;color:var(--black);"><?php echo htmlspecialchars($p['name'] ?? ''); ?></td>
             <td style="color:var(--stone-mid);"><?php echo htmlspecialchars($p['sku']??'-'); ?></td>
             <td><span style="font-weight:700;color:#EF4444;"><?php echo (int)$p['stock_quantity']; ?> left</span></td>
             <td><?php echo formatPrice($p['price']); ?></td>

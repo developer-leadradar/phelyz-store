@@ -68,7 +68,7 @@ $presetsJs = array_map(function($p) {
         <option value="">Pick a template</option>
         <?php foreach ($templates as $t): ?>
         <option value="<?php echo (int)$t['id']; ?>" <?php echo $t['is_default'] ? 'selected' : ''; ?>>
-          <?php echo htmlspecialchars($t['name']); ?><?php echo $t['is_default'] ? ' (default)' : ''; ?>
+          <?php echo htmlspecialchars($t['name'] ?? ''); ?><?php echo $t['is_default'] ? ' (default)' : ''; ?>
         </option>
         <?php endforeach; ?>
       </select>
@@ -78,7 +78,7 @@ $presetsJs = array_map(function($p) {
       <select id="opt-preset" class="form-input form-select">
         <?php foreach ($presets as $p): ?>
         <option value="<?php echo (int)$p['id']; ?>" <?php echo $p['is_default'] ? 'selected' : ''; ?>>
-          <?php echo htmlspecialchars($p['name']); ?><?php echo $p['is_default'] ? ' (default)' : ''; ?>
+          <?php echo htmlspecialchars($p['name'] ?? ''); ?><?php echo $p['is_default'] ? ' (default)' : ''; ?>
         </option>
         <?php endforeach; ?>
       </select>

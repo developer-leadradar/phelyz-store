@@ -12,7 +12,7 @@ $product = getProductById($productId);
 if (!$product) { redirect('shop.php'); }
 
 $pageTitle       = $product['name'];
-$pageDescription = substr(strip_tags($product['description']), 0, 160);
+$pageDescription = substr(strip_tags($product['description'] ?? ''), 0, 160);
 
 require_once 'includes/header.php';
 
@@ -60,9 +60,9 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
       <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" class="text-stone-400"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
       <a href="shop.php">Shop</a>
       <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" class="text-stone-400"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-      <a href="shop.php?category=<?php echo (int)$product['category_id']; ?>"><?php echo htmlspecialchars($product['category_name']); ?></a>
+      <a href="shop.php?category=<?php echo (int)$product['category_id']; ?>"><?php echo htmlspecialchars($product['category_name'] ?? ''); ?></a>
       <svg viewBox="0 0 20 20" fill="currentColor" width="14" height="14" class="text-stone-400"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd"/></svg>
-      <span><?php echo htmlspecialchars($product['name']); ?></span>
+      <span><?php echo htmlspecialchars($product['name'] ?? ''); ?></span>
     </nav>
 
     <!-- ── Product Detail ─────────────────────────────────── -->
@@ -74,8 +74,8 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
         <div class="relative bg-white rounded-2xl overflow-hidden border border-stone-200 shadow-sm mb-3 aspect-square flex items-center justify-center p-8">
           <!-- The one image worth fetching immediately: everything else on the
                page can wait behind it. -->
-          <img src="<?php echo htmlspecialchars($product['image']); ?>"
-               alt="<?php echo htmlspecialchars($product['name']); ?>"
+          <img src="<?php echo htmlspecialchars($product['image'] ?? ''); ?>"
+               alt="<?php echo htmlspecialchars($product['name'] ?? ''); ?>"
                id="main-product-image"
                width="800" height="800"
                fetchpriority="high" decoding="async"
@@ -112,9 +112,9 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
         <!-- Thumbnails -->
         <?php if (!empty($additionalImages)): ?>
         <div class="flex gap-2 overflow-x-auto pb-1">
-          <button onclick="setMainImage('<?php echo htmlspecialchars($product['image'], ENT_QUOTES); ?>', this)"
+          <button onclick="setMainImage('<?php echo htmlspecialchars($product['image'] ?? '', ENT_QUOTES); ?>', this)"
             class="thumb-btn active flex-shrink-0 w-16 h-16 rounded-lg border-2 border-gold p-1 bg-white overflow-hidden">
-            <img src="<?php echo htmlspecialchars($product['image']); ?>" alt="Main" width="64" height="64" decoding="async" class="w-full h-full object-contain">
+            <img src="<?php echo htmlspecialchars($product['image'] ?? ''); ?>" alt="Main" width="64" height="64" decoding="async" class="w-full h-full object-contain">
           </button>
           <?php foreach ($additionalImages as $img): ?>
             <button onclick="setMainImage('<?php echo htmlspecialchars($img, ENT_QUOTES); ?>', this)"
@@ -131,9 +131,9 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
 
         <!-- Category badge + name -->
         <div>
-          <span class="product-card-cat block mb-2"><?php echo htmlspecialchars($product['category_name']); ?></span>
+          <span class="product-card-cat block mb-2"><?php echo htmlspecialchars($product['category_name'] ?? ''); ?></span>
           <h1 class="font-display text-3xl md:text-4xl font-semibold text-stone-900 leading-tight mb-3">
-            <?php echo htmlspecialchars($product['name']); ?>
+            <?php echo htmlspecialchars($product['name'] ?? ''); ?>
           </h1>
 
           <!-- Rating. Only shown once real customers have reviewed the piece;
@@ -230,7 +230,7 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
         <!-- Short description -->
         <?php if (!empty($product['description'])): ?>
         <p class="text-stone-600 text-sm leading-relaxed line-clamp-3">
-          <?php echo htmlspecialchars(substr(strip_tags($product['description']), 0, 220)); ?>...
+          <?php echo htmlspecialchars(substr(strip_tags($product['description'] ?? ''), 0, 220)); ?>...
         </p>
         <?php endif; ?>
 
@@ -243,20 +243,20 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
             <?php if (!empty($product['sku'])): ?>
             <tr class="border-b border-stone-50">
               <td class="px-5 py-2.5 text-stone-500 font-medium w-2/5">SKU</td>
-              <td class="px-5 py-2.5 text-stone-800 font-semibold"><?php echo htmlspecialchars($product['sku']); ?></td>
+              <td class="px-5 py-2.5 text-stone-800 font-semibold"><?php echo htmlspecialchars($product['sku'] ?? ''); ?></td>
             </tr>
             <?php endif; ?>
             <?php if (!empty($product['brand'])): ?>
             <tr class="border-b border-stone-50">
               <td class="px-5 py-2.5 text-stone-500 font-medium">Brand</td>
-              <td class="px-5 py-2.5 text-stone-800"><?php echo htmlspecialchars($product['brand']); ?></td>
+              <td class="px-5 py-2.5 text-stone-800"><?php echo htmlspecialchars($product['brand'] ?? ''); ?></td>
             </tr>
             <?php endif; ?>
             <?php if (!empty($product['material'])): ?>
             <tr class="border-b border-stone-50">
               <td class="px-5 py-2.5 text-stone-500 font-medium">Material</td>
               <td class="px-5 py-2.5 text-stone-800">
-                <?php echo htmlspecialchars($product['metal_purity'] ?? ''); ?> <?php echo htmlspecialchars($product['material']); ?>
+                <?php echo htmlspecialchars($product['metal_purity'] ?? ''); ?> <?php echo htmlspecialchars($product['material'] ?? ''); ?>
               </td>
             </tr>
             <?php endif; ?>
@@ -264,33 +264,33 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
             <tr class="border-b border-stone-50">
               <td class="px-5 py-2.5 text-stone-500 font-medium">Stone</td>
               <td class="px-5 py-2.5 text-stone-800">
-                <?php if (!empty($product['stone_weight'])): ?><?php echo htmlspecialchars($product['stone_weight']); ?>ct <?php endif; ?>
-                <?php echo htmlspecialchars($product['stone_type']); ?>
+                <?php if (!empty($product['stone_weight'])): ?><?php echo htmlspecialchars($product['stone_weight'] ?? ''); ?>ct <?php endif; ?>
+                <?php echo htmlspecialchars($product['stone_type'] ?? ''); ?>
               </td>
             </tr>
             <?php endif; ?>
             <?php if (!empty($product['weight'])): ?>
             <tr class="border-b border-stone-50">
               <td class="px-5 py-2.5 text-stone-500 font-medium">Weight</td>
-              <td class="px-5 py-2.5 text-stone-800"><?php echo htmlspecialchars($product['weight']); ?>g</td>
+              <td class="px-5 py-2.5 text-stone-800"><?php echo htmlspecialchars($product['weight'] ?? ''); ?>g</td>
             </tr>
             <?php endif; ?>
             <?php if (!empty($product['gender'])): ?>
             <tr class="border-b border-stone-50">
               <td class="px-5 py-2.5 text-stone-500 font-medium">Gender</td>
-              <td class="px-5 py-2.5 text-stone-800"><?php echo htmlspecialchars($product['gender']); ?></td>
+              <td class="px-5 py-2.5 text-stone-800"><?php echo htmlspecialchars($product['gender'] ?? ''); ?></td>
             </tr>
             <?php endif; ?>
             <?php if (!empty($product['style'])): ?>
             <tr class="border-b border-stone-50">
               <td class="px-5 py-2.5 text-stone-500 font-medium">Style</td>
-              <td class="px-5 py-2.5 text-stone-800"><?php echo htmlspecialchars($product['style']); ?></td>
+              <td class="px-5 py-2.5 text-stone-800"><?php echo htmlspecialchars($product['style'] ?? ''); ?></td>
             </tr>
             <?php endif; ?>
             <?php if (!empty($product['occasion'])): ?>
             <tr>
               <td class="px-5 py-2.5 text-stone-500 font-medium">Occasion</td>
-              <td class="px-5 py-2.5 text-stone-800"><?php echo htmlspecialchars($product['occasion']); ?></td>
+              <td class="px-5 py-2.5 text-stone-800"><?php echo htmlspecialchars($product['occasion'] ?? ''); ?></td>
             </tr>
             <?php endif; ?>
           </table>
@@ -334,17 +334,17 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
             <div id="variant-rows" style="display:flex;flex-direction:column;gap:8px;">
               <?php foreach ($productColors as $idx => $c):
                 $bg = $c['hex'] ?: '#E5E7EB'; ?>
-                <div class="variant-row" data-color="<?php echo htmlspecialchars($c['name']); ?>">
+                <div class="variant-row" data-color="<?php echo htmlspecialchars($c['name'] ?? ''); ?>">
                   <span class="variant-swatch" style="background:<?php echo $bg; ?>;"></span>
-                  <span class="variant-name"><?php echo htmlspecialchars($c['name']); ?></span>
+                  <span class="variant-name"><?php echo htmlspecialchars($c['name'] ?? ''); ?></span>
                   <div class="qty-stepper variant-stepper">
-                    <button type="button" class="qty-btn" aria-label="Fewer <?php echo htmlspecialchars($c['name']); ?>"
+                    <button type="button" class="qty-btn" aria-label="Fewer <?php echo htmlspecialchars($c['name'] ?? ''); ?>"
                             onclick="stepVariant(this,-1)">
                       <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
                     </button>
                     <input type="number" class="qty-input variant-qty" value="0" min="0"
-                           max="<?php echo $maxQty; ?>" readonly aria-label="<?php echo htmlspecialchars($c['name']); ?> quantity">
-                    <button type="button" class="qty-btn" aria-label="More <?php echo htmlspecialchars($c['name']); ?>"
+                           max="<?php echo $maxQty; ?>" readonly aria-label="<?php echo htmlspecialchars($c['name'] ?? ''); ?> quantity">
+                    <button type="button" class="qty-btn" aria-label="More <?php echo htmlspecialchars($c['name'] ?? ''); ?>"
                             onclick="stepVariant(this,1)">
                       <svg viewBox="0 0 20 20" fill="currentColor" width="15" height="15"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
                     </button>
@@ -451,7 +451,7 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
         <div class="glass-card max-w-3xl" style="padding:32px 36px !important;">
           <?php if (!empty($product['description'])): ?>
             <div class="prose prose-stone text-stone-700 leading-relaxed text-sm" style="max-width:none;">
-              <?php echo nl2br(htmlspecialchars($product['description'])); ?>
+              <?php echo nl2br(htmlspecialchars($product['description'] ?? '')); ?>
             </div>
           <?php else: ?>
             <p class="text-stone-400 text-sm italic">No description available for this product.</p>
@@ -526,11 +526,11 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
               <div class="flex items-start justify-between gap-4 mb-3">
                 <div class="flex items-center gap-3">
                   <div class="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                    <?php echo strtoupper(substr($review['first_name'], 0, 1)); ?>
+                    <?php echo strtoupper(substr($review['first_name'] ?? '', 0, 1)); ?>
                   </div>
                   <div>
                     <p class="font-semibold text-stone-800 text-sm">
-                      <?php echo htmlspecialchars($review['first_name'] . ' ' . strtoupper(substr($review['last_name'], 0, 1))); ?>.
+                      <?php echo htmlspecialchars($review['first_name'] . ' ' . strtoupper(substr($review['last_name'] ?? '', 0, 1))); ?>.
                     </p>
                     <div class="flex items-center gap-2 flex-wrap">
                       <span class="text-xs text-stone-400"><?php echo date('M j, Y', strtotime($review['created_at'])); ?></span>
@@ -556,7 +556,7 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
                   <?php endif; ?>
                 </div>
               </div>
-              <p class="text-stone-600 text-sm leading-relaxed"><?php echo nl2br(htmlspecialchars($review['review_text'])); ?></p>
+              <p class="text-stone-600 text-sm leading-relaxed"><?php echo nl2br(htmlspecialchars($review['review_text'] ?? '')); ?></p>
             </div>
             <?php endforeach; ?>
           </div>
@@ -595,8 +595,8 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
           <div class="product-card">
             <div class="product-card-img">
               <a href="product.php?id=<?php echo (int)$rp['id']; ?>">
-                <img src="<?php echo htmlspecialchars($rp['image']); ?>"
-                     alt="<?php echo htmlspecialchars($rp['name']); ?>" loading="lazy">
+                <img src="<?php echo htmlspecialchars($rp['image'] ?? ''); ?>"
+                     alt="<?php echo htmlspecialchars($rp['name'] ?? ''); ?>" loading="lazy">
               </a>
               <?php if ($rp['compare_price'] > $rp['price']): ?>
                 <span class="product-card-badge badge-sale">Sale</span>
@@ -615,7 +615,7 @@ $discountPct = ($product['compare_price'] > $product['price'] && $product['compa
             <div class="product-card-body">
               <p class="product-card-cat"><?php echo htmlspecialchars($rp['category_name'] ?? 'Jewelry'); ?></p>
               <h3 class="product-card-name">
-                <a href="product.php?id=<?php echo (int)$rp['id']; ?>"><?php echo htmlspecialchars($rp['name']); ?></a>
+                <a href="product.php?id=<?php echo (int)$rp['id']; ?>"><?php echo htmlspecialchars($rp['name'] ?? ''); ?></a>
               </h3>
               <div class="stars mb-1"><?php echo renderStars((int)$rp['rating']); ?></div>
               <div class="product-card-price">

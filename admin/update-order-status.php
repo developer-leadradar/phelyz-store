@@ -39,7 +39,7 @@ if ($updated) {
         $subject = "Order Status Update - " . $order['order_number'];
         $message = phelyzEmailTemplate(
             '<p style="margin:0 0 12px;font-size:16px;">Your order has an update.</p>'
-          . '<p style="margin:0 0 18px;color:#44403C;">Order <strong>' . htmlspecialchars($order['order_number']) . '</strong> is now <strong>' . htmlspecialchars(ucfirst($newStatus)) . '</strong>.</p>'
+          . '<p style="margin:0 0 18px;color:#44403C;">Order <strong>' . htmlspecialchars($order['order_number'] ?? '') . '</strong> is now <strong>' . htmlspecialchars(ucfirst($newStatus)) . '</strong>.</p>'
           . phelyzEmailButton('Track My Order', SITE_URL . '/track.php')
           . '<p style="margin:0;color:#78716C;font-size:13px;">Thank you for shopping with Phelyz Store.</p>',
             'Order ' . $order['order_number'] . ' is now ' . ucfirst($newStatus) . '.'

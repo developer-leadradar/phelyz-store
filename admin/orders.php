@@ -53,7 +53,7 @@ $statusColors=['pending'=>'status-pending','processing'=>'status-processing','sh
         <tbody>
           <?php foreach ($orders as $o): ?>
             <tr>
-              <td style="font-weight:700;color:var(--black);"><?php echo htmlspecialchars($o['order_number']); ?></td>
+              <td style="font-weight:700;color:var(--black);"><?php echo htmlspecialchars($o['order_number'] ?? ''); ?></td>
               <td>
                 <div style="font-weight:600;font-size:13px;"><?php echo htmlspecialchars(($o['first_name']??'Guest').' '.($o['last_name']??'')); ?></div>
                 <div style="font-size:11px;color:var(--stone-mid);"><?php echo htmlspecialchars($o['email']??''); ?></div>
@@ -62,7 +62,7 @@ $statusColors=['pending'=>'status-pending','processing'=>'status-processing','sh
               <td style="color:var(--stone-mid);">-</td>
               <td style="font-weight:700;"><?php echo formatPrice($o['total']); ?></td>
               <td style="font-size:12px;color:var(--stone-mid);"><?php echo ucwords(str_replace('_',' ',$o['payment_method'])); ?></td>
-              <td><span class="status-badge <?php echo $statusColors[$o['status']]??'status-pending'; ?>"><?php echo ucfirst($o['status']); ?></span></td>
+              <td><span class="status-badge <?php echo $statusColors[$o['status']]??'status-pending'; ?>"><?php echo ucfirst($o['status'] ?? ''); ?></span></td>
               <td>
                 <a href="order-details.php?id=<?php echo $o['id']; ?>" class="btn btn-outline btn-sm">View</a>
               </td>

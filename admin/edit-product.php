@@ -237,7 +237,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <option value="">Select Category</option>
                 <?php foreach ($categories as $cat): ?>
                     <option value="<?php echo $cat['id']; ?>" <?php echo $product['category_id'] == $cat['id'] ? 'selected' : ''; ?>>
-                        <?php echo htmlspecialchars($cat['name']); ?>
+                        <?php echo htmlspecialchars($cat['name'] ?? ''); ?>
                     </option>
                 <?php endforeach; ?>
             </select>
@@ -509,7 +509,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <?php foreach ($existingExtras as $img): ?>
                 <div id="existing-img-<?php echo (int)$img['id']; ?>"
                      style="position:relative;border:1px solid var(--cream-dark);border-radius:10px;overflow:hidden;background:white;">
-                    <img src="<?php echo htmlspecialchars($img['image_path']); ?>" alt="Gallery"
+                    <img src="<?php echo htmlspecialchars($img['image_path'] ?? ''); ?>" alt="Gallery"
                          style="width:100%;height:120px;object-fit:cover;display:block;"
                          onerror="this.src='https://placehold.co/120x120/F5F5F4/78716C?text=J'">
                     <button type="button" onclick="markImageForDelete(<?php echo (int)$img['id']; ?>)"

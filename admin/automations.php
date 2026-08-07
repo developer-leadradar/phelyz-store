@@ -82,23 +82,23 @@ $cronToken = getenv('CRON_TOKEN') ?: '';
 <?php if ($editing): ?>
 <!-- ── Edit one automation ─────────────────────────────── -->
 <form method="POST" class="card" style="padding:22px;margin-bottom:20px;">
-  <input type="hidden" name="automation_key" value="<?php echo htmlspecialchars($editing['automation_key']); ?>">
+  <input type="hidden" name="automation_key" value="<?php echo htmlspecialchars($editing['automation_key'] ?? ''); ?>">
   <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;">
-    <h2 style="font-size:15px;font-weight:700;margin:0;"><?php echo htmlspecialchars($editing['label']); ?></h2>
+    <h2 style="font-size:15px;font-weight:700;margin:0;"><?php echo htmlspecialchars($editing['label'] ?? ''); ?></h2>
     <a href="automations.php" style="font-size:12.5px;color:var(--stone-mid);">Cancel</a>
   </div>
 
   <div class="form-group">
     <label class="form-label">Subject line</label>
-    <input type="text" name="subject" class="form-input" required maxlength="255" value="<?php echo htmlspecialchars($editing['subject']); ?>">
+    <input type="text" name="subject" class="form-input" required maxlength="255" value="<?php echo htmlspecialchars($editing['subject'] ?? ''); ?>">
   </div>
   <div class="form-group">
     <label class="form-label">Headline</label>
-    <input type="text" name="heading" class="form-input" maxlength="255" value="<?php echo htmlspecialchars($editing['heading']); ?>">
+    <input type="text" name="heading" class="form-input" maxlength="255" value="<?php echo htmlspecialchars($editing['heading'] ?? ''); ?>">
   </div>
   <div class="form-group">
     <label class="form-label">Message</label>
-    <textarea name="body" class="form-input" rows="8" required><?php echo htmlspecialchars($editing['body']); ?></textarea>
+    <textarea name="body" class="form-input" rows="8" required><?php echo htmlspecialchars($editing['body'] ?? ''); ?></textarea>
     <p style="font-size:12px;color:var(--stone-mid);margin:6px 0 0;">
       <code style="background:var(--cream-dark);padding:1px 5px;border-radius:4px;">{name}</code> becomes their first name.
     </p>
@@ -106,11 +106,11 @@ $cronToken = getenv('CRON_TOKEN') ?: '';
   <div class="auto-row-3">
     <div class="form-group">
       <label class="form-label">Button text</label>
-      <input type="text" name="cta_text" class="form-input" maxlength="100" value="<?php echo htmlspecialchars($editing['cta_text']); ?>">
+      <input type="text" name="cta_text" class="form-input" maxlength="100" value="<?php echo htmlspecialchars($editing['cta_text'] ?? ''); ?>">
     </div>
     <div class="form-group">
       <label class="form-label">Button link</label>
-      <input type="url" name="cta_url" class="form-input" maxlength="500" value="<?php echo htmlspecialchars($editing['cta_url']); ?>">
+      <input type="url" name="cta_url" class="form-input" maxlength="500" value="<?php echo htmlspecialchars($editing['cta_url'] ?? ''); ?>">
     </div>
     <div class="form-group">
       <label class="form-label">Include coupon</label>
@@ -143,8 +143,8 @@ $cronToken = getenv('CRON_TOKEN') ?: '';
           <div style="border:1px solid var(--cream-dark);border-radius:10px;padding:13px 14px;">
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
               <div style="min-width:0;flex:1;">
-                <div style="font-weight:700;font-size:13.5px;color:var(--black);"><?php echo htmlspecialchars($a['label']); ?></div>
-                <div style="font-size:12px;color:var(--stone-mid);margin-top:3px;"><?php echo htmlspecialchars($a['description']); ?></div>
+                <div style="font-weight:700;font-size:13.5px;color:var(--black);"><?php echo htmlspecialchars($a['label'] ?? ''); ?></div>
+                <div style="font-size:12px;color:var(--stone-mid);margin-top:3px;"><?php echo htmlspecialchars($a['description'] ?? ''); ?></div>
               </div>
               <span style="flex-shrink:0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#fff;
                            background:<?php echo $a['is_active'] ? '#10B981' : '#A8A29E'; ?>;padding:3px 9px;border-radius:99px;">
@@ -154,11 +154,11 @@ $cronToken = getenv('CRON_TOKEN') ?: '';
             <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--stone-mid);margin-top:9px;padding-top:9px;border-top:1px solid var(--cream-dark);">
               <span>after <strong style="color:var(--black);"><?php echo (int)$a['delay_hours']; ?>h</strong></span>
               <span><strong style="color:var(--black);"><?php echo (int)$a['sent_count']; ?></strong> sent</span>
-              <?php if (!empty($a['coupon_code'])): ?><span>code <strong style="color:var(--gold);"><?php echo htmlspecialchars($a['coupon_code']); ?></strong></span><?php endif; ?>
+              <?php if (!empty($a['coupon_code'])): ?><span>code <strong style="color:var(--gold);"><?php echo htmlspecialchars($a['coupon_code'] ?? ''); ?></strong></span><?php endif; ?>
             </div>
             <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:9px;font-size:12px;">
-              <a href="?edit=<?php echo urlencode($a['automation_key']); ?>" style="color:var(--gold);font-weight:600;">Edit wording</a>
-              <a href="?toggle=<?php echo urlencode($a['automation_key']); ?>" style="color:var(--stone-mid);font-weight:600;">
+              <a href="?edit=<?php echo urlencode($a['automation_key'] ?? ''); ?>" style="color:var(--gold);font-weight:600;">Edit wording</a>
+              <a href="?toggle=<?php echo urlencode($a['automation_key'] ?? ''); ?>" style="color:var(--stone-mid);font-weight:600;">
                 <?php echo $a['is_active'] ? 'Turn off' : 'Turn on'; ?>
               </a>
             </div>
@@ -180,7 +180,7 @@ $cronToken = getenv('CRON_TOKEN') ?: '';
         <?php foreach ($upcoming as $u): ?>
           <div style="display:flex;align-items:center;gap:10px;border:1px solid var(--cream-dark);border-radius:9px;padding:10px 12px;">
             <div style="flex:1;min-width:0;">
-              <div style="font-weight:700;font-size:13px;color:var(--black);"><?php echo htmlspecialchars($u['label']); ?></div>
+              <div style="font-weight:700;font-size:13px;color:var(--black);"><?php echo htmlspecialchars($u['label'] ?? ''); ?></div>
               <div style="font-size:11.5px;color:var(--stone-mid);">
                 <?php
                 if ($u['date'] === null) echo 'Date moves each year, set it yourself';
@@ -189,7 +189,7 @@ $cronToken = getenv('CRON_TOKEN') ?: '';
                 ?>
               </div>
             </div>
-            <a href="email-campaigns.php?season=<?php echo urlencode($u['key']); ?>"
+            <a href="email-campaigns.php?season=<?php echo urlencode($u['key'] ?? ''); ?>"
                class="btn btn-outline" style="flex-shrink:0;font-size:12px;padding:6px 12px;">Write it</a>
           </div>
         <?php endforeach; ?>

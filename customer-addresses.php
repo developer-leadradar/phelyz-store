@@ -57,8 +57,8 @@ $currentPage=basename($_SERVER['PHP_SELF']);
         <form method="POST">
           <input type="hidden" name="add_address" value="1">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;">
-            <div class="form-group" style="margin:0;"><label class="form-label">First Name *</label><input type="text" name="first_name" class="form-input" required value="<?php echo htmlspecialchars($user['first_name']); ?>"></div>
-            <div class="form-group" style="margin:0;"><label class="form-label">Last Name *</label><input type="text" name="last_name" class="form-input" required value="<?php echo htmlspecialchars($user['last_name']); ?>"></div>
+            <div class="form-group" style="margin:0;"><label class="form-label">First Name *</label><input type="text" name="first_name" class="form-input" required value="<?php echo htmlspecialchars($user['first_name'] ?? ''); ?>"></div>
+            <div class="form-group" style="margin:0;"><label class="form-label">Last Name *</label><input type="text" name="last_name" class="form-input" required value="<?php echo htmlspecialchars($user['last_name'] ?? ''); ?>"></div>
           </div>
           <div class="form-group" style="margin-bottom:14px;"><label class="form-label">Street Address *</label><input type="text" name="address" class="form-input" required></div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px;">
@@ -88,10 +88,10 @@ $currentPage=basename($_SERVER['PHP_SELF']);
           <div style="margin-bottom:12px;">
             <div style="font-weight:700;color:var(--black);margin-bottom:6px;"><?php echo htmlspecialchars($addr['first_name'].' '.$addr['last_name']); ?></div>
             <div style="font-size:13px;color:var(--stone-mid);line-height:1.65;">
-              <?php echo htmlspecialchars($addr['address']); ?><br>
+              <?php echo htmlspecialchars($addr['address'] ?? ''); ?><br>
               <?php echo htmlspecialchars($addr['city'].', '.($addr['state']??'').' '.($addr['zip_code']??'')); ?><br>
-              <?php echo htmlspecialchars($addr['country']); ?><br>
-              <?php echo htmlspecialchars($addr['phone']); ?>
+              <?php echo htmlspecialchars($addr['country'] ?? ''); ?><br>
+              <?php echo htmlspecialchars($addr['phone'] ?? ''); ?>
             </div>
           </div>
           <div style="display:flex;gap:10px;flex-wrap:wrap;">

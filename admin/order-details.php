@@ -103,18 +103,18 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
           <div>
             <div style="font-size:10px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:var(--stone-mid);">Tracking ID</div>
             <div style="font-size:17px;font-weight:700;color:var(--black);letter-spacing:0.03em;font-family:'Cormorant',serif;">
-              <?php echo htmlspecialchars($p['tracking_id']); ?>
+              <?php echo htmlspecialchars($p['tracking_id'] ?? ''); ?>
             </div>
             <div style="font-size:11.5px;color:var(--stone-mid);margin-top:3px;">
-              Parcel <?php echo htmlspecialchars($p['parcel_number']); ?>
+              Parcel <?php echo htmlspecialchars($p['parcel_number'] ?? ''); ?>
               &nbsp;·&nbsp; to <?php echo htmlspecialchars($p['dest_label'] ?: '-'); ?>
             </div>
           </div>
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
             <span style="background:<?php echo $pm['colour']; ?>1A;color:<?php echo $pm['colour']; ?>;padding:6px 14px;border-radius:99px;font-size:12px;font-weight:700;">
-              <?php echo htmlspecialchars($pm['label']); ?>
+              <?php echo htmlspecialchars($pm['label'] ?? ''); ?>
             </span>
-            <a href="../track.php?id=<?php echo urlencode($p['tracking_id']); ?>" target="_blank"
+            <a href="../track.php?id=<?php echo urlencode($p['tracking_id'] ?? ''); ?>" target="_blank"
                style="font-size:12px;font-weight:600;color:var(--gold);text-decoration:none;">Customer view ↗</a>
           </div>
         </div>
@@ -130,7 +130,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
               <select name="parcel_status" required class="form-input form-select">
                 <?php foreach (parcelStatuses() as $key => $s): ?>
                   <option value="<?php echo $key; ?>" <?php echo $p['status'] === $key ? 'selected' : ''; ?>>
-                    <?php echo htmlspecialchars($s['label']); ?>
+                    <?php echo htmlspecialchars($s['label'] ?? ''); ?>
                   </option>
                 <?php endforeach; ?>
               </select>
@@ -173,9 +173,9 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
               <div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:9px;font-size:12.5px;">
                 <span style="width:8px;height:8px;border-radius:50%;background:<?php echo $em['colour']; ?>;margin-top:5px;flex-shrink:0;"></span>
                 <div style="flex:1;">
-                  <strong style="color:var(--black);"><?php echo htmlspecialchars($em['label']); ?></strong>
-                  <?php if ($ev['label']): ?><span style="color:var(--stone);"> - <?php echo htmlspecialchars($ev['label']); ?></span><?php endif; ?>
-                  <?php if ($ev['note']): ?><div style="color:var(--stone-mid);font-size:11.5px;"><?php echo htmlspecialchars($ev['note']); ?></div><?php endif; ?>
+                  <strong style="color:var(--black);"><?php echo htmlspecialchars($em['label'] ?? ''); ?></strong>
+                  <?php if ($ev['label']): ?><span style="color:var(--stone);"> - <?php echo htmlspecialchars($ev['label'] ?? ''); ?></span><?php endif; ?>
+                  <?php if ($ev['note']): ?><div style="color:var(--stone-mid);font-size:11.5px;"><?php echo htmlspecialchars($ev['note'] ?? ''); ?></div><?php endif; ?>
                 </div>
                 <span style="color:var(--stone-mid);font-size:11px;white-space:nowrap;"><?php echo date('j M, g:ia', strtotime($ev['created_at'])); ?></span>
               </div>
@@ -206,11 +206,11 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
                0 01-1.414 0z" clip-rule="evenodd"/>
         </svg>
         <span style="color:var(--black);font-weight:600;">
-          #<?php echo htmlspecialchars($order['order_number']); ?>
+          #<?php echo htmlspecialchars($order['order_number'] ?? ''); ?>
         </span>
       </nav>
       <h1 class="admin-page-title">
-        Order #<?php echo htmlspecialchars($order['order_number']); ?>
+        Order #<?php echo htmlspecialchars($order['order_number'] ?? ''); ?>
       </h1>
     </div>
 
@@ -259,7 +259,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
       <div style="display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap;">
         <span style="font-size:13px;color:var(--stone-mid);">Current:</span>
         <span class="status-badge status-<?php echo $order['status']; ?>">
-          <?php echo ucfirst($order['status']); ?>
+          <?php echo ucfirst($order['status'] ?? ''); ?>
         </span>
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
              stroke-width="2" stroke="var(--stone-mid)" width="14" height="14">
@@ -328,22 +328,22 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
                   <td style="padding-left:20px;">
                     <div style="display:flex;align-items:center;gap:12px;">
                       <img src="<?php echo htmlspecialchars(productImageUrl($item['image'])); ?>"
-                           alt="<?php echo htmlspecialchars($item['product_name']); ?>"
+                           alt="<?php echo htmlspecialchars($item['product_name'] ?? ''); ?>"
                            onerror="this.src='https://placehold.co/48x48/F5F5F4/78716C?text=+'"
                            style="width:48px;height:48px;object-fit:cover;
                                   border-radius:var(--radius-sm);background:var(--cream-dark);">
                       <div>
                         <div style="font-weight:600;font-size:13.5px;color:var(--black);">
-                          <?php echo htmlspecialchars($item['product_name']); ?>
+                          <?php echo htmlspecialchars($item['product_name'] ?? ''); ?>
                         </div>
                         <?php if (!empty($item['variant'])): ?>
                           <div style="font-size:11px;color:var(--stone-mid);margin-top:2px;">
-                            <?php echo htmlspecialchars($item['variant']); ?>
+                            <?php echo htmlspecialchars($item['variant'] ?? ''); ?>
                           </div>
                         <?php endif; ?>
                         <?php if (!empty($item['selected_color'])): ?>
                           <div style="font-size:11px;color:var(--stone-mid);margin-top:2px;">
-                            Colour: <?php echo htmlspecialchars($item['selected_color']); ?>
+                            Colour: <?php echo htmlspecialchars($item['selected_color'] ?? ''); ?>
                           </div>
                         <?php endif; ?>
                       </div>
@@ -403,7 +403,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
               Phone
             </p>
             <p style="color:var(--stone);">
-              <?php echo htmlspecialchars($order['shipping_phone']); ?>
+              <?php echo htmlspecialchars($order['shipping_phone'] ?? ''); ?>
             </p>
           </div>
           <div style="grid-column:1/-1;">
@@ -412,9 +412,9 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
               Address
             </p>
             <p style="color:var(--stone);line-height:1.65;">
-              <?php echo htmlspecialchars($order['shipping_address']); ?><br>
+              <?php echo htmlspecialchars($order['shipping_address'] ?? ''); ?><br>
               <?php echo htmlspecialchars($order['shipping_city'].', '.$order['shipping_state'].' '.$order['shipping_zip']); ?><br>
-              <?php echo htmlspecialchars($order['shipping_country']); ?>
+              <?php echo htmlspecialchars($order['shipping_country'] ?? ''); ?>
             </p>
           </div>
         </div>
@@ -484,7 +484,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
           </div>
           <p style="font-size:14px;color:var(--stone);line-height:1.7;
                     background:var(--cream-dark);padding:12px 16px;border-radius:var(--radius-sm);">
-            <?php echo nl2br(htmlspecialchars($order['notes'])); ?>
+            <?php echo nl2br(htmlspecialchars($order['notes'] ?? '')); ?>
           </p>
         </div>
       <?php endif; ?>
@@ -507,18 +507,18 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
                         display:flex;align-items:center;justify-content:center;
                         font-family:'Cormorant',serif;font-size:20px;font-weight:700;
                         color:white;flex-shrink:0;">
-              <?php echo strtoupper(substr($customer['first_name'],0,1).substr($customer['last_name'],0,1)); ?>
+              <?php echo strtoupper(substr($customer['first_name'] ?? '',0,1).substr($customer['last_name'] ?? '',0,1)); ?>
             </div>
             <div style="flex:1;min-width:0;">
               <p style="font-weight:700;font-size:14px;color:var(--black);">
                 <?php echo htmlspecialchars($customer['first_name'].' '.$customer['last_name']); ?>
               </p>
               <p style="font-size:13px;color:var(--stone-mid);margin-top:2px;">
-                <?php echo htmlspecialchars($customer['email']); ?>
+                <?php echo htmlspecialchars($customer['email'] ?? ''); ?>
               </p>
               <?php if (!empty($customer['phone'])): ?>
                 <p style="font-size:13px;color:var(--stone-mid);margin-top:2px;">
-                  <?php echo htmlspecialchars($customer['phone']); ?>
+                  <?php echo htmlspecialchars($customer['phone'] ?? ''); ?>
                 </p>
               <?php endif; ?>
             </div>
@@ -544,7 +544,7 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
           <p style="font-size:10px;font-weight:700;letter-spacing:0.12em;
                     text-transform:uppercase;opacity:0.5;margin-bottom:4px;">Order Summary</p>
           <p style="font-family:'Cormorant',serif;font-size:20px;font-weight:700;letter-spacing:0.02em;">
-            #<?php echo htmlspecialchars($order['order_number']); ?>
+            #<?php echo htmlspecialchars($order['order_number'] ?? ''); ?>
           </p>
           <p style="font-size:12px;opacity:0.55;margin-top:2px;">
             <?php echo formatDate($order['created_at']); ?>
@@ -596,13 +596,13 @@ $currentStep = $statusOrder[$order['status']] ?? 0;
           <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
             <span style="color:var(--stone-mid);">Status</span>
             <span class="status-badge status-<?php echo $order['payment_status'] === 'paid' ? 'delivered' : 'pending'; ?>">
-              <?php echo ucfirst($order['payment_status']); ?>
+              <?php echo ucfirst($order['payment_status'] ?? ''); ?>
             </span>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;font-size:13px;">
             <span style="color:var(--stone-mid);">Order Status</span>
             <span class="status-badge status-<?php echo $order['status']; ?>">
-              <?php echo ucfirst($order['status']); ?>
+              <?php echo ucfirst($order['status'] ?? ''); ?>
             </span>
           </div>
         </div>

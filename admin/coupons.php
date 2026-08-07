@@ -157,12 +157,12 @@ $dtLocal = function ($v) { return $v ? date('Y-m-d\TH:i', strtotime($v)) : ''; }
   <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px;">
     <div style="min-width:0;">
       <h2 style="font-size:16px;font-weight:700;margin:0 0 4px;">
-        Who used <code style="background:var(--black);color:#fff;padding:2px 9px;border-radius:6px;font-size:13px;letter-spacing:0.06em;"><?php echo htmlspecialchars($viewing['code']); ?></code>
+        Who used <code style="background:var(--black);color:#fff;padding:2px 9px;border-radius:6px;font-size:13px;letter-spacing:0.06em;"><?php echo htmlspecialchars($viewing['code'] ?? ''); ?></code>
       </h2>
       <p style="font-size:12.5px;color:var(--stone-mid);margin:0;">
         <?php
         $people = [];
-        foreach ($redeemers as $r) { if (!empty($r['email'])) $people[strtolower($r['email'])] = true; }
+        foreach ($redeemers as $r) { if (!empty($r['email'])) $people[strtolower($r['email'] ?? '')] = true; }
         $peopleCount = count($people);
         echo count($redeemers) . ' ' . (count($redeemers) === 1 ? 'use' : 'uses') . ' by ' . $peopleCount . ' ' . ($peopleCount === 1 ? 'person' : 'people');
         ?>
@@ -201,7 +201,7 @@ $dtLocal = function ($v) { return $v ? date('Y-m-d\TH:i', strtotime($v)) : ''; }
             <td style="font-size:13px;color:var(--stone-mid);white-space:nowrap;"><?php echo date('j M Y', strtotime($r['created_at'])); ?></td>
             <td style="font-size:13px;">
               <?php if (!empty($r['order_number'])): ?>
-                <a href="order-details.php?id=<?php echo (int)$r['order_id']; ?>" style="color:var(--gold);font-weight:600;"><?php echo htmlspecialchars($r['order_number']); ?></a>
+                <a href="order-details.php?id=<?php echo (int)$r['order_id']; ?>" style="color:var(--gold);font-weight:600;"><?php echo htmlspecialchars($r['order_number'] ?? ''); ?></a>
                 <span style="color:var(--stone-mid);">(<?php echo formatPrice($r['total']); ?>)</span>
               <?php else: ?>
                 <span style="color:var(--stone-mid);">-</span>
@@ -305,7 +305,7 @@ $dtLocal = function ($v) { return $v ? date('Y-m-d\TH:i', strtotime($v)) : ''; }
           <option value="">All products</option>
           <?php foreach ($categories as $cat): ?>
             <option value="<?php echo (int)$cat['id']; ?>" <?php echo (int)($editing['category_id'] ?? 0) === (int)$cat['id'] ? 'selected' : ''; ?>>
-              <?php echo htmlspecialchars($cat['name']); ?>
+              <?php echo htmlspecialchars($cat['name'] ?? ''); ?>
             </option>
           <?php endforeach; ?>
         </select>
@@ -395,11 +395,11 @@ $dtLocal = function ($v) { return $v ? date('Y-m-d\TH:i', strtotime($v)) : ''; }
             <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap;">
               <div style="min-width:0;flex:1;">
                 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                  <code style="background:var(--black);color:#fff;padding:3px 9px;border-radius:6px;font-size:12.5px;font-weight:700;letter-spacing:0.06em;"><?php echo htmlspecialchars($c['code']); ?></code>
+                  <code style="background:var(--black);color:#fff;padding:3px 9px;border-radius:6px;font-size:12.5px;font-weight:700;letter-spacing:0.06em;"><?php echo htmlspecialchars($c['code'] ?? ''); ?></code>
                   <span style="font-size:12.5px;font-weight:700;color:var(--gold);"><?php echo $gives; ?></span>
                 </div>
                 <?php if ($c['description']): ?>
-                  <div style="font-size:12px;color:var(--stone-mid);margin-top:5px;overflow-wrap:anywhere;"><?php echo htmlspecialchars($c['description']); ?></div>
+                  <div style="font-size:12px;color:var(--stone-mid);margin-top:5px;overflow-wrap:anywhere;"><?php echo htmlspecialchars($c['description'] ?? ''); ?></div>
                 <?php endif; ?>
                 <div style="font-size:11.5px;color:var(--stone-mid);margin-top:5px;">
                   <?php
@@ -409,7 +409,7 @@ $dtLocal = function ($v) { return $v ? date('Y-m-d\TH:i', strtotime($v)) : ''; }
                   if (!empty($c['birthday_only']))    $bits[] = 'birthday';
                   if (!empty($c['expires_at']))       $bits[] = 'ends ' . date('j M Y', strtotime($c['expires_at']));
                   if (!empty($c['max_uses']))         $bits[] = (int)$c['max_uses'] . ' total';
-                  if (!empty($c['source']))           $bits[] = htmlspecialchars($c['source']);
+                  if (!empty($c['source']))           $bits[] = htmlspecialchars($c['source'] ?? '');
                   echo $bits ? implode(' &middot; ', $bits) : 'No restrictions';
                   ?>
                 </div>
@@ -429,7 +429,7 @@ $dtLocal = function ($v) { return $v ? date('Y-m-d\TH:i', strtotime($v)) : ''; }
                 <a href="?used=<?php echo (int)$c['id']; ?>" style="color:var(--black);font-weight:600;">See who used it</a>
               <?php endif; ?>
               <a href="?toggle=<?php echo (int)$c['id']; ?>" style="color:var(--stone-mid);font-weight:600;"><?php echo $c['is_active'] ? 'Turn off' : 'Turn on'; ?></a>
-              <a href="?delete=<?php echo (int)$c['id']; ?>" onclick="return confirm('Delete <?php echo htmlspecialchars($c['code']); ?>? Past orders keep their discount.')" style="color:#EF4444;">Delete</a>
+              <a href="?delete=<?php echo (int)$c['id']; ?>" onclick="return confirm('Delete <?php echo htmlspecialchars($c['code'] ?? ''); ?>? Past orders keep their discount.')" style="color:#EF4444;">Delete</a>
             </div>
           </div>
         <?php endforeach; ?>

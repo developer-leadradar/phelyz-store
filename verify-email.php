@@ -3,7 +3,7 @@ $pageTitle = "Verify Email";
 require_once 'includes/header.php';
 
 $db    = getDB();
-$token = isset($_GET['token']) ? trim($_GET['token']) : '';
+$token = isset($_GET['token']) ? trim($_GET['token'] ?? '') : '';
 $state = 'invalid'; // invalid | expired | success | already_active
 
 // Housekeeping: clear out links that expired over a week ago.

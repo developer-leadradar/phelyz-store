@@ -250,7 +250,7 @@ if ($ready) {
           $pct = $totExpenses > 0 ? ($c['total'] / $totExpenses) * 100 : 0; ?>
           <div style="margin-bottom:9px;">
             <div style="display:flex;justify-content:space-between;font-size:12.5px;margin-bottom:3px;">
-              <span style="color:var(--black);font-weight:600;"><?php echo htmlspecialchars($c['category']); ?></span>
+              <span style="color:var(--black);font-weight:600;"><?php echo htmlspecialchars($c['category'] ?? ''); ?></span>
               <span style="color:var(--stone-mid);"><?php echo formatPrice($c['total']); ?></span>
             </div>
             <div style="height:6px;background:var(--cream-dark);border-radius:99px;overflow:hidden;">
@@ -317,7 +317,7 @@ if ($ready) {
           <div style="border:1px solid var(--cream-dark);border-radius:10px;padding:12px 14px;">
             <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
               <div style="min-width:0;flex:1;">
-                <div style="font-weight:700;font-size:13px;color:var(--black);overflow-wrap:anywhere;"><?php echo htmlspecialchars($b['reference']); ?></div>
+                <div style="font-weight:700;font-size:13px;color:var(--black);overflow-wrap:anywhere;"><?php echo htmlspecialchars($b['reference'] ?? ''); ?></div>
                 <div style="font-size:11.5px;color:var(--stone-mid);margin-top:3px;">
                   <?php echo htmlspecialchars($b['supplier'] ?: 'Supplier not set'); ?>
                   &middot; <?php echo date('j M Y', strtotime($b['ordered_on'])); ?>
@@ -350,7 +350,7 @@ if ($ready) {
                     <select name="product_id" class="form-input form-select">
                       <option value="">Not listed yet</option>
                       <?php foreach ($products as $p): ?>
-                        <option value="<?php echo (int)$p['id']; ?>"><?php echo htmlspecialchars($p['name']); ?></option>
+                        <option value="<?php echo (int)$p['id']; ?>"><?php echo htmlspecialchars($p['name'] ?? ''); ?></option>
                       <?php endforeach; ?>
                     </select></div>
                 </div>
@@ -384,8 +384,8 @@ if ($ready) {
       <?php foreach ($expenses as $e): ?>
         <tr>
           <td style="white-space:nowrap;font-size:13px;"><?php echo date('j M Y', strtotime($e['spent_on'])); ?></td>
-          <td style="font-size:13px;color:var(--stone-mid);"><?php echo htmlspecialchars($e['category']); ?></td>
-          <td style="font-size:13px;overflow-wrap:anywhere;"><?php echo htmlspecialchars($e['description']); ?></td>
+          <td style="font-size:13px;color:var(--stone-mid);"><?php echo htmlspecialchars($e['category'] ?? ''); ?></td>
+          <td style="font-size:13px;overflow-wrap:anywhere;"><?php echo htmlspecialchars($e['description'] ?? ''); ?></td>
           <td style="text-align:right;font-weight:600;white-space:nowrap;"><?php echo formatPrice($e['amount']); ?></td>
         </tr>
       <?php endforeach; ?>

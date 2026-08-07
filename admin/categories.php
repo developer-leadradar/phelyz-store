@@ -149,8 +149,8 @@ $categories = $db->fetchAll("SELECT * FROM categories ORDER BY display_order ASC
                     ?>
                     <tr id="category-<?php echo $category['id']; ?>">
                         <td style="color:var(--stone-mid);"><?php echo $category['display_order']; ?></td>
-                        <td style="font-weight:700;color:var(--black);"><?php echo htmlspecialchars($category['name']); ?></td>
-                        <td style="font-size:12px;color:var(--stone-mid);font-family:monospace;"><?php echo htmlspecialchars($category['slug']); ?></td>
+                        <td style="font-weight:700;color:var(--black);"><?php echo htmlspecialchars($category['name'] ?? ''); ?></td>
+                        <td style="font-size:12px;color:var(--stone-mid);font-family:monospace;"><?php echo htmlspecialchars($category['slug'] ?? ''); ?></td>
                         <td style="font-size:12px;color:var(--stone-mid);"><?php echo htmlspecialchars(substr($category['description'] ?? '', 0, 50)); ?><?php echo strlen($category['description'] ?? '') > 50 ? '…' : ''; ?></td>
                         <td style="font-size:13px;"><?php echo $productCount; ?></td>
                         <td>
@@ -178,7 +178,7 @@ $categories = $db->fetchAll("SELECT * FROM categories ORDER BY display_order ASC
                                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;" class="form-row-2col">
                                     <div class="form-group" style="margin-bottom:0;">
                                         <label class="form-label">Category Name <span style="color:#EF4444;">*</span></label>
-                                        <input type="text" name="name" value="<?php echo htmlspecialchars($category['name']); ?>" required class="form-input">
+                                        <input type="text" name="name" value="<?php echo htmlspecialchars($category['name'] ?? ''); ?>" required class="form-input">
                                     </div>
                                     <div class="form-group" style="margin-bottom:0;">
                                         <label class="form-label">Display Order</label>

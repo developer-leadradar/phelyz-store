@@ -126,14 +126,14 @@ $fActive   = $editing ? (int)$editing['is_active'] : 1;
       <?php foreach ($presets as $key => $p): ?>
         <button type="button" class="preset-btn" data-preset="<?php echo $key; ?>"
                 data-copy='<?php echo htmlspecialchars(json_encode($p["copy"]), ENT_QUOTES); ?>'
-                data-emoji="<?php echo htmlspecialchars($p['emoji']); ?>"
+                data-emoji="<?php echo htmlspecialchars($p['emoji'] ?? ''); ?>"
                 onclick="pickPreset('<?php echo $key; ?>')"
                 style="border:2px solid <?php echo $fPreset === $key ? 'var(--gold)' : 'transparent'; ?>;border-radius:10px;padding:0;cursor:pointer;overflow:hidden;background:none;text-align:left;">
           <div style="background:<?php echo $p['grad']; ?>;height:52px;display:flex;align-items:center;justify-content:center;font-size:20px;">
             <?php echo $p['emoji']; ?>
           </div>
           <div style="padding:7px 9px;background:white;font-size:11.5px;font-weight:600;color:var(--black);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-            <?php echo htmlspecialchars($p['label']); ?>
+            <?php echo htmlspecialchars($p['label'] ?? ''); ?>
           </div>
         </button>
       <?php endforeach; ?>
@@ -255,10 +255,10 @@ $fActive   = $editing ? (int)$editing['is_active'] : 1;
         <div style="display:flex;align-items:center;gap:16px;border:1px solid var(--cream-dark);border-radius:11px;padding:12px;flex-wrap:wrap;">
           <div style="background:<?php echo $st['bg']; ?>;color:<?php echo $st['text']; ?>;border-radius:8px;padding:12px 16px;min-width:210px;flex:1;">
             <div style="font-size:13.5px;font-weight:700;">
-              <?php echo $b['emoji'] ? htmlspecialchars($b['emoji']).' ' : ''; ?><?php echo htmlspecialchars($b['title']); ?>
+              <?php echo $b['emoji'] ? htmlspecialchars($b['emoji'] ?? '').' ' : ''; ?><?php echo htmlspecialchars($b['title'] ?? ''); ?>
             </div>
             <?php if ($b['subtitle']): ?>
-              <div style="font-size:11.5px;opacity:0.85;margin-top:3px;"><?php echo htmlspecialchars($b['subtitle']); ?></div>
+              <div style="font-size:11.5px;opacity:0.85;margin-top:3px;"><?php echo htmlspecialchars($b['subtitle'] ?? ''); ?></div>
             <?php endif; ?>
           </div>
           <div style="font-size:12px;color:var(--stone-mid);min-width:150px;">

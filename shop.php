@@ -132,14 +132,14 @@ if (!empty($activeFilters)):
     <!-- ── Sidebar Filter ─────────────────────── -->
     <aside style="width:240px;flex-shrink:0;" id="desktop-sidebar">
       <form method="GET" action="shop.php" id="filter-form">
-        <?php if (!empty($filters['sort'])): ?><input type="hidden" name="sort" value="<?php echo htmlspecialchars($filters['sort']); ?>"><?php endif; ?>
+        <?php if (!empty($filters['sort'])): ?><input type="hidden" name="sort" value="<?php echo htmlspecialchars($filters['sort'] ?? ''); ?>"><?php endif; ?>
 
         <div class="card" style="overflow:hidden;padding:0;">
           <!-- Header -->
           <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--cream-dark);background:var(--cream);">
             <span style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--stone);">Filters</span>
             <?php if (!empty($activeFilters)): ?>
-              <a href="shop.php<?php echo !empty($filters['sort'])?'?sort='.htmlspecialchars($filters['sort']):''; ?>" style="font-size:11px;color:#EF4444;font-weight:600;">Clear all</a>
+              <a href="shop.php<?php echo !empty($filters['sort'])?'?sort='.htmlspecialchars($filters['sort'] ?? ''):''; ?>" style="font-size:11px;color:#EF4444;font-weight:600;">Clear all</a>
             <?php endif; ?>
           </div>
 
@@ -175,7 +175,7 @@ if (!empty($activeFilters)):
               $checked = (isset($filters['category_id']) && $filters['category_id']==$cat['id']) ? 'checked' : '';
               $opts .= '<label style="display:flex;align-items:center;gap:8px;padding:5px 0;cursor:pointer;">
                 <input type="radio" name="category" value="'.(int)$cat['id'].'" '.$checked.' style="accent-color:var(--gold);width:14px;height:14px;">
-                <span style="font-size:13px;color:var(--stone);">'.htmlspecialchars($cat['name']).'</span>
+                <span style="font-size:13px;color:var(--stone);">'.htmlspecialchars($cat['name'] ?? '').'</span>
               </label>';
             }
             echo filterSection('Category', $opts);
@@ -221,7 +221,7 @@ if (!empty($activeFilters)):
       <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
         <p style="font-size:13px;color:var(--stone-mid);">
           Showing <strong style="color:var(--black);"><?php echo number_format($totalProducts); ?></strong> result<?php echo $totalProducts!=1?'s':''; ?>
-          <?php if (!empty($filters['search'])): ?> for "<strong><?php echo htmlspecialchars($filters['search']); ?></strong>"<?php endif; ?>
+          <?php if (!empty($filters['search'])): ?> for "<strong><?php echo htmlspecialchars($filters['search'] ?? ''); ?></strong>"<?php endif; ?>
         </p>
         <form method="GET" action="shop.php" id="sort-form" style="display:flex;align-items:center;gap:8px;">
           <?php foreach ($_GET as $k=>$v): if ($k==='sort') continue; ?>

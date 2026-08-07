@@ -230,12 +230,12 @@ try {
       <?php foreach ($templates as $key => $t): ?>
         <button type="button" class="template-chip<?php echo $key === 'blank' ? ' is-blank' : ''; ?>"
                 data-key="<?php echo $key; ?>"
-                data-subject="<?php echo htmlspecialchars($t['subject']); ?>"
-                data-heading="<?php echo htmlspecialchars($t['heading']); ?>"
-                data-body="<?php echo htmlspecialchars($t['body']); ?>"
-                data-cta="<?php echo htmlspecialchars($t['cta']); ?>"
-                data-url="<?php echo htmlspecialchars($t['url']); ?>">
-          <?php echo htmlspecialchars($t['name']); ?>
+                data-subject="<?php echo htmlspecialchars($t['subject'] ?? ''); ?>"
+                data-heading="<?php echo htmlspecialchars($t['heading'] ?? ''); ?>"
+                data-body="<?php echo htmlspecialchars($t['body'] ?? ''); ?>"
+                data-cta="<?php echo htmlspecialchars($t['cta'] ?? ''); ?>"
+                data-url="<?php echo htmlspecialchars($t['url'] ?? ''); ?>">
+          <?php echo htmlspecialchars($t['name'] ?? ''); ?>
         </button>
       <?php endforeach; ?>
     </div>
@@ -288,8 +288,8 @@ try {
         <label class="audience-option<?php echo $selAud === $key ? ' selected' : ''; ?>">
           <input type="radio" name="audience" value="<?php echo $key; ?>" <?php echo $selAud === $key ? 'checked' : ''; ?>>
           <span style="flex:1;min-width:0;">
-            <span style="display:block;font-weight:700;font-size:13.5px;color:var(--black);"><?php echo htmlspecialchars($a['label']); ?></span>
-            <span style="display:block;font-size:12px;color:var(--stone-mid);"><?php echo htmlspecialchars($a['desc']); ?></span>
+            <span style="display:block;font-weight:700;font-size:13.5px;color:var(--black);"><?php echo htmlspecialchars($a['label'] ?? ''); ?></span>
+            <span style="display:block;font-size:12px;color:var(--stone-mid);"><?php echo htmlspecialchars($a['desc'] ?? ''); ?></span>
           </span>
           <span class="audience-count"><?php echo (int)$counts[$key]; ?></span>
         </label>
@@ -369,13 +369,13 @@ try {
             <tbody>
             <?php foreach ($leads as $l): ?>
               <tr>
-                <td style="font-size:12.5px;overflow-wrap:anywhere;"><?php echo htmlspecialchars($l['email']); ?></td>
+                <td style="font-size:12.5px;overflow-wrap:anywhere;"><?php echo htmlspecialchars($l['email'] ?? ''); ?></td>
                 <td style="font-size:12.5px;white-space:nowrap;">
                   <?php if (!empty($l['whatsapp'])):
                     $wa = preg_replace('/\D/', '', $l['whatsapp']);
                     if (strpos($wa, '0') === 0) $wa = '234' . substr($wa, 1); ?>
                     <a href="https://wa.me/<?php echo htmlspecialchars($wa); ?>" target="_blank" rel="noopener"
-                       style="color:#25D366;font-weight:600;"><?php echo htmlspecialchars($l['whatsapp']); ?></a>
+                       style="color:#25D366;font-weight:600;"><?php echo htmlspecialchars($l['whatsapp'] ?? ''); ?></a>
                   <?php else: ?>
                     <span style="color:var(--stone-mid);">-</span>
                   <?php endif; ?>
@@ -409,7 +409,7 @@ try {
             <div style="border:1px solid var(--cream-dark);border-radius:10px;padding:12px 14px;">
               <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
                 <div style="min-width:0;flex:1;">
-                  <div style="font-weight:700;font-size:13px;color:var(--black);overflow-wrap:anywhere;"><?php echo htmlspecialchars($c['subject']); ?></div>
+                  <div style="font-weight:700;font-size:13px;color:var(--black);overflow-wrap:anywhere;"><?php echo htmlspecialchars($c['subject'] ?? ''); ?></div>
                   <div style="font-size:11.5px;color:var(--stone-mid);margin-top:3px;">
                     <?php echo date('j M Y, g:ia', strtotime($c['created_at'])); ?>
                     &middot; <?php echo htmlspecialchars($audiences[$c['audience']]['label'] ?? $c['audience']); ?>
@@ -419,7 +419,7 @@ try {
                   $badge = ['sent'=>'#10B981','sending'=>'#D97706','draft'=>'#78716C','cancelled'=>'#EF4444'][$c['status']] ?? '#78716C';
                 ?>
                 <span style="flex-shrink:0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#fff;background:<?php echo $badge; ?>;padding:3px 9px;border-radius:99px;">
-                  <?php echo htmlspecialchars($c['status']); ?>
+                  <?php echo htmlspecialchars($c['status'] ?? ''); ?>
                 </span>
               </div>
               <div style="font-size:12px;color:var(--stone-mid);margin-top:8px;display:flex;gap:14px;flex-wrap:wrap;">

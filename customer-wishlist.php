@@ -40,7 +40,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
           <div class="product-card">
             <div class="product-card-img">
               <a href="product.php?id=<?php echo $item['id']; ?>">
-                <img src="<?php echo htmlspecialchars($item['image']); ?>" alt="<?php echo htmlspecialchars($item['name']); ?>" loading="lazy" onerror="this.src='https://placehold.co/400x400/F5F5F4/78716C?text=Jewelry'">
+                <img src="<?php echo htmlspecialchars($item['image'] ?? ''); ?>" alt="<?php echo htmlspecialchars($item['name'] ?? ''); ?>" loading="lazy" onerror="this.src='https://placehold.co/400x400/F5F5F4/78716C?text=Jewelry'">
               </a>
               <div class="product-card-actions">
                 <button onclick="addToCart(<?php echo $item['id']; ?>)" class="icon-btn" title="Add to Cart">
@@ -53,7 +53,7 @@ $currentPage = basename($_SERVER['PHP_SELF']);
             </div>
             <div class="product-card-body">
               <div class="product-card-cat"><?php echo htmlspecialchars($item['category_name'] ?? ''); ?></div>
-              <h3 class="product-card-name"><a href="product.php?id=<?php echo $item['id']; ?>"><?php echo htmlspecialchars($item['name']); ?></a></h3>
+              <h3 class="product-card-name"><a href="product.php?id=<?php echo $item['id']; ?>"><?php echo htmlspecialchars($item['name'] ?? ''); ?></a></h3>
               <div class="product-card-price">
                 <span class="price-current"><?php echo formatPrice($item['price']); ?></span>
                 <?php if (!empty($item['compare_price']) && $item['compare_price']>$item['price']): ?><span class="price-original"><?php echo formatPrice($item['compare_price']); ?></span><?php endif; ?>

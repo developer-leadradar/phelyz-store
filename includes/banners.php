@@ -140,7 +140,7 @@ function bannerSlideStyle($b) {
     $p = bannerPreset($b['preset'] ?? 'gold');
     $bg = $p['grad'];
     if (!empty($b['bg_image'])) {
-        $bg = "linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.45)), url('" . htmlspecialchars($b['bg_image'], ENT_QUOTES) . "') center/cover no-repeat";
+        $bg = "linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.45)), url('" . htmlspecialchars($b['bg_image'] ?? '', ENT_QUOTES) . "') center/cover no-repeat";
     }
     return ['bg' => $bg, 'text' => $p['text'], 'accent' => $p['accent'], 'onAcc' => $p['onAcc']];
 }

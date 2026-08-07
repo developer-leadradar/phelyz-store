@@ -29,7 +29,7 @@ if (!isset($data['product_id']) || !isset($data['rating']) || !isset($data['revi
 $userId     = (int)$_SESSION['user_id'];
 $productId  = (int)$data['product_id'];
 $rating     = (int)$data['rating'];
-$reviewText = trim($data['review_text']);
+$reviewText = trim($data['review_text'] ?? '');
 $reviewId   = !empty($data['review_id']) ? (int)$data['review_id'] : 0;
 
 if ($rating < 1 || $rating > 5) {

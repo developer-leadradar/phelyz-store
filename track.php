@@ -66,17 +66,17 @@ $currentProgress = $meta ? (float)$meta['progress'] : -1;
         <div>
           <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--stone-mid);margin-bottom:5px;">Tracking ID</div>
           <div style="font-family:'Cormorant',serif;font-size:26px;font-weight:700;color:var(--black);letter-spacing:0.02em;">
-            <?php echo htmlspecialchars($parcel['tracking_id']); ?>
+            <?php echo htmlspecialchars($parcel['tracking_id'] ?? ''); ?>
           </div>
           <div style="font-size:12.5px;color:var(--stone-mid);margin-top:5px;">
-            Order <strong style="color:var(--black);"><?php echo htmlspecialchars($parcel['order_number']); ?></strong>
-            &nbsp;·&nbsp; Parcel <?php echo htmlspecialchars($parcel['parcel_number']); ?>
+            Order <strong style="color:var(--black);"><?php echo htmlspecialchars($parcel['order_number'] ?? ''); ?></strong>
+            &nbsp;·&nbsp; Parcel <?php echo htmlspecialchars($parcel['parcel_number'] ?? ''); ?>
           </div>
         </div>
         <div style="text-align:right;">
           <span style="display:inline-flex;align-items:center;gap:7px;background:<?php echo $meta['colour']; ?>1A;color:<?php echo $meta['colour']; ?>;padding:8px 16px;border-radius:999px;font-size:13px;font-weight:700;">
             <span style="width:8px;height:8px;border-radius:50%;background:<?php echo $meta['colour']; ?>;"></span>
-            <?php echo htmlspecialchars($meta['label']); ?>
+            <?php echo htmlspecialchars($meta['label'] ?? ''); ?>
           </span>
           <?php if (!empty($parcel['eta_date']) && $parcel['status'] !== 'delivered' && !$isProblem): ?>
             <div style="font-size:12.5px;color:var(--stone-mid);margin-top:9px;">
@@ -115,7 +115,7 @@ $currentProgress = $meta ? (float)$meta['progress'] : -1;
                 <?php endif; ?>
               </div>
               <div style="font-size:11.5px;font-weight:<?php echo $done ? '700' : '500'; ?>;color:<?php echo $done ? 'var(--black)' : 'var(--stone-mid)'; ?>;line-height:1.35;">
-                <?php echo htmlspecialchars($sm['label']); ?>
+                <?php echo htmlspecialchars($sm['label'] ?? ''); ?>
               </div>
             </div>
           <?php endforeach; ?>
@@ -124,7 +124,7 @@ $currentProgress = $meta ? (float)$meta['progress'] : -1;
       <?php else: ?>
         <div class="alert alert-error" style="margin:22px 0 0;">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" style="width:18px;height:18px;flex-shrink:0;"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126z"/></svg>
-          <div><strong><?php echo htmlspecialchars($meta['label']); ?>.</strong> <?php echo htmlspecialchars($meta['desc']); ?> - please contact us on WhatsApp and we'll sort it out.</div>
+          <div><strong><?php echo htmlspecialchars($meta['label'] ?? ''); ?>.</strong> <?php echo htmlspecialchars($meta['desc'] ?? ''); ?> - please contact us on WhatsApp and we'll sort it out.</div>
         </div>
       <?php endif; ?>
     </div>
@@ -159,12 +159,12 @@ $currentProgress = $meta ? (float)$meta['progress'] : -1;
                             background:<?php echo $latest ? $em['colour'] : 'var(--white)'; ?>;
                             border:3px solid <?php echo $em['colour']; ?>;
                             <?php echo $latest ? 'box-shadow:0 0 0 4px '.$em['colour'].'26;' : ''; ?>"></div>
-                <div style="font-size:13.5px;font-weight:700;color:var(--black);"><?php echo htmlspecialchars($em['label']); ?></div>
+                <div style="font-size:13.5px;font-weight:700;color:var(--black);"><?php echo htmlspecialchars($em['label'] ?? ''); ?></div>
                 <?php if (!empty($ev['label'])): ?>
-                  <div style="font-size:12.5px;color:var(--stone);margin-top:2px;"><?php echo htmlspecialchars($ev['label']); ?></div>
+                  <div style="font-size:12.5px;color:var(--stone);margin-top:2px;"><?php echo htmlspecialchars($ev['label'] ?? ''); ?></div>
                 <?php endif; ?>
                 <?php if (!empty($ev['note'])): ?>
-                  <div style="font-size:12px;color:var(--stone-mid);margin-top:3px;line-height:1.5;"><?php echo htmlspecialchars($ev['note']); ?></div>
+                  <div style="font-size:12px;color:var(--stone-mid);margin-top:3px;line-height:1.5;"><?php echo htmlspecialchars($ev['note'] ?? ''); ?></div>
                 <?php endif; ?>
                 <div style="font-size:11.5px;color:var(--stone-mid);margin-top:4px;">
                   <?php echo date('j M Y, g:ia', strtotime($ev['created_at'])); ?>
@@ -220,7 +220,7 @@ $currentProgress = $meta ? (float)$meta['progress'] : -1;
        .bindPopup('<b>Destination</b><br><?php echo addslashes($parcel['dest_label'] ?: 'Your address'); ?>');
 
       var here = L.marker(current, { icon: dot(colour, 22) }).addTo(map)
-        .bindPopup('<b><?php echo addslashes($meta['label']); ?></b><br><?php echo addslashes($parcel['current_label'] ?: PHELYZ_ORIGIN_LABEL); ?>');
+        .bindPopup('<b><?php echo addslashes($meta['label'] ?? ''); ?></b><br><?php echo addslashes($parcel['current_label'] ?: PHELYZ_ORIGIN_LABEL); ?>');
       here.openPopup();
 
       // Gentle pulse on the live position

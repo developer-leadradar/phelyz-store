@@ -81,14 +81,14 @@ $paymentFailed = isset($_GET['payment']) && $_GET['payment'] === 'failed';
                   <div class="md:col-span-6 flex items-center gap-4">
                     <a href="product.php?id=<?php echo (int)$item['product_id']; ?>"
                        class="flex-shrink-0 w-20 h-20 md:w-24 md:h-24 rounded-xl overflow-hidden bg-stone-100 border border-stone-200">
-                      <img src="<?php echo htmlspecialchars($item['image']); ?>"
-                           alt="<?php echo htmlspecialchars($item['name']); ?>"
+                      <img src="<?php echo htmlspecialchars($item['image'] ?? ''); ?>"
+                           alt="<?php echo htmlspecialchars($item['name'] ?? ''); ?>"
                            class="w-full h-full object-contain p-1">
                     </a>
                     <div class="min-w-0">
                       <a href="product.php?id=<?php echo (int)$item['product_id']; ?>"
                          class="font-semibold text-stone-800 text-sm leading-snug hover:text-gold transition-colors line-clamp-2 block mb-1">
-                        <?php echo htmlspecialchars($item['name']); ?>
+                        <?php echo htmlspecialchars($item['name'] ?? ''); ?>
                       </a>
                       <?php if (!empty($item['selected_color'])):
                         // Look up the hex from the product's colors string for the swatch dot
@@ -101,7 +101,7 @@ $paymentFailed = isset($_GET['payment']) && $_GET['payment'] === 'failed';
                           <?php if ($hex): ?>
                           <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:<?php echo htmlspecialchars($hex); ?>;border:1px solid rgba(0,0,0,0.1);flex-shrink:0;"></span>
                           <?php endif; ?>
-                          Colour: <strong class="text-stone-700"><?php echo htmlspecialchars($item['selected_color']); ?></strong>
+                          Colour: <strong class="text-stone-700"><?php echo htmlspecialchars($item['selected_color'] ?? ''); ?></strong>
                         </span>
                       <?php endif; ?>
                       <?php if ($item['stock_quantity'] < $item['quantity']): ?>

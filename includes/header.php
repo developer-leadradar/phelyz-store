@@ -123,7 +123,7 @@ tailwind.config = {
       <a href="shop.php" class="drawer-cat-link">All Products</a>
       <?php foreach ($categories as $cat): ?>
         <a href="shop.php?category=<?php echo $cat['id']; ?>" class="drawer-cat-link">
-          <?php echo htmlspecialchars($cat['name']); ?>
+          <?php echo htmlspecialchars($cat['name'] ?? ''); ?>
         </a>
       <?php endforeach; ?>
     </div>
@@ -176,7 +176,7 @@ tailwind.config = {
           <div style="height:1px;background:var(--cream-dark);margin:4px 0;"></div>
           <?php foreach ($categories as $cat): ?>
             <a href="shop.php?category=<?php echo $cat['id']; ?>" class="nav-dd-item">
-              <?php echo htmlspecialchars($cat['name']); ?>
+              <?php echo htmlspecialchars($cat['name'] ?? ''); ?>
             </a>
           <?php endforeach; ?>
         </div>

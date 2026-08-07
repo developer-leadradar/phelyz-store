@@ -38,11 +38,11 @@ $customers=$db->fetchAll($sql,$params);
             <tr>
               <td>
                 <div style="display:flex;align-items:center;gap:10px;">
-                  <div style="width:34px;height:34px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Cormorant',serif;font-size:15px;font-weight:700;color:white;flex-shrink:0;"><?php echo strtoupper(substr($c['first_name'],0,1)); ?></div>
+                  <div style="width:34px;height:34px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-family:'Cormorant',serif;font-size:15px;font-weight:700;color:white;flex-shrink:0;"><?php echo strtoupper(substr($c['first_name'] ?? '',0,1)); ?></div>
                   <span style="font-weight:600;font-size:13px;"><?php echo htmlspecialchars($c['first_name'].' '.$c['last_name']); ?></span>
                 </div>
               </td>
-              <td style="font-size:13px;color:var(--stone-mid);"><?php echo htmlspecialchars($c['email']); ?></td>
+              <td style="font-size:13px;color:var(--stone-mid);"><?php echo htmlspecialchars($c['email'] ?? ''); ?></td>
               <td style="font-size:13px;color:var(--stone-mid);"><?php echo htmlspecialchars($c['phone']??'-'); ?></td>
               <td style="font-size:12px;color:var(--stone-mid);"><?php echo formatDate($c['created_at']); ?></td>
               <td><span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:99px;<?php echo $c['is_active']?'background:#F0FDF4;color:#166534;':'background:#FEF2F2;color:#991B1B;'; ?>"><?php echo $c['is_active']?'Active':'Inactive'; ?></span></td>

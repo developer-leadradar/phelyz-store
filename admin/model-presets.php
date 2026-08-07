@@ -187,14 +187,14 @@ if (isset($_GET['edit'])) {
       <?php foreach ($presets as $p): ?>
       <div style="border:1px solid var(--cream-dark);border-radius:10px;padding:14px 16px;background:white;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div style="font-size:14px;font-weight:700;color:var(--black);"><?php echo htmlspecialchars($p['name']); ?></div>
+          <div style="font-size:14px;font-weight:700;color:var(--black);"><?php echo htmlspecialchars($p['name'] ?? ''); ?></div>
           <?php if ((int)$p['is_default'] === 1): ?>
           <span style="background:var(--gold);color:white;font-size:9px;font-weight:700;padding:3px 8px;border-radius:99px;text-transform:uppercase;letter-spacing:0.06em;">Default</span>
           <?php endif; ?>
         </div>
         <div style="font-size:12px;color:var(--stone-mid);line-height:1.6;">
-          <?php echo htmlspecialchars(ucfirst($p['skin_tone'])); ?> · <?php echo htmlspecialchars($p['gender']); ?> · <?php echo htmlspecialchars($p['age_range']); ?><br>
-          <?php echo htmlspecialchars(ucfirst($p['pose_style'])); ?> · <?php echo htmlspecialchars(ucfirst($p['lighting_mood'])); ?>
+          <?php echo htmlspecialchars(ucfirst($p['skin_tone'] ?? '')); ?> · <?php echo htmlspecialchars($p['gender'] ?? ''); ?> · <?php echo htmlspecialchars($p['age_range'] ?? ''); ?><br>
+          <?php echo htmlspecialchars(ucfirst($p['pose_style'] ?? '')); ?> · <?php echo htmlspecialchars(ucfirst($p['lighting_mood'] ?? '')); ?>
         </div>
         <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;">
           <a href="?edit=<?php echo (int)$p['id']; ?>" style="color:var(--gold);font-size:12px;font-weight:600;text-decoration:none;">Edit</a>

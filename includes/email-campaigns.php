@@ -145,7 +145,7 @@ function campaignRecipientsFor($audienceKey) {
     $seen = [];
     $out  = [];
     foreach ($rows as $r) {
-        $email = strtolower(trim($r['email']));
+        $email = strtolower(trim($r['email'] ?? ''));
         if ($email === '' || isset($seen[$email]) || isset($optedOut[$email])) continue;
         $seen[$email] = true;
         $out[] = $r;
@@ -160,7 +160,7 @@ function campaignOptOutList() {
     $list = [];
     try {
         foreach (getDB()->fetchAll("SELECT email FROM email_unsubscribes") as $r) {
-            $list[strtolower(trim($r['email']))] = true;
+            $list[strtolower(trim($r['email'] ?? ''))] = true;
         }
     } catch (Exception $e) {
         // Table missing just means nobody has opted out yet.

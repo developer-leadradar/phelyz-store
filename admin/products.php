@@ -35,7 +35,7 @@ $categories = getAllCategories();
       <input type="text" name="search" class="form-input" placeholder="Search products…" value="<?php echo htmlspecialchars($searchQuery); ?>" style="width:200px;padding:8px 12px;font-size:13px;">
       <select name="category" class="form-input form-select" style="width:160px;padding:8px 12px;font-size:13px;">
         <option value="">All Categories</option>
-        <?php foreach ($categories as $c): ?><option value="<?php echo $c['id']; ?>" <?php echo $categoryFilter==$c['id']?'selected':''; ?>><?php echo htmlspecialchars($c['name']); ?></option><?php endforeach; ?>
+        <?php foreach ($categories as $c): ?><option value="<?php echo $c['id']; ?>" <?php echo $categoryFilter==$c['id']?'selected':''; ?>><?php echo htmlspecialchars($c['name'] ?? ''); ?></option><?php endforeach; ?>
       </select>
       <select name="filter" class="form-input form-select" style="width:150px;padding:8px 12px;font-size:13px;">
         <option value="all" <?php echo $statusFilter==='all'?'selected':''; ?>>All Products</option>
@@ -69,7 +69,7 @@ $categories = getAllCategories();
                 </div>
               </td>
               <td>
-                <div style="font-weight:700;font-size:13px;color:var(--black);"><?php echo htmlspecialchars($p['name']); ?></div>
+                <div style="font-weight:700;font-size:13px;color:var(--black);"><?php echo htmlspecialchars($p['name'] ?? ''); ?></div>
                 <?php if ($p['is_featured']): ?><span style="font-size:10px;font-weight:700;background:rgba(202,138,4,0.10);color:var(--gold);padding:2px 6px;border-radius:4px;">Featured</span><?php endif; ?>
               </td>
               <td style="font-size:12px;color:var(--stone-mid);"><?php echo htmlspecialchars($p['sku']??'-'); ?></td>

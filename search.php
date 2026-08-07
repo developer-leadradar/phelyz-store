@@ -127,8 +127,8 @@ function renderStars($r){
         <div class="product-card"
              onclick="window.location='product.php?id=<?php echo $p['id']; ?>'">
           <div class="product-card-img">
-            <img src="<?php echo htmlspecialchars($p['image']); ?>"
-                 alt="<?php echo htmlspecialchars($p['name']); ?>"
+            <img src="<?php echo htmlspecialchars($p['image'] ?? ''); ?>"
+                 alt="<?php echo htmlspecialchars($p['name'] ?? ''); ?>"
                  loading="lazy"
                  onerror="this.src='https://placehold.co/400x400/F5F5F4/78716C?text=Jewelry'">
             <?php if ($p['compare_price'] > $p['price']): ?>
@@ -146,11 +146,11 @@ function renderStars($r){
             </div>
           </div>
           <div class="product-card-body">
-            <div class="product-card-cat"><?php echo htmlspecialchars($p['category_name']); ?></div>
+            <div class="product-card-cat"><?php echo htmlspecialchars($p['category_name'] ?? ''); ?></div>
             <h3 class="product-card-name">
               <a href="product.php?id=<?php echo $p['id']; ?>"
                  onclick="event.stopPropagation()">
-                <?php echo htmlspecialchars($p['name']); ?>
+                <?php echo htmlspecialchars($p['name'] ?? ''); ?>
               </a>
             </h3>
             <?php if ((int)$p['review_count'] > 0): ?>

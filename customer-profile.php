@@ -64,10 +64,10 @@ $currentPage=basename($_SERVER['PHP_SELF']);
       <form method="POST">
         <input type="hidden" name="update_profile" value="1">
         <div class="profile-form-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
-          <div class="form-group" style="margin:0;"><label class="form-label">First Name</label><input type="text" name="first_name" class="form-input" required value="<?php echo htmlspecialchars($user['first_name']); ?>"></div>
-          <div class="form-group" style="margin:0;"><label class="form-label">Last Name</label><input type="text" name="last_name" class="form-input" required value="<?php echo htmlspecialchars($user['last_name']); ?>"></div>
+          <div class="form-group" style="margin:0;"><label class="form-label">First Name</label><input type="text" name="first_name" class="form-input" required value="<?php echo htmlspecialchars($user['first_name'] ?? ''); ?>"></div>
+          <div class="form-group" style="margin:0;"><label class="form-label">Last Name</label><input type="text" name="last_name" class="form-input" required value="<?php echo htmlspecialchars($user['last_name'] ?? ''); ?>"></div>
         </div>
-        <div class="form-group" style="margin-bottom:16px;"><label class="form-label">Email Address <span style="color:var(--stone-mid);font-weight:400;">(cannot be changed)</span></label><input type="email" class="form-input" value="<?php echo htmlspecialchars($user['email']); ?>" disabled style="opacity:0.6;cursor:not-allowed;"></div>
+        <div class="form-group" style="margin-bottom:16px;"><label class="form-label">Email Address <span style="color:var(--stone-mid);font-weight:400;">(cannot be changed)</span></label><input type="email" class="form-input" value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>" disabled style="opacity:0.6;cursor:not-allowed;"></div>
         <div class="form-group" style="margin-bottom:16px;"><label class="form-label">Phone Number</label><input type="tel" name="phone" class="form-input" value="<?php echo htmlspecialchars($user['phone']??''); ?>"></div>
         <?php
           $curDay = $curMonth = 0;
