@@ -195,17 +195,51 @@
       if (on && note) el.textContent = note;
     }
 
+    /** Whatever went wrong, say so on the page rather than in the console. */
+    function complain(messages) {
+      var el = document.getElementById(opts.container + '-error');
+      if (!el) return;
+      if (!messages.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+      el.innerHTML = messages.map(function (m) { return '<div>' + m + '</div>'; }).join('');
+      el.style.display = 'block';
+    }
+
+    var READABLE = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+
     async function add(fileList) {
       var incoming = Array.prototype.slice.call(fileList || []);
       if (!incoming.length) return;
 
+      var problems = [];
+      complain([]);
       setBusy(true, 'Preparing ' + incoming.length + ' photo' + (incoming.length > 1 ? 's' : '') + '…');
-      for (var i = 0; i < incoming.length; i++) {
-        if (!/^image\//.test(incoming[i].type)) continue;
-        chosen.push(await shrink(incoming[i]));
-      }
-      setBusy(false);
 
+      for (var i = 0; i < incoming.length; i++) {
+        var raw = incoming[i];
+        var prepared = await shrink(raw);
+
+        // A phone set to "HEIF picture" hands over a .heic, which no browser
+        // here can decode and the server will not accept either. Better to say
+        // that plainly than to upload it and have it rejected out of sight.
+        if (READABLE.indexOf(prepared.type) === -1) {
+          problems.push('<strong>' + escapeAttr(raw.name) + '</strong> is not a format the site can read' +
+            (/heic|heif/i.test(raw.name + raw.type)
+              ? '. Your phone is saving photos as HEIF. In the camera app open Settings and switch the picture format to JPEG, then take the photo again.'
+              : '. Please use a JPG, PNG or WebP.'));
+          continue;
+        }
+
+        if (opts.maxBytes && prepared.size > opts.maxBytes) {
+          problems.push('<strong>' + escapeAttr(raw.name) + '</strong> is ' + formatSize(prepared.size) +
+            ' after resizing, and this server only accepts ' + formatSize(opts.maxBytes) + ' per photo.');
+          continue;
+        }
+
+        chosen.push(prepared);
+      }
+
+      setBusy(false);
+      complain(problems);
       syncInput();
       render();
     }

@@ -487,6 +487,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <input type="file" id="product_image" name="images[]" accept="image/*" multiple
                    style="display:none;">
 
+            <div id="image-preview-container-error" style="display:none;margin-top:12px;padding:12px 14px;background:#FEF2F2;border:1px solid #FECACA;border-radius:9px;color:#991B1B;font-size:12.5px;line-height:1.6;"></div>
+
             <p id="image-preview-container-busy" style="display:none;margin-top:12px;font-size:12.5px;font-weight:600;color:var(--gold);">Preparing photos…</p>
 
             <!-- Multi-image preview grid -->
@@ -538,7 +540,8 @@ var productImagePicker = phelyzImagePicker({
     dropZone:  'drop-zone',
     container: 'image-preview-container',
     grid:      'image-preview-grid',
-    label:     'image-count-label'
+    label:     'image-count-label',
+    maxBytes:  <?php echo (int)uploadMaxBytes(); ?>
 });
 
 function clearImage() { if (productImagePicker) productImagePicker.clear(); }

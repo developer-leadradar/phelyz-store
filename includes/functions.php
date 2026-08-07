@@ -1126,6 +1126,18 @@ function uploadImage($file, $directory = 'products') {
     return false;
 }
 
+/** upload_max_filesize in bytes, so the browser can check before sending. */
+function uploadMaxBytes() {
+    $raw  = trim((string)ini_get('upload_max_filesize'));
+    if ($raw === '') return 0;
+    $unit = strtolower(substr($raw, -1));
+    $n    = (float)$raw;
+    if ($unit === 'g') return (int)($n * 1024 * 1024 * 1024);
+    if ($unit === 'm') return (int)($n * 1024 * 1024);
+    if ($unit === 'k') return (int)($n * 1024);
+    return (int)$n;
+}
+
 /** memory_limit in bytes. Returns 0 when the limit is unlimited. */
 function imageMemoryLimitBytes() {
     $raw = trim((string)ini_get('memory_limit'));
