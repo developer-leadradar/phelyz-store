@@ -1,0 +1,41 @@
+# Phelyz Store
+#
+# The shop is open to search engines. The admin panel, the checkout flow and
+# anything personal is not: those pages are useless in search results and a
+# few of them would leak an order to whoever found the link.
+
+User-agent: *
+
+Disallow: /admin/
+Disallow: /api/
+Disallow: /cron/
+Disallow: /migrations/
+Disallow: /storage/
+Disallow: /uploads/templates/
+
+# Personal or single-use pages
+Disallow: /checkout.php
+Disallow: /cart.php
+Disallow: /order-details.php
+Disallow: /customer-dashboard.php
+Disallow: /customer-orders.php
+Disallow: /customer-profile.php
+Disallow: /customer-addresses.php
+Disallow: /customer-wishlist.php
+Disallow: /reset-password.php
+Disallow: /verify-email.php
+Disallow: /unsubscribe.php
+Disallow: /logout.php
+Disallow: /paystack-callback.php
+Disallow: /paystack-webhook.php
+Disallow: /install.php
+Disallow: /uninstall.php
+
+# Search result pages add nothing and dilute the real product pages
+Disallow: /search.php
+
+# Product photos should be indexed; they bring people in through image search
+Allow: /uploads/products/
+Allow: /assets/
+
+Sitemap: https://phelyzstore.com/sitemap.php

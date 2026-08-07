@@ -35,6 +35,9 @@ trackPageView(
 <link rel="icon" href="<?php echo SITE_URL; ?>/assets/images/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="<?php echo SITE_URL; ?>/assets/images/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="<?php echo SITE_URL; ?>/assets/images/favicon-16.png">
+<!-- Google picks the icon nearest 48px when it builds a search result, so give
+     it one at exactly that size rather than making it scale a 32. -->
+<link rel="icon" type="image/png" sizes="48x48" href="<?php echo SITE_URL; ?>/assets/images/favicon-48.png">
 <link rel="apple-touch-icon" sizes="180x180" href="<?php echo SITE_URL; ?>/assets/images/apple-touch-icon.png">
 
 <meta name="description" content="<?php echo isset($pageDescription) ? htmlspecialchars($pageDescription) : 'Premium jewelry - exquisite rings, necklaces, bracelets and more. Certified authentic, free shipping over ₦50,000.'; ?>">

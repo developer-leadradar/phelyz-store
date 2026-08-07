@@ -1,4 +1,37 @@
 <?php
+// ── Raw message body, for the preview frame ─────────────────────────────────
+//
+// This has to answer before a single byte of the admin page is sent. It used
+// to sit below the header include, which meant the frame received the entire
+// admin page (sidebar, menu button, page title) wrapped around the email, and
+// the header() calls below arrived too late to take effect.
+//
+// Bootstrapped by hand rather than through includes/header.php, because that
+// file starts printing HTML immediately.
+define('PHELYZ_ACCESS', true);
+require_once __DIR__ . '/../config.php';
+require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/functions.php';
+requireAdmin();
+
+if (!empty($_GET['view']) && isset($_GET['raw'])) {
+    $row = null;
+    try {
+        $row = getDB()->fetchOne("SELECT body_html FROM email_log WHERE token = ?", [$_GET['view']]);
+    } catch (Exception $e) {}
+
+    header('Content-Type: text/html; charset=UTF-8');
+    // The stored HTML is ours, but it is still content being replayed: let it
+    // load images and inline styles, nothing else.
+    header("Content-Security-Policy: default-src 'none'; img-src * data:; style-src 'unsafe-inline'");
+    header('X-Frame-Options: SAMEORIGIN');
+
+    echo ($row && $row['body_html'])
+        ? $row['body_html']
+        : '<p style="font-family:sans-serif;color:#888;padding:20px;">No copy was stored for this message.</p>';
+    exit;
+}
+
 $pageTitle = "Email Log";
 require_once 'includes/header.php';
 require_once __DIR__ . '/../includes/email-campaigns.php';
@@ -12,15 +45,6 @@ catch (Exception $e) { $ready = false; }
 $viewing = null;
 if ($ready && !empty($_GET['view'])) {
     $viewing = $db->fetchOne("SELECT * FROM email_log WHERE token = ?", [$_GET['view']]);
-}
-
-// Raw message body, served on its own so the stored HTML renders exactly as the
-// customer saw it without its styles leaking into the admin page.
-if ($viewing && isset($_GET['raw'])) {
-    header('Content-Type: text/html; charset=UTF-8');
-    header("Content-Security-Policy: default-src 'none'; img-src * data:; style-src 'unsafe-inline'");
-    echo $viewing['body_html'] ?: '<p style="font-family:sans-serif;color:#888">No copy was stored for this message.</p>';
-    exit;
 }
 
 // ── Filters ─────────────────────────────────────────────────────────────────

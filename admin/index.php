@@ -39,6 +39,13 @@ $bkWarn = $backupAgeH !== null && $backupAgeH > 36;
         <?php echo (int)($backup['db_copies'] ?? 0); ?> database
         and <?php echo (int)($backup['photo_copies'] ?? 0); ?> photo copies kept,
         <?php echo round(($backup['total_bytes'] ?? 0) / 1048576, 1); ?> MB.
+        <br>
+        <span style="color:var(--black);">Saved in</span>
+        <code style="background:var(--cream-dark);padding:1px 6px;border-radius:5px;font-size:11px;"><?php echo htmlspecialchars($backup['path'] ?? ''); ?></code>
+        <span style="color:var(--stone-mid);">
+          Open cPanel, then File Manager, and go to that folder to download one.
+          It sits outside the website on purpose, so nobody can reach it from the web.
+        </span>
       <?php elseif ($bkWarn): ?>
         Last backup was <?php echo round($backupAgeH / 24); ?> days ago. It should run nightly.
       <?php else: ?>
