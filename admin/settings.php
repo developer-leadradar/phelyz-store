@@ -585,7 +585,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                        class="form-input">
                 <p class="form-hint">
                     Get a free key at <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600;">aistudio.google.com</a>.
-                    On Vercel set <code>GEMINI_API_KEY</code> env var instead (overrides this field).
+                    If <code>GEMINI_API_KEY</code> is set in the server's <code>.env</code> file it wins and this field is ignored. It is currently blank, so what you save here is what gets used.
                 </p>
             </div>
         </div>
@@ -631,7 +631,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <p class="form-hint" style="margin-top:10px;">
             Keys are at <a href="https://dashboard.paystack.com/#/settings/developers" target="_blank" rel="noopener" style="color:var(--gold);font-weight:600;">dashboard.paystack.com → Settings → API Keys</a>.
             Test keys (<code>sk_test_/pk_test_</code>) run in sandbox - use card <code>4084 0840 8408 4081</code>, any future expiry, CVV <code>408</code>.
-            On Vercel, set <code>PAYSTACK_SECRET_KEY</code> and <code>PAYSTACK_PUBLIC_KEY</code> env vars instead (they override these fields).
+            If <code>PAYSTACK_SECRET_KEY</code> / <code>PAYSTACK_PUBLIC_KEY</code> are set in the server's <code>.env</code> file they win and these fields are ignored. Both are currently blank, so what you save here is what the site uses.
             The "Pay with Card" option appears at checkout automatically once a secret key is present.
         </p>
 
