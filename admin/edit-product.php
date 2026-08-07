@@ -20,11 +20,11 @@ $error = '';
 $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = cleanText($_POST['name']);
-    $sku = cleanText($_POST['sku']);
-    $price = (float)$_POST['price'];
-    $stock = (int)$_POST['stock_quantity'];
-    $categoryId = (int)$_POST['category_id'];
+    $name = cleanText($_POST['name'] ?? '');
+    $sku = cleanText($_POST['sku'] ?? '');
+    $price = (float)($_POST['price'] ?? 0);
+    $stock = (int)($_POST['stock_quantity'] ?? 0);
+    $categoryId = (int)($_POST['category_id'] ?? 0);
 
     if (empty($name) || empty($sku) || $price <= 0 || !$categoryId) {
         $error = 'Please fill in all required fields';
@@ -96,23 +96,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $updateData = [
                 'name' => $name,
                 'slug' => generateSlug($name),
-                'description' => cleanText($_POST['description']),
+                'description' => cleanText($_POST['description'] ?? ''),
                 'category_id' => $categoryId,
-                'material' => cleanText($_POST['material']) ?: null,
-                'metal_purity' => cleanText($_POST['metal_purity']) ?: null,
-                'stone_type' => cleanText($_POST['stone_type']) ?: 'None',
-                'stone_weight' => (float)($_POST['stone_weight'] ?: 0),
-                'brand' => cleanText($_POST['brand']) ?: null,
+                'material' => cleanText($_POST['material'] ?? '') ?: null,
+                'metal_purity' => cleanText($_POST['metal_purity'] ?? '') ?: null,
+                'stone_type' => cleanText($_POST['stone_type'] ?? '') ?: 'None',
+                'stone_weight' => (float)(($_POST['stone_weight'] ?? 0) ?: 0),
+                'brand' => cleanText($_POST['brand'] ?? '') ?: null,
                 'price' => $price,
-                'compare_price' => (float)($_POST['compare_price'] ?: 0),
+                'compare_price' => (float)(($_POST['compare_price'] ?? 0) ?: 0),
                 'stock_quantity' => $stock,
                 'sku' => $sku,
                 'image' => $imagePath,
-                'weight' => (float)($_POST['weight'] ?: 0),
-                'dimensions' => cleanText($_POST['dimensions']) ?: null,
-                'gender' => cleanText($_POST['gender']) ?: 'Unisex',
-                'style' => cleanText($_POST['style']) ?: null,
-                'occasion' => cleanText($_POST['occasion']) ?: null,
+                'weight' => (float)(($_POST['weight'] ?? 0) ?: 0),
+                // There is no dimensions box on this form, so a save must keep
+                // whatever is already stored. Reading $_POST for it blanked the
+                // column every time the product was edited.
+                'dimensions' => array_key_exists('dimensions', $_POST)
+                                  ? (cleanText($_POST['dimensions']) ?: null)
+                                  : ($product['dimensions'] ?? null),
+                'gender' => cleanText($_POST['gender'] ?? '') ?: 'Unisex',
+                'style' => cleanText($_POST['style'] ?? '') ?: null,
+                'occasion' => cleanText($_POST['occasion'] ?? '') ?: null,
                 'stock_status' => in_array($_POST['stock_status'] ?? '', ['available','express','out_of_stock']) ? $_POST['stock_status'] : 'available',
                 'colors' => trim($_POST['colors'] ?? '') ?: null,
                 'cod_enabled'  => isset($_POST['pm_cod_override'])  ? (isset($_POST['cod_enabled'])  ? 1 : 0) : null,
@@ -209,12 +214,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="edit_name">Product Name <span style="color:#EF4444;">*</span></label>
                 <input type="text" id="edit_name" name="name" required class="form-input"
-                       value="<?php echo htmlspecialchars($product['name']); ?>">
+                       value="<?php echo htmlspecialchars($product['name'] ?? ''); ?>">
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="edit_sku">SKU <span style="color:#EF4444;">*</span></label>
                 <input type="text" id="edit_sku" name="sku" required class="form-input"
-                       value="<?php echo htmlspecialchars($product['sku']); ?>">
+                       value="<?php echo htmlspecialchars($product['sku'] ?? ''); ?>">
             </div>
         </div>
 
@@ -222,7 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="form-group" style="margin-top:20px;">
             <label class="form-label" for="edit_desc">Description <span style="color:#EF4444;">*</span></label>
             <textarea id="edit_desc" name="description" rows="5" required
-                      class="form-input" style="resize:vertical;min-height:120px;"><?php echo htmlspecialchars($product['description']); ?></textarea>
+                      class="form-input" style="resize:vertical;min-height:120px;"><?php echo htmlspecialchars($product['description'] ?? ''); ?></textarea>
         </div>
 
         <!-- Category -->
@@ -394,7 +399,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="edit_brand">Brand</label>
                 <input type="text" id="edit_brand" name="brand" class="form-input"
-                       value="<?php echo htmlspecialchars($product['brand']); ?>">
+                       value="<?php echo htmlspecialchars($product['brand'] ?? ''); ?>">
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="edit_weight">Weight (g)</label>
@@ -418,7 +423,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <label class="form-label" for="edit_style">Style</label>
                 <input type="text" id="edit_style" name="style" placeholder="e.g., Classic, Modern, Vintage"
                        class="form-input"
-                       value="<?php echo htmlspecialchars($product['style']); ?>">
+                       value="<?php echo htmlspecialchars($product['style'] ?? ''); ?>">
             </div>
         </div>
 
@@ -427,7 +432,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <label class="form-label" for="edit_occasion">Occasion</label>
             <input type="text" id="edit_occasion" name="occasion" placeholder="e.g., Engagement, Wedding, Anniversary"
                    class="form-input"
-                   value="<?php echo htmlspecialchars($product['occasion']); ?>">
+                   value="<?php echo htmlspecialchars($product['occasion'] ?? ''); ?>">
         </div>
 
         <!-- Colors -->

@@ -16,11 +16,11 @@ if (isset($_GET['next_sku'])) {
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate inputs
-    $name = cleanText($_POST['name']);
-    $sku = cleanText($_POST['sku']);
-    $price = (float)$_POST['price'];
-    $stock = (int)$_POST['stock_quantity'];
-    $categoryId = (int)$_POST['category_id'];
+    $name = cleanText($_POST['name'] ?? '');
+    $sku = cleanText($_POST['sku'] ?? '');
+    $price = (float)($_POST['price'] ?? 0);
+    $stock = (int)($_POST['stock_quantity'] ?? 0);
+    $categoryId = (int)($_POST['category_id'] ?? 0);
 
     // No SKU typed? Build one from the category so every product still has a
     // unique code without the admin having to invent one each time.
@@ -93,23 +93,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $productData = [
                 'name' => $name,
                 'slug' => generateSlug($name),
-                'description' => cleanText($_POST['description']),
+                'description' => cleanText($_POST['description'] ?? ''),
                 'category_id' => $categoryId,
-                'material' => cleanText($_POST['material']) ?: null,
-                'metal_purity' => cleanText($_POST['metal_purity']) ?: null,
-                'stone_type' => cleanText($_POST['stone_type']) ?: 'None',
-                'stone_weight' => (float)($_POST['stone_weight'] ?: 0),
-                'brand' => cleanText($_POST['brand']) ?: null,
+                'material' => cleanText($_POST['material'] ?? '') ?: null,
+                'metal_purity' => cleanText($_POST['metal_purity'] ?? '') ?: null,
+                'stone_type' => cleanText($_POST['stone_type'] ?? '') ?: 'None',
+                'stone_weight' => (float)(($_POST['stone_weight'] ?? 0) ?: 0),
+                'brand' => cleanText($_POST['brand'] ?? '') ?: null,
                 'price' => $price,
-                'compare_price' => (float)($_POST['compare_price'] ?: 0),
+                'compare_price' => (float)(($_POST['compare_price'] ?? 0) ?: 0),
                 'stock_quantity' => $stock,
                 'sku' => $sku,
                 'image' => $imagePath,
-                'weight' => (float)($_POST['weight'] ?: 0),
-                'dimensions' => cleanText($_POST['dimensions']) ?: null,
-                'gender' => cleanText($_POST['gender']) ?: 'Unisex',
-                'style' => cleanText($_POST['style']) ?: null,
-                'occasion' => cleanText($_POST['occasion']) ?: null,
+                'weight' => (float)(($_POST['weight'] ?? 0) ?: 0),
+                'dimensions' => cleanText($_POST['dimensions'] ?? '') ?: null,
+                'gender' => cleanText($_POST['gender'] ?? '') ?: 'Unisex',
+                'style' => cleanText($_POST['style'] ?? '') ?: null,
+                'occasion' => cleanText($_POST['occasion'] ?? '') ?: null,
                 'stock_status' => in_array($_POST['stock_status'] ?? '', ['available','express','out_of_stock']) ? $_POST['stock_status'] : 'available',
                 'colors' => trim($_POST['colors'] ?? '') ?: null,
                 'cod_enabled'  => isset($_POST['pm_cod_override'])  ? (isset($_POST['cod_enabled'])  ? 1 : 0) : null,
@@ -193,13 +193,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <label class="form-label" for="add_name">Product Name <span style="color:#EF4444;">*</span></label>
                 <input type="text" id="add_name" name="name" required placeholder="e.g., Diamond Engagement Ring"
                        class="form-input"
-                       value="<?php echo isset($_POST['name']) ? htmlspecialchars($_POST['name']) : ''; ?>">
+                       value="<?php echo isset($_POST['name']) ? htmlspecialchars($_POST['name'] ?? '') : ''; ?>">
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="add_sku">SKU <span style="color:#EF4444;">*</span></label>
                 <input type="text" id="add_sku" name="sku" placeholder="Leave blank to generate automatically"
                        class="form-input"
-                       value="<?php echo isset($_POST['sku']) ? htmlspecialchars($_POST['sku']) : ''; ?>">
+                       value="<?php echo isset($_POST['sku']) ? htmlspecialchars($_POST['sku'] ?? '') : ''; ?>">
                 <p style="font-size:12px;color:var(--stone-mid);margin:6px 0 0;">
                     Filled in from the category as you choose one. Type over it if you prefer your own code.
                 </p>
@@ -210,7 +210,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="form-group" style="margin-top:20px;">
             <label class="form-label" for="add_desc">Description <span style="color:#EF4444;">*</span></label>
             <textarea id="add_desc" name="description" rows="5" required placeholder="Enter detailed product description..."
-                      class="form-input" style="resize:vertical;min-height:120px;"><?php echo isset($_POST['description']) ? htmlspecialchars($_POST['description']) : ''; ?></textarea>
+                      class="form-input" style="resize:vertical;min-height:120px;"><?php echo isset($_POST['description']) ? htmlspecialchars($_POST['description'] ?? '') : ''; ?></textarea>
         </div>
 
         <!-- Category -->
@@ -336,7 +336,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <label class="form-label" for="add_material">Material</label>
                 <input type="text" id="add_material" name="material" class="form-input" list="material-list"
                        placeholder="Pick one or type your own"
-                       value="<?php echo isset($_POST['material']) ? htmlspecialchars($_POST['material']) : ''; ?>">
+                       value="<?php echo isset($_POST['material']) ? htmlspecialchars($_POST['material'] ?? '') : ''; ?>">
                 <datalist id="material-list">
                     <?php foreach (productFieldSuggestions('material', ['Gold','Platinum','Silver','Rose Gold','White Gold','Titanium','Stainless Steel']) as $m): ?>
                         <option value="<?php echo htmlspecialchars($m); ?>"></option>
@@ -347,7 +347,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <label class="form-label" for="add_purity">Metal Purity</label>
                 <input type="text" id="add_purity" name="metal_purity" class="form-input" list="purity-list"
                        placeholder="Pick one or type your own"
-                       value="<?php echo isset($_POST['metal_purity']) ? htmlspecialchars($_POST['metal_purity']) : ''; ?>">
+                       value="<?php echo isset($_POST['metal_purity']) ? htmlspecialchars($_POST['metal_purity'] ?? '') : ''; ?>">
                 <datalist id="purity-list">
                     <?php foreach (productFieldSuggestions('metal_purity', ['10K','14K','18K','22K','24K','950','925','N/A']) as $p): ?>
                         <option value="<?php echo htmlspecialchars($p); ?>"></option>
@@ -362,7 +362,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <label class="form-label" for="add_stone">Stone Type</label>
                 <input type="text" id="add_stone" name="stone_type" class="form-input" list="stone-list"
                        placeholder="Pick one or type your own"
-                       value="<?php echo isset($_POST['stone_type']) ? htmlspecialchars($_POST['stone_type']) : 'None'; ?>">
+                       value="<?php echo isset($_POST['stone_type']) ? htmlspecialchars($_POST['stone_type'] ?? '') : 'None'; ?>">
                 <datalist id="stone-list">
                     <?php foreach (productFieldSuggestions('stone_type', ['None','Diamond','Ruby','Emerald','Sapphire','Pearl','Topaz','Amethyst','Zirconia','Moissanite','Opal','Garnet']) as $s): ?>
                         <option value="<?php echo htmlspecialchars($s); ?>"></option>
@@ -383,7 +383,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <label class="form-label" for="add_brand">Brand</label>
                 <input type="text" id="add_brand" name="brand" placeholder="e.g., Phelyz Collection"
                        class="form-input"
-                       value="<?php echo isset($_POST['brand']) ? htmlspecialchars($_POST['brand']) : ''; ?>">
+                       value="<?php echo isset($_POST['brand']) ? htmlspecialchars($_POST['brand'] ?? '') : ''; ?>">
             </div>
             <div class="form-group" style="margin-bottom:0;">
                 <label class="form-label" for="add_weight">Weight (g)</label>
@@ -407,7 +407,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <label class="form-label" for="add_style">Style</label>
                 <input type="text" id="add_style" name="style" placeholder="e.g., Classic, Modern, Vintage"
                        class="form-input"
-                       value="<?php echo isset($_POST['style']) ? htmlspecialchars($_POST['style']) : ''; ?>">
+                       value="<?php echo isset($_POST['style']) ? htmlspecialchars($_POST['style'] ?? '') : ''; ?>">
             </div>
         </div>
 
@@ -416,7 +416,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <label class="form-label" for="add_occasion">Occasion</label>
             <input type="text" id="add_occasion" name="occasion" placeholder="e.g., Engagement, Wedding, Anniversary"
                    class="form-input"
-                   value="<?php echo isset($_POST['occasion']) ? htmlspecialchars($_POST['occasion']) : ''; ?>">
+                   value="<?php echo isset($_POST['occasion']) ? htmlspecialchars($_POST['occasion'] ?? '') : ''; ?>">
         </div>
 
         <!-- Colors -->

@@ -73,9 +73,32 @@ define('PASSWORD_HASH_COST', 12);
 define('APP_SECRET', getenv('APP_SECRET') ?: ('phelyz-fallback-' . DB_NAME . DB_USER));
 
 // ── Error reporting ───────────────────────────────────────────────────────────
-$isProduction = !empty(getenv('VERCEL')) || !empty(getenv('VERCEL_ENV'));
-error_reporting($isProduction ? 0 : E_ALL);
+// This used to decide "am I in production?" by looking for Vercel's own
+// environment variables. Those stopped existing the day the site moved to
+// cPanel, so the answer became "no" on the live server and every visitor to
+// phelyzstore.com was shown raw PHP warnings, complete with the full path to
+// the code on disk.
+//
+// It now defaults to production and only relaxes for a recognisably local
+// machine, so a new environment can never be noisy by accident. Set APP_ENV in
+// .env to override.
+$appEnv = strtolower(trim((string)(getenv('APP_ENV') ?: '')));
+if ($appEnv === '') {
+    $host    = strtolower(preg_replace('/:\d+$/', '', (string)($_SERVER['HTTP_HOST'] ?? '')));
+    $isLocal = in_array($host, ['localhost', '127.0.0.1', '::1'], true)
+            || substr($host, -6) === '.local'
+            || substr($host, -5) === '.test';
+    $appEnv  = $isLocal ? 'development' : 'production';
+}
+define('APP_ENV', $appEnv);
+$isProduction = (APP_ENV === 'production');
+
+// Report everything worth knowing about, but never to the visitor's screen.
+// Deprecation notices are left out of the log so they cannot drown the real
+// errors. On the server these land in cPanel's error log.
+error_reporting($isProduction ? (E_ALL & ~E_DEPRECATED & ~E_STRICT) : E_ALL);
 ini_set('display_errors', $isProduction ? '0' : '1');
+ini_set('log_errors', '1');
 
 // ── Timezone ──────────────────────────────────────────────────────────────────
 date_default_timezone_set('Africa/Lagos');
