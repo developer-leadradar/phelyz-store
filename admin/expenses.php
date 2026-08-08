@@ -33,6 +33,44 @@ if ($ready && ($_POST['form'] ?? '') === 'expense') {
     }
 }
 
+// ── Change an expense already recorded ──────────────────────────────────────
+// A typo in an amount quietly distorts every profit figure on this page, so it
+// has to be fixable without going near the database.
+$editSaved = false;
+
+if ($ready && ($_POST['form'] ?? '') === 'expense_edit') {
+    $id     = (int)($_POST['expense_id'] ?? 0);
+    $amount = (float)($_POST['amount'] ?? 0);
+    $desc   = trim($_POST['description'] ?? '');
+    if (!$id || $desc === '' || $amount <= 0) {
+        $error = 'Give the expense a description and an amount.';
+    } else {
+        try {
+            $db->update('expenses', [
+                'spent_on'    => $_POST['spent_on'] ?: date('Y-m-d'),
+                'category'    => in_array($_POST['category'] ?? '', $categories, true) ? $_POST['category'] : 'Other',
+                'description' => $desc,
+                'amount'      => $amount,
+                'notes'       => trim($_POST['notes'] ?? '') ?: null,
+            ], 'id = ?', [$id]);
+            $success   = 'Expense updated.';
+            $editSaved = true;   // put the form back to adding, not re-editing
+        } catch (Exception $e) { $error = 'Could not update that expense.'; }
+    }
+}
+
+// ── Remove an expense ───────────────────────────────────────────────────────
+if ($ready && ($_POST['form'] ?? '') === 'expense_delete') {
+    $id = (int)($_POST['expense_id'] ?? 0);
+    if ($id) {
+        try {
+            $db->delete('expenses', 'id = ?', [$id]);
+            $success   = 'Expense deleted.';
+            $editSaved = true;
+        } catch (Exception $e) { $error = 'Could not delete that expense.'; }
+    }
+}
+
 // ── Add a purchase batch ────────────────────────────────────────────────────
 if ($ready && ($_POST['form'] ?? '') === 'batch') {
     $ref = trim($_POST['reference'] ?? '');
@@ -116,6 +154,20 @@ if ($ready && isset($_GET['apply_costs'])) {
 // ── Figures ─────────────────────────────────────────────────────────────────
 $from = $_GET['from'] ?? date('Y-01-01');
 $to   = $_GET['to']   ?? date('Y-m-d');
+
+// The date filter, kept on every link and on the form's own action so that
+// editing a row never throws away the range being looked at.
+$filterQs = '?from=' . urlencode($from) . '&to=' . urlencode($to);
+
+// The row currently being edited, if any. Cleared the moment an edit is saved,
+// so the form drops back to adding instead of re-opening what was just changed.
+$editing = null;
+if ($ready && !$editSaved && !empty($_GET['edit'])) {
+    try {
+        $editing = $db->fetchOne("SELECT * FROM expenses WHERE id = ?", [(int)$_GET['edit']]);
+    } catch (Exception $e) { $editing = null; }
+    if (!$editing) $error = 'That expense no longer exists.';
+}
 
 $totExpenses = 0; $byCategory = []; $expenses = []; $batches = []; $products = [];
 $revenue = 0; $cogs = 0; $orderCount = 0;
@@ -216,32 +268,58 @@ if ($ready) {
 
 <div class="exp-grid">
 
-  <!-- ── Record an expense ───────────────────────────────── -->
-  <form method="POST" class="card" style="padding:20px;">
-    <input type="hidden" name="form" value="expense">
-    <h2 style="font-size:15px;font-weight:700;margin:0 0 12px;">Record an expense</h2>
+  <!-- ── Record or change an expense ─────────────────────── -->
+  <form method="POST" action="expenses.php<?php echo $filterQs; ?>" class="card" style="padding:20px;" id="expense-form">
+    <input type="hidden" name="form" value="<?php echo $editing ? 'expense_edit' : 'expense'; ?>">
+    <?php if ($editing): ?>
+      <input type="hidden" name="expense_id" value="<?php echo (int)$editing['id']; ?>">
+    <?php endif; ?>
+
+    <h2 style="font-size:15px;font-weight:700;margin:0 0 12px;">
+      <?php echo $editing ? 'Edit expense' : 'Record an expense'; ?>
+    </h2>
+
+    <?php if ($editing): ?>
+      <p style="font-size:12.5px;color:var(--stone-mid);margin:-6px 0 14px;">
+        Changing this updates every figure on this page.
+      </p>
+    <?php endif; ?>
 
     <div class="exp-row-2">
       <div class="form-group">
         <label class="form-label">Date</label>
-        <input type="date" name="spent_on" class="form-input" value="<?php echo date('Y-m-d'); ?>">
+        <input type="date" name="spent_on" class="form-input"
+               value="<?php echo htmlspecialchars($editing['spent_on'] ?? date('Y-m-d')); ?>">
       </div>
       <div class="form-group">
         <label class="form-label">Category</label>
         <select name="category" class="form-input form-select">
-          <?php foreach ($categories as $c): ?><option value="<?php echo $c; ?>"><?php echo $c; ?></option><?php endforeach; ?>
+          <?php foreach ($categories as $c): ?>
+            <option value="<?php echo $c; ?>" <?php echo (($editing['category'] ?? '') === $c) ? 'selected' : ''; ?>><?php echo $c; ?></option>
+          <?php endforeach; ?>
         </select>
       </div>
     </div>
     <div class="form-group">
       <label class="form-label">What was it for</label>
-      <input type="text" name="description" class="form-input" required maxlength="255" placeholder="Transport to Mount Zion (delivery)">
+      <input type="text" name="description" class="form-input" required maxlength="255"
+             placeholder="Transport to Mount Zion (delivery)"
+             value="<?php echo htmlspecialchars($editing['description'] ?? ''); ?>">
     </div>
     <div class="form-group">
       <label class="form-label">Amount</label>
-      <input type="number" name="amount" class="form-input" step="0.01" min="0" required placeholder="0.00">
+      <input type="number" name="amount" class="form-input" step="0.01" min="0" required placeholder="0.00"
+             value="<?php echo $editing ? htmlspecialchars($editing['amount']) : ''; ?>">
     </div>
-    <button class="btn btn-gold btn-full">Add expense</button>
+
+    <button class="btn btn-gold btn-full"><?php echo $editing ? 'Save changes' : 'Add expense'; ?></button>
+
+    <?php if ($editing): ?>
+      <a href="expenses.php<?php echo $filterQs; ?>"
+         style="display:block;text-align:center;margin-top:10px;font-size:13px;font-weight:600;color:var(--stone-mid);text-decoration:none;">
+        Cancel
+      </a>
+    <?php endif; ?>
 
     <?php if ($byCategory): ?>
       <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--cream-dark);">
@@ -378,15 +456,29 @@ if ($ready) {
 <div class="card" style="padding:20px;margin-top:20px;">
   <h2 style="font-size:15px;font-weight:700;margin:0 0 12px;">Recent expenses</h2>
   <div style="overflow-x:auto;">
-    <table class="data-table" style="min-width:520px;">
-      <thead><tr><th>Date</th><th>Category</th><th>Description</th><th style="text-align:right;">Amount</th></tr></thead>
+    <table class="data-table" style="min-width:620px;">
+      <thead><tr><th>Date</th><th>Category</th><th>Description</th><th style="text-align:right;">Amount</th><th style="text-align:right;">&nbsp;</th></tr></thead>
       <tbody>
-      <?php foreach ($expenses as $e): ?>
-        <tr>
+      <?php foreach ($expenses as $e):
+        $isEditing = $editing && (int)$editing['id'] === (int)$e['id']; ?>
+        <tr<?php echo $isEditing ? ' style="background:rgba(202,138,4,0.07);"' : ''; ?>>
           <td style="white-space:nowrap;font-size:13px;"><?php echo date('j M Y', strtotime($e['spent_on'])); ?></td>
           <td style="font-size:13px;color:var(--stone-mid);"><?php echo htmlspecialchars($e['category'] ?? ''); ?></td>
           <td style="font-size:13px;overflow-wrap:anywhere;"><?php echo htmlspecialchars($e['description'] ?? ''); ?></td>
           <td style="text-align:right;font-weight:600;white-space:nowrap;"><?php echo formatPrice($e['amount']); ?></td>
+          <td style="text-align:right;white-space:nowrap;">
+            <a href="expenses.php<?php echo $filterQs; ?>&amp;edit=<?php echo (int)$e['id']; ?>#expense-form"
+               style="font-size:12.5px;font-weight:600;color:var(--gold);text-decoration:none;">Edit</a>
+            <form method="POST" action="expenses.php<?php echo $filterQs; ?>" style="display:inline;margin-left:10px;"
+                  onsubmit="return confirm('Delete this expense? It cannot be undone.');">
+              <input type="hidden" name="form" value="expense_delete">
+              <input type="hidden" name="expense_id" value="<?php echo (int)$e['id']; ?>">
+              <button type="submit"
+                      style="background:none;border:none;padding:0;font-size:12.5px;font-weight:600;color:#B91C1C;cursor:pointer;">
+                Delete
+              </button>
+            </form>
+          </td>
         </tr>
       <?php endforeach; ?>
       </tbody>
